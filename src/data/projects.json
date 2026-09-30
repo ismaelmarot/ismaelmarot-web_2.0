@@ -1,0 +1,46 @@
+[
+  {
+    "id": "1",
+    "name": "awesome-project",
+    "description": "A sample project showcasing modern web development practices with React and TypeScript.",
+    "primaryLanguage": "TypeScript",
+    "technologies": ["React", "TypeScript", "Vite", "CSS Modules"],
+    "githubUrl": "https://github.com/ismaelmarot/awesome-project",
+    "demoUrl": "https://awesome-project.example.com",
+    "screenshotUrls": [],
+    "stars": 42,
+    "forks": 5,
+    "lastUpdated": "2024-01-15T10:30:00Z",
+    "isFeatured": true,
+    "displayOrder": 1
+  },
+  {
+    "id": "2",
+    "name": "utility-library",
+    "description": "A lightweight utility library for common JavaScript/TypeScript operations.",
+    "primaryLanguage": "TypeScript",
+    "technologies": ["TypeScript", "Vitest", "ESLint", "Prettier"],
+    "githubUrl": "https://github.com/ismaelmarot/utility-library",
+    "screenshotUrls": [],
+    "stars": 18,
+    "forks": 2,
+    "lastUpdated": "2024-02-20T14:45:00Z",
+    "isFeatured": true,
+    "displayOrder": 2
+  },
+  {
+    "id": "3",
+    "name": "blog-platform",
+    "description": "A modern blog platform built with Next.js, featuring MDX support and syntax highlighting.",
+    "primaryLanguage": "TypeScript",
+    "technologies": ["Next.js", "React", "MDX", "Tailwind CSS"],
+    "githubUrl": "https://github.com/ismaelmarot/blog-platform",
+    "demoUrl": "https://blog.example.com",
+    "screenshotUrls": [],
+    "stars": 25,
+    "forks": 3,
+    "lastUpdated": "2024-03-10T09:15:00Z",
+    "isFeatured": false,
+    "displayOrder": 3
+  }
+]

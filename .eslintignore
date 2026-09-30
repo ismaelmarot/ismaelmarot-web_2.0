@@ -1,0 +1,12 @@
+dist/
+node_modules/
+coverage/
+*.log
+.env*
+.vite/
+*.local
+.DS_Store
+*.min.css
+*.min.js
+package-lock.json
+vite.config.ts.timestamp-*
