@@ -1,21 +1,14 @@
 :root {
-  /* Color Palette */
-  --color-bg: #ffffff;
-  --color-bg-muted: #f5f5f7;
-  --color-bg-accent: #f0f0f5;
-  --color-fg: #1d1d1f;
-  --color-fg-muted: #6e6e73;
-  --color-fg-subtle: #86868b;
-  --color-primary: #0066cc;
-  --color-primary-hover: #0052a3;
-  --color-primary-light: #e8f0fe;
-  --color-border: #d2d2d7;
-  --color-border-light: #e5e5e9;
-  --color-focus: #0066cc;
-  --color-error: #d1242f;
-  --color-error-bg: #fce8e6;
-  --color-success: #1a7f37;
-  --color-success-bg: #e6f4ea;
+  /* Color Palette - Spec Compliant */
+  --color-bg: #FFFFFF;
+  --color-bg-muted: #F5F5F7;
+  --color-fg: #1D1D1F;
+  --color-fg-muted: #6E6E73;
+  --color-fg-subtle: #86868B;
+  --color-border: #D2D2D7;
+  --color-black: #000000;
+  --color-white: #FFFFFF;
+  --color-accent: #0071E3;
 
   /* Semantic Colors */
   --color-text-primary: var(--color-fg);
@@ -23,13 +16,11 @@
   --color-text-tertiary: var(--color-fg-subtle);
   --color-background: var(--color-bg);
   --color-background-muted: var(--color-bg-muted);
-  --color-background-accent: var(--color-bg-accent);
   --color-border-default: var(--color-border);
-  --color-border-subtle: var(--color-border-light);
-  --color-interactive: var(--color-primary);
-  --color-interactive-hover: var(--color-primary-hover);
+  --color-interactive: var(--color-accent);
+  --color-interactive-hover: var(--color-accent);
 
-  /* Spacing Scale */
+  /* Spacing Scale - 4px base */
   --space-0: 0;
   --space-1: 0.25rem;   /* 4px */
   --space-2: 0.5rem;    /* 8px */
@@ -44,32 +35,26 @@
   --space-20: 5rem;     /* 80px */
   --space-24: 6rem;     /* 96px */
 
-  /* Typography Scale - Fluid with clamp() for Apple-style responsive type */
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  /* Typography - Inter font family */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, Consolas, monospace;
 
-  /* Fluid type scale using clamp(min, preferred, max) */
-  --text-xs: clamp(0.7rem, 0.65rem + 0.25vw, 0.8125rem);      /* ~11-13px */
-  --text-sm: clamp(0.8125rem, 0.75rem + 0.3125vw, 1rem);       /* ~13-16px */
-  --text-base: clamp(0.9375rem, 0.875rem + 0.3125vw, 1.125rem); /* ~15-18px */
-  --text-lg: clamp(1.0625rem, 1rem + 0.3125vw, 1.25rem);       /* ~17-20px */
-  --text-xl: clamp(1.1875rem, 1.125rem + 0.3125vw, 1.375rem);  /* ~19-22px */
-  --text-2xl: clamp(1.375rem, 1.25rem + 0.625vw, 1.75rem);     /* ~22-28px */
-  --text-3xl: clamp(1.75rem, 1.5rem + 1.25vw, 2.5rem);         /* ~28-40px */
-  --text-4xl: clamp(2.25rem, 1.875rem + 1.875vw, 3.5rem);      /* ~36-56px */
-  --text-5xl: clamp(3rem, 2.25rem + 3.75vw, 5rem);             /* ~48-80px */
-  --text-6xl: clamp(3.75rem, 2.75rem + 5vw, 6.5rem);           /* ~60-104px */
+  /* Typographic Scale - Exact Spec Values */
+  --text-display-hero: clamp(3.5rem, 8vw, 7rem);           /* Hero headline - weight 700 */
+  --text-display-section: clamp(2.5rem, 5vw, 4.5rem);      /* Section titles - weight 700 */
+  --text-display-project: clamp(2rem, 4vw, 3.5rem);        /* Project titles - weight 600 */
+  --text-large-subtitle: clamp(1.25rem, 2vw, 1.75rem);     /* Large subtitles - weight 400 */
+  --text-body: 1rem;                                        /* Body text - weight 400 */
+  --text-secondary: 0.875rem;                               /* Secondary text - weight 400 */
+  --text-label: 0.75rem;                                    /* Labels & navigation - weight 500 */
 
-  /* Display sizes for Hero - even larger */
-  --text-display-sm: clamp(3rem, 2.5rem + 2.5vw, 4.5rem);      /* ~48-72px */
-  --text-display-md: clamp(4rem, 3rem + 5vw, 7rem);            /* ~64-112px */
-  --text-display-lg: clamp(5rem, 3.5rem + 7.5vw, 9rem);        /* ~80-144px */
-
+  /* Font Weights - Only 4 weights permitted */
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
+  /* Line Heights */
   --line-height-tight: 1.05;
   --line-height-snug: 1.2;
   --line-height-normal: 1.5;
@@ -85,13 +70,10 @@
   --radius-2xl: 1.5rem;   /* 24px */
   --radius-full: 9999px;
 
-  /* Shadows */
+  /* Shadows - Reduced per spec (no strong shadows) */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
-  --shadow-focus: 0 0 0 3px var(--color-primary-light);
+  --shadow-focus: 0 0 0 3px var(--color-accent);
 
   /* Transitions */
   --transition-fast: 120ms ease-out;
@@ -106,11 +88,10 @@
   --ease-in-out: ease-in-out;
   --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* Breakpoints */
+  /* Breakpoints - Simplified to 3 per spec */
   --bp-mobile: 768px;
   --bp-tablet: 1024px;
   --bp-desktop: 1280px;
-  --bp-wide: 1440px;
 
   /* Z-Index Scale */
   --z-base: 0;
@@ -131,26 +112,7 @@
   --container-2xl: 1536px;
 }
 
-/* Dark mode support (optional - for future) */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #1d1d1f;
-    --color-bg-muted: #2c2c2e;
-    --color-bg-accent: #3a3a3c;
-    --color-fg: #f5f5f7;
-    --color-fg-muted: #98989d;
-    --color-fg-subtle: #7a7a80;
-    --color-primary: #4d9aff;
-    --color-primary-hover: #6db0ff;
-    --color-primary-light: #1a3d6e;
-    --color-border: #3a3a3c;
-    --color-border-light: #48484a;
-    --color-error-bg: #4d1a1a;
-    --color-success-bg: #1a3d2a;
-  }
-}
-
-/* Reduced motion */
+/* Reduced motion - zeros all transition/duration variables */
 @media (prefers-reduced-motion: reduce) {
   :root {
     --transition-fast: 0ms;

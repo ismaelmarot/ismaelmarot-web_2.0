@@ -1,37 +1,56 @@
 import styled from 'styled-components';
-import { tokens } from '@/styles/tokens';
 
 export const StyledFooter = styled.footer<{ $variant: 'minimal' | 'full' }>`
-  border-top: 1px solid ${tokens.colors.border};
-  padding-block: ${({ $variant }) => ($variant === 'minimal' ? tokens.space[8] : tokens.space[16])};
-  background-color: ${tokens.colors.background};
+  border-top: 1px solid var(--color-border);
+  padding-block: ${({ $variant }) => ($variant === 'minimal' ? 'var(--space-8)' : 'var(--space-16)')};
+  background-color: var(--color-bg);
 `;
 
 export const StyledInner = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: ${tokens.space[6]};
-  max-width: ${tokens.containers.xl};
+  gap: var(--space-6);
+  max-width: var(--container-xl);
   margin-inline: auto;
-  padding-inline: ${tokens.space[6]};
+  padding-inline: var(--space-6);
 `;
 
 export const StyledCopyright = styled.p`
-  font-size: ${tokens.fontSizes.sm};
-  color: ${tokens.colors.textMuted};
+  font-size: var(--text-secondary);
+  font-weight: 400;
+  color: var(--color-text-tertiary);
+  margin: 0;
 `;
 
 export const StyledSocialLinks = styled.div`
   display: flex;
   align-items: center;
-  gap: ${tokens.space[4]};
+  gap: var(--space-4);
+
+  a {
+    color: var(--color-text-secondary);
+    transition: color var(--transition-fast);
+
+    &:hover {
+      color: var(--color-accent);
+    }
+  }
 `;
 
 export const StyledNavWrapper = styled.nav`
   display: flex;
   align-items: center;
-  gap: ${tokens.space[6]};
-  font-size: ${tokens.fontSizes.sm};
-  color: ${tokens.colors.textMuted};
+  gap: var(--space-6);
+  font-size: var(--text-secondary);
+  color: var(--color-text-tertiary);
+
+  a {
+    color: var(--color-text-tertiary);
+    transition: color var(--transition-fast);
+
+    &:hover {
+      color: var(--color-accent);
+    }
+  }
 `;

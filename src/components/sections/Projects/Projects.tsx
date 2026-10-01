@@ -24,7 +24,7 @@ export const Projects = ({
         size="xl"
         background="default"
         fullViewport={true}
-        composition="content"
+        composition="projects"
         verticalAlign="top"
       >
         <Container size="xl" padding="lg">
@@ -51,7 +51,7 @@ export const Projects = ({
         size="xl"
         background="default"
         fullViewport={true}
-        composition="content"
+        composition="projects"
         verticalAlign="center"
       >
         <Container size="xl" padding="lg">
@@ -80,7 +80,7 @@ export const Projects = ({
       size="xl"
       background="default"
       fullViewport={true}
-      composition="content"
+      composition="projects"
       verticalAlign="top"
     >
       <Container size="xl" padding="lg">

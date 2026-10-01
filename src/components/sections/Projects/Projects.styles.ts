@@ -12,20 +12,20 @@ export const StyledProjectsHeader = styled.div`
   text-align: left;
 
   @media (max-width: 767px) {
-    text-align: center;
+    text-align: left;
   }
 `;
 
 export const StyledProjectsHeadline = styled.h2`
   margin: 0;
-  font-size: ${tokens.fontSizes['4xl']};
-  font-weight: ${tokens.fontWeights.bold};
-  line-height: ${tokens.lineHeights.tight};
+  font-size: var(--text-display-section);
+  font-weight: 700;
+  line-height: 1.05;
   letter-spacing: -0.01em;
-  color: ${tokens.colors.textPrimary};
+  color: var(--color-text-primary);
 
   @media (max-width: 767px) {
-    font-size: ${tokens.fontSizes['3xl']};
+    font-size: var(--text-display-section);
   }
 `;
 
@@ -39,19 +39,22 @@ export const StyledProjectsGrid = styled.div<{ $hasSkeleton?: boolean }>`
   }
 
   @media (min-width: 1024px) {
-    grid-template-columns: repeat(3, 1fr);
+    /* Asymmetric layout: 1 featured large + 2 smaller, or custom arrangement */
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: ${tokens.space[6]};
   }
 `;
 
 export const StyledProjectsEmpty = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  text-align: center;
+  text-align: left;
   padding: ${tokens.space[16]} ${tokens.space[8]};
-  color: ${tokens.colors.textTertiary};
-  font-size: ${tokens.fontSizes.lg};
+  color: var(--color-text-tertiary);
+  font-size: var(--text-large-subtitle);
 
   p {
     margin: 0;
@@ -61,12 +64,12 @@ export const StyledProjectsEmpty = styled.div`
 export const StyledProjectsError = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  text-align: center;
+  text-align: left;
   padding: ${tokens.space[16]} ${tokens.space[8]};
-  color: ${tokens.colors.error};
-  font-size: ${tokens.fontSizes.lg};
+  color: var(--color-text-primary);
+  font-size: var(--text-large-subtitle);
   gap: ${tokens.space[4]};
 
   p {
@@ -75,17 +78,17 @@ export const StyledProjectsError = styled.div`
 
   button {
     padding: ${tokens.space[3]} ${tokens.space[6]};
-    font-size: ${tokens.fontSizes.base};
-    font-weight: ${tokens.fontWeights.medium};
-    color: ${tokens.colors.background};
-    background: ${tokens.colors.error};
+    font-size: var(--text-label);
+    font-weight: 500;
+    color: var(--color-white);
+    background: var(--color-accent);
     border: none;
-    border-radius: ${tokens.radii.md};
+    border-radius: var(--radius-md);
     cursor: pointer;
-    transition: background ${tokens.transitions.fast};
+    transition: background var(--transition-fast);
 
     &:hover {
-      background: ${tokens.colors.error}dd;
+      opacity: 0.8;
     }
   }
 `;

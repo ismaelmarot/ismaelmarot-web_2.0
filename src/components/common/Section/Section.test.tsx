@@ -25,8 +25,8 @@ describe('Section', () => {
     const { container: muted } = render(<Section id="test" background="muted">Muted</Section>);
     expect(muted.firstChild).toHaveClass('muted');
 
-    const { container: gradient } = render(<Section id="test" background="gradient">Gradient</Section>);
-    expect(gradient.firstChild).toHaveClass('gradient');
+    const { container: accent } = render(<Section id="test" background="accent">Accent</Section>);
+    expect(accent.firstChild).toHaveClass('accent');
   });
 
   it('renders children', () => {

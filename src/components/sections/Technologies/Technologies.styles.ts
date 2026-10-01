@@ -13,20 +13,20 @@ export const StyledTechnologiesHeader = styled.div`
   max-width: 700px;
 
   @media (max-width: 767px) {
-    text-align: center;
+    text-align: left;
   }
 `;
 
 export const StyledTechnologiesHeadline = styled.h2`
   margin: 0;
-  font-size: ${tokens.fontSizes['4xl']};
-  font-weight: ${tokens.fontWeights.bold};
-  line-height: ${tokens.lineHeights.tight};
+  font-size: var(--text-display-section);
+  font-weight: 700;
+  line-height: 1.05;
   letter-spacing: -0.01em;
-  color: ${tokens.colors.textPrimary};
+  color: var(--color-text-primary);
 
   @media (max-width: 767px) {
-    font-size: ${tokens.fontSizes['3xl']};
+    font-size: var(--text-display-section);
   }
 `;
 
@@ -45,25 +45,23 @@ export const StyledCategoryGroup = styled.div`
 
 export const StyledCategoryTitle = styled.h3`
   margin: 0;
-  font-size: ${tokens.fontSizes.lg};
-  font-weight: ${tokens.fontWeights.semibold};
-  line-height: ${tokens.lineHeights.snug};
-  color: ${tokens.colors.textSecondary};
+  font-size: var(--text-label);
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--color-text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding-bottom: ${tokens.space[2]};
-  border-bottom: 2px solid ${tokens.colors.primary};
   display: inline-block;
-  width: fit-content;
 `;
 
 export const StyledCategoryGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: ${tokens.space[4]};
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${tokens.space[3]} ${tokens.space[4]};
+  align-items: center;
 
   @media (max-width: 767px) {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: ${tokens.space[3]};
+    gap: ${tokens.space[2]} ${tokens.space[3]};
   }
 `;

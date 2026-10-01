@@ -9,16 +9,15 @@ export const StyledAbout = styled.div`
 
 export const StyledAboutHeadline = styled.h2`
   margin: 0 0 ${tokens.space[6]} 0;
-  font-size: ${tokens.fontSizes['4xl']};
-  font-weight: ${tokens.fontWeights.bold};
-  line-height: ${tokens.lineHeights.tight};
+  font-size: var(--text-display-section);
+  font-weight: 700;
+  line-height: 1.05;
   letter-spacing: -0.01em;
-  color: ${tokens.colors.textPrimary};
+  color: var(--color-text-primary);
   text-align: left;
 
   @media (max-width: 767px) {
-    font-size: ${tokens.fontSizes['3xl']};
-    text-align: center;
+    text-align: left;
   }
 `;
 
@@ -28,29 +27,25 @@ export const StyledAboutContent = styled.div`
 
 export const StyledAboutText = styled.p`
   margin: 0 0 ${tokens.space[6]} 0;
-  font-size: ${tokens.fontSizes.lg};
-  font-weight: ${tokens.fontWeights.normal};
-  line-height: ${tokens.lineHeights.relaxed};
-  color: ${tokens.colors.textSecondary};
+  font-size: var(--text-body);
+  font-weight: 400;
+  line-height: 1.625;
+  color: var(--color-text-secondary);
 
   @media (max-width: 767px) {
-    font-size: ${tokens.fontSizes.base};
-    text-align: center;
+    text-align: left;
   }
 `;
 
 export const StyledAboutStats = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: ${tokens.space[8]};
   margin-top: ${tokens.space[10]};
-  padding-top: ${tokens.space[8]};
-  border-top: 1px solid ${tokens.colors.borderSubtle};
   width: 100%;
   max-width: 100%;
 
   @media (max-width: 767px) {
-    grid-template-columns: repeat(2, 1fr);
     gap: ${tokens.space[6]};
   }
 `;
@@ -58,11 +53,11 @@ export const StyledAboutStats = styled.div`
 export const StyledStatItem = styled.div<{ $index?: number }>`
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  align-items: flex-start;
+  text-align: left;
   gap: ${tokens.space[2]};
   opacity: 0;
-  animation: fadeInUp ${tokens.durations.normal} ${tokens.easings.out} forwards;
+  animation: fadeInUp var(--duration-normal) var(--ease-out) forwards;
   animation-delay: ${({ $index }) => ($index || 0) * 100}ms;
 
   @media (prefers-reduced-motion: reduce) {
@@ -72,19 +67,19 @@ export const StyledStatItem = styled.div<{ $index?: number }>`
 `;
 
 export const StyledStatValue = styled.div`
-  font-size: ${tokens.fontSizes['4xl']};
-  font-weight: ${tokens.fontWeights.bold};
-  line-height: ${tokens.lineHeights.tight};
-  color: ${tokens.colors.textPrimary};
+  font-size: var(--text-display-project);
+  font-weight: 600;
+  line-height: 1.05;
+  color: var(--color-text-primary);
 
   @media (max-width: 767px) {
-    font-size: ${tokens.fontSizes['3xl']};
+    font-size: var(--text-display-section);
   }
 `;
 
 export const StyledStatLabel = styled.div<{ $variant?: 'description' }>`
-  font-size: ${({ $variant }) => $variant === 'description' ? tokens.fontSizes.sm : tokens.fontSizes.base};
-  font-weight: ${({ $variant }) => $variant === 'description' ? tokens.fontWeights.normal : tokens.fontWeights.medium};
-  line-height: ${tokens.lineHeights.normal};
-  color: ${({ $variant }) => $variant === 'description' ? tokens.colors.textTertiary : tokens.colors.textSecondary};
+  font-size: ${({ $variant }) => $variant === 'description' ? 'var(--text-secondary)' : 'var(--text-label)'};
+  font-weight: ${({ $variant }) => $variant === 'description' ? 400 : 500};
+  line-height: 1.5;
+  color: ${({ $variant }) => $variant === 'description' ? 'var(--color-text-tertiary)' : 'var(--color-text-secondary)'};
 `;

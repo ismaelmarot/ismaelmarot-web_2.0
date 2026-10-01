@@ -8,6 +8,252 @@
 
 **Input**: User description: "Create a personal developer portfolio website for Ismael Marot. The purpose of the website is to present Ismael as a web developer and showcase the applications and projects he has built. The website should include: 1. A home/hero section introducing Ismael as a web developer. 2. An About section with a concise personal and professional introduction. 3. A Projects section showing the applications and projects Ismael has built. 4. Project information should be based on Ismael's GitHub repositories, including relevant repository information such as project name, description, technologies, links and other useful metadata when available. 5. Projects should support visual presentation through screenshots or images. 6. A Technologies section showing the main technologies and tools used by Ismael. 7. A Contact section with appropriate ways to contact or find Ismael online. 8. Clear navigation between the main sections. 9. Responsive behavior for desktop, tablet and mobile devices. 10. Smooth and intentional animations and transitions. 11. The visual experience should be inspired by Apple's design principles: simplicity, strong visual hierarchy, generous spacing, refined typography, subtle motion and polished interactions. It must not copy Apple's website or proprietary designs. 12. The website should prioritize the projects and their visual presentation rather than excessive text. 13. The interface should feel modern, professional, clean and personal. 14. The website should be accessible and usable with keyboard navigation. 15. The website should provide appropriate loading, empty and error states when project information cannot be retrieved. 16. The website should be deployable as a static website through GitHub Pages. 17. The initial version should remain simple and avoid unnecessary features or complexity. The specification should focus on user needs, behavior, content and acceptance criteria. Do not decide specific implementation libraries or architecture unless they are required to describe the user experience."
 
+---
+
+## Visual Design System
+
+This section defines the official visual system for the portfolio. It is a binding part of the product requirements and must be implemented faithfully.
+
+### Visual Direction
+
+The portfolio MUST embody an aesthetic inspired by Apple's design principles:
+
+- Minimalist
+- Elegant
+- Clean
+- Modern
+- Premium
+- Generous visual space
+- Strong typographic hierarchy
+- Carefully balanced composition
+
+The inspiration is limited to general design principles. The implementation MUST NOT copy Apple's designs, branding, components, copy, or assets literally. The interface MUST feel like a carefully crafted digital product, not a generic portfolio template.
+
+### Typographic System
+
+**Primary Typeface**: Inter (mandatory)
+
+**Permitted Weights Only**:
+- 400 — Regular
+- 500 — Medium
+- 600 — Semibold
+- 700 — Bold
+
+No other weights may be introduced without explicit documented justification.
+
+#### Typographic Scale
+
+| Role | Size | Weight |
+|------|------|--------|
+| Hero headline | `clamp(3.5rem, 8vw, 7rem)` | 700 |
+| Section titles | `clamp(2.5rem, 5vw, 4.5rem)` | 700 |
+| Project titles | `clamp(2rem, 4vw, 3.5rem)` | 600 |
+| Large subtitles | `clamp(1.25rem, 2vw, 1.75rem)` | 400 |
+| Body text | `1rem` | 400 |
+| Secondary text | `0.875rem` | 400 |
+| Labels & navigation | `0.75rem` | 500 |
+
+These values constitute the official visual system. Arbitrary sizes MUST NOT be introduced without justification within the design system.
+
+### Color Palette
+
+The official palette is:
+
+| Token | Hex | Usage |
+|-------|-----|-------|
+| Background Primary | `#FFFFFF` | Main page background |
+| Background Alternate | `#F5F5F7` | Alternate section backgrounds |
+| Text Primary | `#1D1D1F` | Primary content text |
+| Text Secondary | `#6E6E73` | Secondary content text |
+| Text Tertiary | `#86868B` | Tertiary/muted text |
+| Border | `#D2D2D7` | Borders, dividers |
+| Black | `#000000` | Pure black when needed |
+| White | `#FFFFFF` | Pure white when needed |
+| Accent | `#0071E3` | Links, actions, interactive states, small highlights |
+
+**Accent Usage Constraint**: The accent color MUST be used sparingly — primarily for links, actions, interactive states, and small highlights. It MUST NOT become a dominant interface color.
+
+### Spacing and Composition
+
+The interface MUST prioritize:
+
+- Abundant negative space
+- Expansive compositions
+- Clear separation between content blocks
+- Strong visual hierarchy
+- Easily scannable content
+- Few but meaningful visual elements
+
+Dense interfaces MUST be avoided.
+
+### Home Sections — Viewport Height Rule
+
+Each main section of the HOME page MUST occupy at minimum:
+
+```
+min-height: 100dvh;
+```
+
+The sections are:
+
+- Hero
+- About / Sobre mí
+- Projects / Proyectos
+- Technologies / Tecnologías
+- Contact / Contacto
+
+A section MAY grow beyond `100dvh` when content requires it. Each section MUST feel like an independent visual "scene." Mechanical repetition of the same composition across all sections is PROHIBITED.
+
+#### Hero Section
+
+The Hero MUST be the most visually impactful section. It MUST use:
+
+- Large typography
+- Abundant negative space
+- Developer's name
+- Professional role
+- Brief message
+- Primary CTA
+- Clean composition
+
+It MUST feel like a digital product cover, not a traditional CV header.
+
+#### About Section
+
+The About section MUST have its own visual composition. It MUST avoid:
+
+- Large text blocks
+- CV-style layouts
+- Excessive information
+
+It MUST prioritize:
+
+- Brief introduction
+- Relevant information
+- Clean visual composition
+- Typographic hierarchy
+
+#### Projects Section
+
+Projects MUST be one of the visually protagonistic sections. It MUST prioritize:
+
+- Large images/previews
+- Large titles
+- Minimum necessary information
+- Technologies
+- Links
+- Expansive compositions
+
+It MUST avoid grids of many small cards. Projects MUST feel like the portfolio's primary pieces.
+
+#### Technologies Section
+
+The Technologies section MUST NOT appear as a generic logo list. It MUST use the visual system to present technologies cleanly and organized. It MAY use:
+
+- Icons
+- Categories
+- Groupings
+- Micro-interactions
+
+But MUST NOT generate visual excess.
+
+#### Contact Section
+
+The Contact section MUST function as the visual closing of the portfolio. It MUST be:
+
+- Simple
+- Clean
+- Spacious
+- Direct
+
+It MUST prioritize:
+
+- Primary message
+- CTA
+- Contact links
+
+### Responsive Behavior
+
+The visual system MUST explicitly adapt to:
+
+- Mobile
+- Tablet
+- Desktop
+
+Responsive behavior MUST NOT be solved by simply reducing sizes. The following MUST adapt:
+
+- Typography
+- Spacing
+- Composition
+- Grids
+- Images
+- Navigation
+- Vertical distribution
+
+The typographic scale defined via `clamp()` MUST be used to achieve fluid scaling. Sections MUST retain the minimum `100dvh` concept at all breakpoints, allowing growth when content requires it.
+
+### Animations and Transitions
+
+Animations MUST be:
+
+- Subtle
+- Smooth
+- Natural
+- Elegant
+
+Permitted:
+
+- Fade
+- Subtle translate
+- Subtle scale
+- Viewport entrance appearance
+- Hover transitions
+- Micro-interactions
+
+Prohibited:
+
+- Exaggerated animations
+- Abrupt movements
+- Excessive parallax
+- Constant animations
+- Decorative effects without purpose
+
+The system MUST respect `prefers-reduced-motion`.
+
+### Negative Visual Rules
+
+The interface MUST avoid:
+
+- Strong shadows
+- Unnecessary decorative gradients
+- Excessive borders
+- Excessive cards
+- Dashboard-like appearance
+- Excessive colors
+- Unnecessary visual elements
+- Typefaces outside the system
+- Typographic weights outside the system
+- Arbitrary sizes
+- Dense layouts
+
+### Visual Validation and Tokens
+
+The implementation MUST allow visual validation of the visual system and HOME page before proceeding to secondary functionality.
+
+The visual system MUST be centralized via reusable tokens for:
+
+- Typography
+- Weights
+- Sizes
+- Colors
+- Spacing
+- Breakpoints
+- Radii
+- Transitions
+- Motion
+
+Arbitrary visual values MUST NOT be duplicated across components.
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Discover Ismael and His Work (Priority: P1)

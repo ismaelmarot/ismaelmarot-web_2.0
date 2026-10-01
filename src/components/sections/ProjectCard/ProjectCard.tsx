@@ -1,7 +1,6 @@
-import { StyledProjectCardWrapper, StyledProjectImage, StyledProjectContent, StyledProjectName, StyledProjectDescription, StyledProjectTechStack, StyledProjectTechBadge, StyledProjectLinks, StyledProjectLink } from './ProjectCard.styles';
+import { StyledProjectCard, StyledProjectCardWrapper, StyledProjectImage, StyledProjectContent, StyledProjectName, StyledProjectDescription, StyledProjectTechStack, StyledProjectTechBadge, StyledProjectLinks, StyledProjectLink } from './ProjectCard.styles';
 import { useProjectCard } from './useProjectCard';
 import { Badge } from '@/components/ui/Badge';
-import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
 import type { Project } from '@/types/project';
 
@@ -22,37 +21,37 @@ export const ProjectCard = ({
 
   if (isSkeleton) {
     return (
-      <Card variant="elevated" padding="lg" className="animate-stagger-item stagger-0">
-        <div className="skeleton" style={{ height: '200px', borderRadius: 'var(--radius-lg)', background: 'linear-gradient(90deg, var(--color-bg-muted) 25%, var(--color-bg-accent) 50%, var(--color-bg-muted) 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' }} />
-        <div style={{ marginTop: 'var(--space-4)' }}>
-          <div className="skeleton" style={{ height: '32px', width: '60%', borderRadius: 'var(--radius-sm)' }} />
+      <StyledProjectCardWrapper
+        $isFeatured={isFeatured}
+        $index={index}
+        className="animate-stagger-item stagger-0"
+        style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden', background: 'var(--color-bg)' }}
+      >
+        <div className="skeleton" style={{ height: '200px', borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0', background: 'linear-gradient(90deg, var(--color-bg-muted) 25%, var(--color-bg-muted) 50%, var(--color-bg-muted) 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' }} />
+        <div style={{ padding: 'var(--space-5)' }}>
+          <div className="skeleton" style={{ height: '40px', width: '60%', borderRadius: 'var(--radius-sm)' }} />
+          <div style={{ marginTop: 'var(--space-3)' }}>
+            <div className="skeleton" style={{ height: '16px', width: '80%', borderRadius: 'var(--radius-sm)' }} />
+          </div>
+          <div style={{ marginTop: 'var(--space-3)' }}>
+            <div className="skeleton" style={{ height: '24px', width: '80px', borderRadius: 'var(--radius-full)' }} />
+          </div>
         </div>
-        <div style={{ marginTop: 'var(--space-3)' }}>
-          <div className="skeleton" style={{ height: '16px', width: '80%', borderRadius: 'var(--radius-sm)' }} />
-        </div>
-        <div style={{ marginTop: 'var(--space-3)' }}>
-          <div className="skeleton" style={{ height: '16px', width: '50%', borderRadius: 'var(--radius-sm)' }} />
-        </div>
-        <div style={{ marginTop: 'var(--space-4)', display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-          <div className="skeleton" style={{ height: '24px', width: '80px', borderRadius: 'var(--radius-full)' }} />
-          <div className="skeleton" style={{ height: '24px', width: '80px', borderRadius: 'var(--radius-full)' }} />
-          <div className="skeleton" style={{ height: '24px', width: '80px', borderRadius: 'var(--radius-full)' }} />
-        </div>
-      </Card>
+      </StyledProjectCardWrapper>
     );
   }
 
   return (
-    <StyledProjectCardWrapper
-      ref={cardRef}
-      $isFeatured={isFeatured}
-      $index={index}
-      onKeyDown={handleKeyDown}
-      tabIndex={0}
-      role="article"
-      aria-label={`${project.name} - ${project.description}`}
-    >
-      <Card variant="elevated" padding="none" hoverable={false}>
+    <StyledProjectCard>
+      <StyledProjectCardWrapper
+        ref={cardRef}
+        $isFeatured={isFeatured}
+        $index={index}
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
+        role="article"
+        aria-label={`${project.name} - ${project.description}`}
+      >
         <StyledProjectImage>
           {project.screenshotUrls && project.screenshotUrls.length > 0 ? (
             <img
@@ -100,21 +99,21 @@ export const ProjectCard = ({
               <span>Code</span>
             </StyledProjectLink>
             {project.demoUrl && (
-<StyledProjectLink
-            as="a"
-            href={project.demoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`View ${project.name} demo (opens in new tab)`}
-          >
-            <Icon name="externalLink" size={18} aria-hidden="true" />
-            <span>Demo</span>
-          </StyledProjectLink>
+              <StyledProjectLink
+                as="a"
+                href={project.demoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`View ${project.name} demo (opens in new tab)`}
+              >
+                <Icon name="externalLink" size={18} aria-hidden="true" />
+                <span>Demo</span>
+              </StyledProjectLink>
             )}
           </StyledProjectLinks>
         </StyledProjectContent>
-      </Card>
-    </StyledProjectCardWrapper>
+      </StyledProjectCardWrapper>
+    </StyledProjectCard>
   );
 };
 
@@ -138,5 +137,5 @@ function getTechColor(tech: string): string {
     tailwind: '#06b6d4',
     vite: '#646cff',
   };
-  return colors[tech.toLowerCase()] || '#0066cc';
+  return colors[tech.toLowerCase()] || '#0071E3';
 }

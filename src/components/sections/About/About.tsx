@@ -25,7 +25,7 @@ export const About = ({
       size="xl"
       background="muted"
       fullViewport={true}
-      composition="content"
+      composition="about"
       verticalAlign="center"
     >
       <Container size="xl" padding="lg">

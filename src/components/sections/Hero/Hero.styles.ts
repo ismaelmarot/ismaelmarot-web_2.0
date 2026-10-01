@@ -17,26 +17,16 @@ export const StyledHeroContent = styled.div`
   width: 100%;
 `;
 
-export const StyledHeroHeadline = styled.h1<{ $variant?: 'display-sm' | 'display-md' | 'display-lg' }>`
+export const StyledHeroHeadline = styled.h1`
   margin: 0;
-  font-size: ${({ $variant }) => tokens.fontSizes[$variant || 'display-md']};
-  font-weight: ${tokens.fontWeights.bold};
-  line-height: ${tokens.lineHeights.display};
+  font-size: var(--text-display-hero);
+  font-weight: 700;
+  line-height: 1.0;
   letter-spacing: -0.02em;
-  color: ${tokens.colors.textPrimary};
+  color: var(--color-text-primary);
 
   span {
     display: block;
-  }
-
-  @media (max-width: 767px) {
-    font-size: ${({ $variant }) => {
-      switch ($variant) {
-        case 'display-sm': return tokens.fontSizes['display-sm'];
-        case 'display-lg': return tokens.fontSizes['display-md'];
-        default: return tokens.fontSizes['display-md'];
-      }
-    }};
   }
 `;
 
@@ -44,25 +34,15 @@ export const StyledHeroTagline = styled.p<{ $variant?: 'title' | 'description' }
   margin: 0;
   font-size: ${({ $variant }) => {
     switch ($variant) {
-      case 'title': return tokens.fontSizes['2xl'];
-      case 'description': return tokens.fontSizes.lg;
-      default: return tokens.fontSizes.xl;
+      case 'title': return 'var(--text-display-project)';
+      case 'description': return 'var(--text-large-subtitle)';
+      default: return 'var(--text-large-subtitle)';
     }
   }};
-  font-weight: ${({ $variant }) => $variant === 'title' ? tokens.fontWeights.medium : tokens.fontWeights.normal};
+  font-weight: ${({ $variant }) => $variant === 'title' ? 600 : 400};
   line-height: ${tokens.lineHeights.relaxed};
-  color: ${({ $variant }) => $variant === 'description' ? tokens.colors.textTertiary : tokens.colors.textSecondary};
+  color: ${({ $variant }) => $variant === 'description' ? 'var(--color-text-secondary)' : 'var(--color-text-primary)'};
   max-width: 700px;
-
-  @media (max-width: 767px) {
-    font-size: ${({ $variant }) => {
-      switch ($variant) {
-        case 'title': return tokens.fontSizes.xl;
-        case 'description': return tokens.fontSizes.base;
-        default: return tokens.fontSizes.lg;
-      }
-    }};
-  }
 `;
 
 export const StyledHeroCtaGroup = styled.div`

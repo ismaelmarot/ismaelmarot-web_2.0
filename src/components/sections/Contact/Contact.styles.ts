@@ -8,6 +8,8 @@ export const StyledContact = styled.div`
   text-align: center;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  min-height: 100%;
   gap: ${tokens.space[8]};
 `;
 
@@ -19,28 +21,28 @@ export const StyledContactHeader = styled.div`
 
 export const StyledContactHeadline = styled.h2`
   margin: 0;
-  font-size: ${tokens.fontSizes['4xl']};
-  font-weight: ${tokens.fontWeights.bold};
-  line-height: ${tokens.lineHeights.tight};
+  font-size: var(--text-display-section);
+  font-weight: 700;
+  line-height: 1.05;
   letter-spacing: -0.01em;
-  color: ${tokens.colors.textPrimary};
+  color: var(--color-text-primary);
 
   @media (max-width: 767px) {
-    font-size: ${tokens.fontSizes['3xl']};
+    font-size: var(--text-display-section);
   }
 `;
 
 export const StyledContactIntro = styled.p`
   margin: 0;
-  font-size: ${tokens.fontSizes.lg};
-  font-weight: ${tokens.fontWeights.normal};
-  line-height: ${tokens.lineHeights.relaxed};
-  color: ${tokens.colors.textSecondary};
+  font-size: var(--text-large-subtitle);
+  font-weight: 400;
+  line-height: 1.625;
+  color: var(--color-text-secondary);
   max-width: 500px;
   margin: 0 auto;
 
   @media (max-width: 767px) {
-    font-size: ${tokens.fontSizes.base};
+    font-size: var(--text-large-subtitle);
   }
 `;
 

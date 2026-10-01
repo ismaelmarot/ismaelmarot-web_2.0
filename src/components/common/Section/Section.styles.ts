@@ -11,8 +11,7 @@ const sectionSizes = {
 const sectionBackgrounds = {
   default: tokens.colors.background,
   muted: tokens.colors.bgMuted,
-  accent: tokens.colors.bgAccent,
-  gradient: `linear-gradient(180deg, ${tokens.colors.background} 0%, ${tokens.colors.bgMuted} 100%)`,
+  accent: tokens.colors.bgMuted,
 } as const;
 
 const compositionStyles = {
@@ -27,24 +26,44 @@ const compositionStyles = {
     align-items: center;
     text-align: center;
   `,
-  content: `
-    /* Content: left-aligned, max-width constrained */
+  about: `
+    /* About: left-aligned, generous negative space, max-width constrained */
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     max-width: var(--container-xl);
     margin: 0 auto;
+    padding-inline: var(--space-6);
   `,
-  split: `
-    /* Split: two-column layout for desktop */
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: ${tokens.space[12]};
+  projects: `
+    /* Projects: visual-first, asymmetric on desktop, large images */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: var(--container-2xl);
+    margin: 0 auto;
+    width: 100%;
+  `,
+  technologies: `
+    /* Technologies: categorized, clean hierarchy, not card grid */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: var(--container-xl);
+    margin: 0 auto;
+    padding-inline: var(--space-6);
+  `,
+  contact: `
+    /* Contact: centered, vertically distributed, spacious, direct */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-
-    @media (min-width: 1024px) {
-      grid-template-columns: 1fr 1fr;
-    }
+    text-align: center;
+    min-height: 100%;
+    max-width: var(--container-lg);
+    margin: 0 auto;
+    padding-inline: var(--space-6);
   `,
   centered: `
     /* Centered: horizontally and vertically centered */
@@ -55,13 +74,6 @@ const compositionStyles = {
     text-align: center;
     max-width: var(--container-lg);
     margin: 0 auto;
-  `,
-  'space-between': `
-    /* Space-between: content distributed vertically */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    min-height: 100%;
   `,
 } as const;
 
@@ -108,12 +120,8 @@ export const StyledSection = styled.section<{
 
   /* Responsive adjustments */
   @media (max-width: 767px) {
-    /* Mobile: reduce padding, stack split layouts */
+    /* Mobile: reduce padding */
     padding-block: ${tokens.space[10]};
-
-    ${({ $composition }) => $composition === 'split' && `
-      grid-template-columns: 1fr;
-    `}
   }
 
   @media (min-width: 768px) and (max-width: 1023px) {

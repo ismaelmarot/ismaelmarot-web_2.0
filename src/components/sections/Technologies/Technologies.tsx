@@ -50,7 +50,7 @@ export const Technologies = ({
       size="xl"
       background="muted"
       fullViewport={true}
-      composition="content"
+      composition="technologies"
       verticalAlign="top"
     >
       <Container size="xl" padding="lg">
