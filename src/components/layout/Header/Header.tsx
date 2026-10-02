@@ -1,5 +1,6 @@
 import type { HTMLAttributes } from 'react';
 import { forwardRef, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Navigation } from '@/components/layout/Navigation';
 import { MobileMenu } from '@/components/layout/MobileMenu';
 import { Icon } from '@/components/ui/Icon';
@@ -82,12 +83,15 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
             </StyledMenuButton>
           )}
         </StyledInner>
-        <MobileMenu
-          isOpen={menuOpen}
-          onClose={closeMenu}
-          items={navigation}
-          cta={cta}
-        />
+        {createPortal(
+          <MobileMenu
+            isOpen={menuOpen}
+            onClose={closeMenu}
+            items={navigation}
+            cta={cta}
+          />,
+          document.body
+        )}
       </StyledHeader>
     );
   }
