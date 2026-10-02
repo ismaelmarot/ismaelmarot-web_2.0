@@ -6,7 +6,6 @@ import {
   StyledOverlay,
   StyledMobileMenu,
   StyledHeader,
-  StyledTitle,
   StyledCloseButton,
   StyledContent,
   StyledNav,
@@ -37,10 +36,11 @@ export const MobileMenu = forwardRef<HTMLDivElement, MobileMenuProps>(
 
     return (
       <>
-        <StyledOverlay $visible={isOpen} onClick={onClose} aria-hidden="true" />
+        <StyledOverlay $visible={isOpen} onClick={onClose} data-testid="overlay" aria-hidden="true" />
         <StyledMobileMenu
           ref={ref}
           $open={isOpen}
+          id="mobile-menu"
           className={className}
           data-open={isOpen.toString()}
           role="dialog"
@@ -49,17 +49,16 @@ export const MobileMenu = forwardRef<HTMLDivElement, MobileMenuProps>(
           {...props}
         >
           <StyledHeader>
-            <StyledTitle>Menu</StyledTitle>
             <StyledCloseButton onClick={onClose} aria-label="Close menu" type="button">
               <Icon name="x" size="md" decorative />
             </StyledCloseButton>
           </StyledHeader>
           <StyledContent>
             <StyledNav aria-label="Mobile navigation">
-              <Navigation items={items} variant="mobile" />
+              <Navigation items={items} variant="mobile" onNavigate={onClose} />
             </StyledNav>
             {hasCta && cta && (
-              <StyledNavItem as={cta.external ? 'a' : 'a'} href={cta.href} target={cta.external ? '_blank' : undefined} rel={cta.external ? 'noopener noreferrer' : undefined} aria-label={cta.ariaLabel}>
+              <StyledNavItem as={cta.external ? 'a' : 'a'} href={cta.href} onClick={onClose} target={cta.external ? '_blank' : undefined} rel={cta.external ? 'noopener noreferrer' : undefined} aria-label={cta.ariaLabel}>
                 {cta.label}
               </StyledNavItem>
             )}

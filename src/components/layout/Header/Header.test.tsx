@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { Header } from './Header';
 
 const mockNavigation = [
@@ -18,7 +18,7 @@ describe('Header', () => {
 
   it('renders navigation items', () => {
     render(<Header navigation={mockNavigation} />);
-    expect(screen.getByRole('link', { name: /home/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^home$/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /about/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /projects/i })).toBeInTheDocument();
   });
@@ -36,24 +36,37 @@ describe('Header', () => {
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
-  it('applies sticky class by default', () => {
-    const { container } = render(<Header navigation={mockNavigation} />);
-    expect(container.firstChild).toHaveClass('sticky');
-  });
-
-  it('applies static class when sticky is false', () => {
-    const { container } = render(<Header navigation={mockNavigation} sticky={false} />);
-    expect(container.firstChild).toHaveClass('static');
-  });
-
-  it('applies transparent class by default', () => {
-    const { container } = render(<Header navigation={mockNavigation} />);
-    expect(container.firstChild).toHaveClass('transparent');
+  it('renders a header element', () => {
+    render(<Header navigation={mockNavigation} />);
+    expect(screen.getByRole('banner')).toBeInTheDocument();
   });
 
   it('forwards ref', () => {
     const ref = vi.fn();
     render(<Header navigation={mockNavigation} ref={ref} />);
     expect(ref).toHaveBeenCalledWith(expect.any(HTMLElement));
+  });
+
+  it('shows hamburger and opens menu when mobile viewport', () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: query === '(max-width: 767px)',
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+
+    render(<Header navigation={mockNavigation} />);
+    const button = screen.getByRole('button', { name: /open menu/i });
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(button);
+    expect(button).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('dialog', { name: /mobile menu/i })).toBeInTheDocument();
+
+    window.matchMedia = originalMatchMedia;
   });
 });

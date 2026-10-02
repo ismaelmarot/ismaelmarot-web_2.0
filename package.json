@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:component": "vitest run --project=component",
+    "test:component": "vitest run --config vitest.component.config.ts",
     "test:e2e": "playwright test",
     "test:a11y": "npm run build && npx http-server dist -p 4173 -s & sleep 2 && npx axe-cli http://localhost:4173 --save --exit --reporter=cli && pkill -f http-server",
     "format": "prettier --write .",

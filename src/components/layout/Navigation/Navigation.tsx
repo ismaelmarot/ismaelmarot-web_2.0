@@ -40,6 +40,7 @@ export const Navigation = forwardRef<HTMLElement, NavigationProps>(
           <StyledNavItem
             key={item.href}
             href={item.href}
+            $variant={variant}
             $active={item.href === activeSection}
             aria-current={item.href === activeSection ? 'page' : undefined}
             target={item.external ? '_blank' : undefined}

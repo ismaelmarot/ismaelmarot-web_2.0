@@ -4,7 +4,6 @@ export {
   StyledOverlay,
   StyledMobileMenu,
   StyledHeader,
-  StyledTitle,
   StyledCloseButton,
   StyledContent,
   StyledNav,

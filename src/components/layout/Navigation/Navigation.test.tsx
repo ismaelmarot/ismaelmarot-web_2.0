@@ -18,12 +18,12 @@ describe('Navigation', () => {
     expect(screen.getByRole('link', { name: /github/i })).toBeInTheDocument();
   });
 
-  it('applies variant classes', () => {
-    const { container: header } = render(<Navigation items={mockItems} variant="header" />);
-    expect(header.firstChild).toHaveClass('header');
+  it('applies variant aria-labels', () => {
+    render(<Navigation items={mockItems} variant="header" />);
+    expect(screen.getByRole('navigation', { name: 'Main navigation' })).toBeInTheDocument();
 
-    const { container: mobile } = render(<Navigation items={mockItems} variant="mobile" />);
-    expect(mobile.firstChild).toHaveClass('mobile');
+    render(<Navigation items={mockItems} variant="mobile" />);
+    expect(screen.getByRole('navigation', { name: 'Mobile navigation' })).toBeInTheDocument();
   });
 
   it('highlights active section', () => {

@@ -1,10 +1,10 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { tokens } from '@/styles/tokens';
 
 export const StyledOverlay = styled.div<{ $visible: boolean }>`
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.3);
   z-index: ${tokens.zIndices.modal - 1};
   opacity: ${({ $visible }) => ($visible ? 1 : 0)};
   visibility: ${({ $visible }) => ($visible ? 'visible' : 'hidden')};
@@ -13,34 +13,44 @@ export const StyledOverlay = styled.div<{ $visible: boolean }>`
 
 export const StyledMobileMenu = styled.div<{ $open: boolean }>`
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   width: 100%;
-  max-width: 320px;
+  max-width: none;
   background-color: ${tokens.colors.background};
-  border-left: 1px solid ${tokens.colors.border};
-  box-shadow: ${tokens.shadows.xl};
+  border-left: none;
+  box-shadow: none;
   z-index: ${tokens.zIndices.modal};
   display: flex;
   flex-direction: column;
-  transform: ${({ $open }) => ($open ? 'translateX(0)' : 'translateX(100%)')};
-  transition: transform 200ms ease-out;
+  transform: ${({ $open }) => ($open ? 'translateY(0)' : 'translateY(-12px)')};
+  opacity: ${({ $open }) => ($open ? 1 : 0)};
+  transition: transform 240ms var(--ease-out), opacity 240ms var(--ease-out);
+
+  ${({ $open }) =>
+    $open &&
+    css`
+      animation: menuSolidify 360ms var(--ease-out);
+      backdrop-filter: blur(0px);
+
+      @keyframes menuSolidify {
+        from {
+          background-color: rgba(255, 255, 255, 0.55);
+          backdrop-filter: blur(18px);
+        }
+        to {
+          background-color: ${tokens.colors.background};
+          backdrop-filter: blur(0px);
+        }
+      }
+    `}
 `;
 
 export const StyledHeader = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  height: 64px;
+  justify-content: flex-end;
+  height: 52px;
   padding-inline: ${tokens.space[6]};
-  border-bottom: 1px solid ${tokens.colors.border};
-`;
-
-export const StyledTitle = styled.span`
-  font-size: ${tokens.fontSizes.xl};
-  font-weight: ${tokens.fontWeights.bold};
-  color: ${tokens.colors.textPrimary};
 `;
 
 export const StyledCloseButton = styled.button`
@@ -68,7 +78,7 @@ export const StyledCloseButton = styled.button`
 
 export const StyledContent = styled.div`
   flex: 1;
-  padding: ${tokens.space[6]};
+  padding: ${tokens.space[8]} ${tokens.space[6]};
   overflow-y: auto;
 `;
 
@@ -79,18 +89,30 @@ export const StyledNav = styled.nav`
 `;
 
 export const StyledNavItem = styled.a`
-  display: flex;
-  align-items: center;
-  padding: ${tokens.space[3]} ${tokens.space[4]};
+  display: block;
+  text-align: left;
+  padding: ${tokens.space[3]} 0;
   color: ${tokens.colors.textPrimary};
-  font-size: ${tokens.fontSizes.lg};
-  font-weight: ${tokens.fontWeights.medium};
+  font-size: clamp(1.5rem, 5vw, 2rem);
+  font-weight: ${tokens.fontWeights.semibold};
+  line-height: ${tokens.lineHeights.snug};
   text-decoration: none;
-  border-radius: ${tokens.radii.md};
-  transition: background-color 120ms ease-out;
+  transition: color 160ms ease-out;
+  animation: itemIn 360ms var(--ease-out) 260ms both;
+
+  @keyframes itemIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 
   &:hover {
-    background-color: ${tokens.colors.bgMuted};
+    color: ${tokens.colors.accent};
   }
 
   &:focus-visible {

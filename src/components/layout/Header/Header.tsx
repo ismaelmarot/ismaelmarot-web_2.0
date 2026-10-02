@@ -1,6 +1,8 @@
 import type { HTMLAttributes } from 'react';
-import { forwardRef } from 'react';
+import { forwardRef, useRef } from 'react';
 import { Navigation } from '@/components/layout/Navigation';
+import { MobileMenu } from '@/components/layout/MobileMenu';
+import { Icon } from '@/components/ui/Icon';
 import {
   StyledHeader,
   StyledInner,
@@ -8,6 +10,7 @@ import {
   StyledLogo,
   StyledNavWrapper,
   StyledCtaWrapper,
+  StyledMenuButton,
 } from './Header.styles';
 import { useHeader } from './useHeader';
 
@@ -27,7 +30,9 @@ export interface HeaderProps extends HTMLAttributes<HTMLElement> {
 
 export const Header = forwardRef<HTMLElement, HeaderProps>(
   ({ navigation, cta, sticky = true, transparent = true, className, ...props }, ref) => {
-    const { isScrolled } = useHeader();
+    const innerRef = useRef<HTMLDivElement>(null);
+    const { isScrolled, menuOpen, toggleMenu, closeMenu, isCompact } =
+      useHeader(innerRef);
 
     return (
       <StyledHeader
@@ -38,29 +43,51 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
         className={className}
         {...props}
       >
-        <StyledInner>
+        <StyledInner ref={innerRef}>
           <StyledBrand>
             <StyledLogo href="/" aria-label="Go to homepage">
               Ismael Marot
             </StyledLogo>
           </StyledBrand>
-          <StyledNavWrapper aria-label="Main navigation">
-            <Navigation items={navigation} variant="header" />
-            {cta && (
-              <StyledCtaWrapper>
-                <a
-                  href={cta.href}
-                  className={cta.external ? 'external' : ''}
-                  target={cta.external ? '_blank' : undefined}
-                  rel={cta.external ? 'noopener noreferrer' : undefined}
-                  aria-label={cta.ariaLabel}
-                >
-                  {cta.label}
-                </a>
-              </StyledCtaWrapper>
-            )}
-          </StyledNavWrapper>
+          {!isCompact ? (
+            <StyledNavWrapper>
+              <Navigation
+                items={navigation}
+                variant="header"
+                onNavigate={closeMenu}
+              />
+              {cta && (
+                <StyledCtaWrapper>
+                  <a
+                    href={cta.href}
+                    className={cta.external ? 'external' : ''}
+                    target={cta.external ? '_blank' : undefined}
+                    rel={cta.external ? 'noopener noreferrer' : undefined}
+                    aria-label={cta.ariaLabel}
+                  >
+                    {cta.label}
+                  </a>
+                </StyledCtaWrapper>
+              )}
+            </StyledNavWrapper>
+          ) : (
+            <StyledMenuButton
+              type="button"
+              onClick={toggleMenu}
+              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={menuOpen}
+              aria-controls="mobile-menu"
+            >
+              <Icon name={menuOpen ? 'x' : 'menu'} size="md" decorative />
+            </StyledMenuButton>
+          )}
         </StyledInner>
+        <MobileMenu
+          isOpen={menuOpen}
+          onClose={closeMenu}
+          items={navigation}
+          cta={cta}
+        />
       </StyledHeader>
     );
   }
