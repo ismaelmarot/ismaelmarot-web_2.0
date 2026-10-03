@@ -44,6 +44,8 @@ coverage/
 *.tsbuildinfo
 
 # Package manager
-package-lock.json
+# The lockfile IS committed. An application needs its dependency tree pinned: npm ci in CI
+# cannot run without it, and a floating resolution makes a deploy differ from the build it was
+# tested against. Only package manager specific caches stay ignored.
 yarn.lock
 pnpm-lock.yaml
