@@ -21,9 +21,11 @@ describe('Contact', () => {
 
   it('renders contact methods', () => {
     render(<Contact methods={mockMethods} />);
-    expect(screen.getByRole('link', { name: 'Email' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'GitHub' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'LinkedIn' })).toBeInTheDocument();
+    // Each card's accessible name carries the address, not just the service, so a screen reader
+    // announces where the link actually goes.
+    expect(screen.getByRole('link', { name: /^Email: / })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^GitHub: / })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^LinkedIn: / })).toBeInTheDocument();
   });
 
   it('exposes the methods as one list with no nested list items', () => {

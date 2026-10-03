@@ -1,4 +1,11 @@
-import { StyledContactMethodWrapper, StyledContactMethodLink, StyledContactMethodIcon, StyledContactMethodLabel, StyledContactMethodValue } from './ContactMethod.styles';
+import {
+  StyledContactMethodWrapper,
+  StyledContactMethodLink,
+  StyledContactMethodIcon,
+  StyledContactMethodLabel,
+  StyledContactMethodValue,
+  StyledContactMethodArrow,
+} from './ContactMethod.styles';
 import { useContactMethod } from './useContactMethod';
 import { Icon } from '@/components/ui/Icon';
 import type { IconName } from '@/components/ui/Icon';
@@ -20,6 +27,11 @@ export const ContactMethod = ({
   const isExternal = !isEmail;
   const iconName = method.iconName as IconName;
 
+  // The card shows the address in visible text, so the accessible name has to carry it too.
+  // A label of just "Email" left a screen reader announcing a link whose destination it could
+  // not read.
+  const accessibleName = `${method.label}: ${method.value}`;
+
   return (
     // No role here on purpose: the list item wrapper lives in the parent section, and
     // declaring it here nested a listitem inside a listitem, which breaks role="list".
@@ -29,11 +41,17 @@ export const ContactMethod = ({
         href={href}
         target={isExternal ? '_blank' : undefined}
         rel={isExternal ? 'noopener noreferrer' : undefined}
-        aria-label={method.label}
+        aria-label={accessibleName}
+        $type={method.type}
       >
         <StyledContactMethodIcon aria-hidden="true">
           <Icon name={iconName} size={24} />
         </StyledContactMethodIcon>
+
+        <StyledContactMethodArrow aria-hidden="true">
+          <Icon name="arrowRight" size={18} />
+        </StyledContactMethodArrow>
+
         <StyledContactMethodLabel>{method.label}</StyledContactMethodLabel>
         <StyledContactMethodValue>{isEmail ? method.value : method.value.replace(/^https?:\/\//, '')}</StyledContactMethodValue>
       </StyledContactMethodLink>

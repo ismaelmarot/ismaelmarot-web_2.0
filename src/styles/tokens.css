@@ -15,6 +15,19 @@
   --color-accent-text: #0062C4;
   --color-accent-text-hover: #0059B0;
 
+  /* Brand surfaces. Each contact card takes the identity of the service it links to, so the
+     row reads as three destinations rather than three copies of the same button.
+     Every pairing below clears WCAG AA for text, measured rather than eyeballed:
+       white on --brand-github        18.92:1
+       white on --brand-linkedin       5.69:1
+       white 90% on --brand-linkedin   4.93:1
+       --color-fg on --color-bg-muted 15.46:1
+     A translucent label was rejected: white at 72% on the LinkedIn blue is 3.72:1 and fails. */
+  --brand-github: #0D1117;
+  --brand-linkedin: #0A66C2;
+  --brand-linkedin-deep: #08427A;
+  --brand-email: #F5F5F7;
+
   /* Semantic Colors */
   --color-text-primary: var(--color-fg);
   --color-text-secondary: var(--color-fg-muted);
