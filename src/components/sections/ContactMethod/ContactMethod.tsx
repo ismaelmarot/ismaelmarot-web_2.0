@@ -9,7 +9,8 @@ import {
 import { useContactMethod } from './useContactMethod';
 import { Icon } from '@/components/ui/Icon';
 import type { IconName } from '@/components/ui/Icon';
-import type { ContactMethod as ContactMethodType } from '@/types/contact';
+import { VisuallyHidden } from '@/components/common/VisuallyHidden';
+import { getContactDomain, type ContactMethod as ContactMethodType } from '@/types/contact';
 
 export interface ContactMethodProps {
   method: ContactMethodType;
@@ -27,9 +28,9 @@ export const ContactMethod = ({
   const isExternal = !isEmail;
   const iconName = method.iconName as IconName;
 
-  // The card shows the address in visible text, so the accessible name has to carry it too.
-  // A label of just "Email" left a screen reader announcing a link whose destination it could
-  // not read.
+  // The card names the destination, so the accessible name has to carry the full address, not
+  // only the label. A name of just "Email" left a screen reader announcing a link whose
+  // destination it could not read.
   const accessibleName = `${method.label}: ${method.value}`;
 
   return (
@@ -45,15 +46,20 @@ export const ContactMethod = ({
         $type={method.type}
       >
         <StyledContactMethodIcon aria-hidden="true">
-          <Icon name={iconName} size={24} />
+          <Icon name={iconName} size={56} />
         </StyledContactMethodIcon>
 
         <StyledContactMethodArrow aria-hidden="true">
-          <Icon name="arrowRight" size={18} />
+          <Icon name="arrowRight" size={28} />
         </StyledContactMethodArrow>
 
         <StyledContactMethodLabel>{method.label}</StyledContactMethodLabel>
-        <StyledContactMethodValue>{isEmail ? method.value : method.value.replace(/^https?:\/\//, '')}</StyledContactMethodValue>
+
+        {/* Only the domain is shown. The full address stays in the accessible name above, so
+            the account and profile path are one keystroke away for anyone who needs them. */}
+        <StyledContactMethodValue>{getContactDomain(method.value)}</StyledContactMethodValue>
+
+        <VisuallyHidden>{method.value}</VisuallyHidden>
       </StyledContactMethodLink>
     </StyledContactMethodWrapper>
   );

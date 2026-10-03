@@ -3,9 +3,11 @@ import { tokens } from '@/styles/tokens';
 
 export const StyledContact = styled.div`
   width: 100%;
-  /* Wide enough for three cards side by side. 600px forced ~180px per card, which is below
-     the point where a card can hold an icon and an address without wrapping into a mess. */
-  max-width: 960px;
+  /* Sized for the content the cards actually carry now: a 56px icon and a domain. 960px was
+     for the full addresses, and at that width the cards read as three large empty slabs with
+     one short word in each. 760px puts them at roughly 220px, which is where the gradient and
+     the icon carry the card and the type does not float in the middle of it. */
+  max-width: 760px;
   margin: 0 auto;
   text-align: center;
   display: flex;

@@ -15,18 +15,22 @@
   --color-accent-text: #0062C4;
   --color-accent-text-hover: #0059B0;
 
-  /* Brand surfaces. Each contact card takes the identity of the service it links to, so the
+  /* Brand gradients. Each contact card takes the identity of the service it links to, so the
      row reads as three destinations rather than three copies of the same button.
-     Every pairing below clears WCAG AA for text, measured rather than eyeballed:
-       white on --brand-github        18.92:1
-       white on --brand-linkedin       5.69:1
-       white 90% on --brand-linkedin   4.93:1
-       --color-fg on --color-bg-muted 15.46:1
-     A translucent label was rejected: white at 72% on the LinkedIn blue is 3.72:1 and fails. */
-  --brand-github: #0D1117;
-  --brand-linkedin: #0A66C2;
-  --brand-linkedin-deep: #08427A;
-  --brand-email: #F5F5F7;
+     Every card is a from/to pair rather than one colour, and each pair was measured against
+     its lightest stop, which is where a gradient fails:
+       email     #7A3FD1 -> #4C1D9E   white 6.07:1, label 90% 5.25:1
+       github    #2A3138 -> #0A0D10   white 13.17:1, label 90% 10.95:1
+       linkedin  #0A66C2 -> #07447E   white 5.69:1, label 90% 4.93:1
+     Three brighter candidates were rejected on measurement: #8E5CF0 violet gives white only
+     4.25:1, #3E9BE0 and #1E7FD0 for LinkedIn give 3.01:1 and 4.20:1. The LinkedIn brand blue is
+     kept rather than pushed lighter or more saturated for that reason. */
+  --brand-email-from: #7A3FD1;
+  --brand-email-to: #4C1D9E;
+  --brand-github-from: #2A3138;
+  --brand-github-to: #0A0D10;
+  --brand-linkedin-from: #0A66C2;
+  --brand-linkedin-to: #07427E;
 
   /* Semantic Colors */
   --color-text-primary: var(--color-fg);

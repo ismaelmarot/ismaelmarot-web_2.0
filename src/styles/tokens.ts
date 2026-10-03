@@ -15,11 +15,13 @@ export const tokens = {
     accentText: 'var(--color-accent-text)',
     accentTextHover: 'var(--color-accent-text-hover)',
 
-    // Brand surfaces, one per contact card
-    brandGithub: 'var(--brand-github)',
-    brandLinkedin: 'var(--brand-linkedin)',
-    brandLinkedinDeep: 'var(--brand-linkedin-deep)',
-    brandEmail: 'var(--brand-email)',
+    // Brand gradients, one pair per contact card
+    brandEmailFrom: 'var(--brand-email-from)',
+    brandEmailTo: 'var(--brand-email-to)',
+    brandGithubFrom: 'var(--brand-github-from)',
+    brandGithubTo: 'var(--brand-github-to)',
+    brandLinkedinFrom: 'var(--brand-linkedin-from)',
+    brandLinkedinTo: 'var(--brand-linkedin-to)',
 
     // Semantic aliases (new)
     textPrimary: 'var(--color-text-primary)',
