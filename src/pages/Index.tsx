@@ -1,5 +1,6 @@
 import { Hero } from '@/components/sections/Hero';
 import { SectionSummary } from '@/components/sections/SectionSummary';
+import { TechnologyMarquee } from '@/components/sections/TechnologyMarquee';
 import { siteConfig } from '@/data/site-config';
 import { StyledIndexPage } from './Index.styles';
 
@@ -36,6 +37,7 @@ export const IndexPage = () => {
         ctaLabel="Ver tecnologías"
         ctaHref="/technologies"
         background="muted"
+        featuredItems={<TechnologyMarquee />}
       />
       <SectionSummary
         id="contact-summary"

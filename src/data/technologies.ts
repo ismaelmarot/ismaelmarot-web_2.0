@@ -132,3 +132,38 @@ export const technologyCategoryOrder: TechnologyCategory[] = [
   'testing',
   'other',
 ];
+
+/**
+ * The Spanish heading for each category.
+ *
+ * Lives here rather than inside a component because two places render it: the technologies page
+ * and the home marquee. When the labels were only in the section, the two could drift apart
+ * without anything failing.
+ */
+export const technologyCategoryLabels: Record<TechnologyCategory, string> = {
+  language: 'Lenguajes',
+  framework: 'Frameworks',
+  tool: 'Herramientas',
+  database: 'Bases de datos',
+  cloud: 'Cloud y DevOps',
+  testing: 'Testing',
+  other: 'Otras',
+};
+
+/**
+ * The categories that actually have technologies, in display order.
+ *
+ * Takes the list as an argument rather than closing over the module's own, so a caller can render
+ * a different set and so the component keeps its own prop contract.
+ */
+export function getPopulatedCategories(
+  list: Technology[] = technologies
+): { category: TechnologyCategory; label: string; technologies: Technology[] }[] {
+  return technologyCategoryOrder
+    .map((category) => ({
+      category,
+      label: technologyCategoryLabels[category],
+      technologies: list.filter((technology) => technology.category === category),
+    }))
+    .filter((group) => group.technologies.length > 0);
+}

@@ -18,6 +18,16 @@ export const StyledSectionSummary = styled.section<{ $background: 'default' | 'm
 
 export const StyledSectionSummaryContent = styled.div`
   max-width: ${tokens.containers.xl};
+  /* Two properties, and both are load-bearing for the technology marquee in the featured slot,
+     whose track is width:max-content at nearly 7000px:
+
+     width:100% because auto margins on a grid item switch off justify-self:stretch, so without
+     an explicit width this box took its max-content width instead of the track's.
+
+     min-width:0 because a grid item's automatic minimum size is its min-content width, which
+     raised the track's own minimum to 1072px and pushed it past a 375px phone. */
+  width: 100%;
+  min-width: 0;
   margin-inline: auto;
   padding-inline: ${tokens.space[6]};
   display: flex;
@@ -74,4 +84,10 @@ export const StyledSectionSummaryFeatured = styled.div`
   margin-top: ${tokens.space[8]};
   width: 100%;
   max-width: ${tokens.containers.lg};
+  /* A block's minimum content size is min(max-content, max-width), so max-width:1024px on its
+     own puts a 1024px floor under this box. With a wide child such as the technology marquee,
+     whose track is width:max-content at nearly 7000px, that floor exceeded a 375px phone and
+     pushed a horizontal scrollbar onto the whole page. Zeroing the automatic minimum lets this
+     box shrink to the space it actually has. */
+  min-width: 0;
 `;

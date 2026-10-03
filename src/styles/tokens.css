@@ -122,6 +122,10 @@
   --duration-fast: 120ms;
   --duration-normal: 200ms;
   --duration-slow: 300ms;
+  /* One full lap of the technology marquee. One copy of the six categories measures roughly
+     3600px, so 40s works out near 90px/s, which is ambient rather than attention-seeking: the
+     visible window refreshes about every 11 seconds. */
+  --duration-marquee: 40s;
   --ease-out: ease-out;
   --ease-in-out: ease-in-out;
   --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);

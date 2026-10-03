@@ -4,8 +4,7 @@ import { TechnologyCard } from '@/components/sections/TechnologyCard';
 import { Contributions } from '@/components/sections/Contributions';
 import { Section } from '@/components/common/Section';
 import { Container } from '@/components/common/Container';
-import { groupTechnologiesByCategory } from '@/types/project';
-import { technologyCategoryOrder } from '@/data/technologies';
+import { getPopulatedCategories } from '@/data/technologies';
 import type { Technology } from '@/types/project';
 
 export interface TechnologiesProps {
@@ -17,17 +16,8 @@ export const Technologies = ({
 }: TechnologiesProps) => {
   const { categoriesRef } = useTechnologies();
 
-  const groupedTech = groupTechnologiesByCategory(technologies);
-
-  const categoryLabels: Record<string, string> = {
-    language: 'Lenguajes',
-    framework: 'Frameworks',
-    tool: 'Herramientas',
-    database: 'Bases de datos',
-    cloud: 'Cloud y DevOps',
-    testing: 'Testing',
-    other: 'Otras',
-  };
+  // One source for the grouping, the order and the labels, shared with the home marquee.
+  const groups = getPopulatedCategories(technologies);
 
   return (
     <Section
@@ -48,17 +38,14 @@ export const Technologies = ({
           <Contributions />
 
           <StyledTechnologiesCategories role="list" aria-label="Categorías de tecnologías">
-            {technologyCategoryOrder.map((category) => {
-              const techs = groupedTech[category];
-              if (!techs || techs.length === 0) return null;
-
+            {groups.map(({ category, label, technologies: techs }) => {
               return (
                 <StyledCategoryGroup key={category} role="listitem">
-                  <StyledCategoryTitle>{categoryLabels[category]}</StyledCategoryTitle>
+                  <StyledCategoryTitle>{label}</StyledCategoryTitle>
                   {/* Its own list: the chip is already a listitem, and burying one inside
                       another without a list between them is what axe reports as
                       aria-required-parent. It went unnoticed while the section was empty. */}
-                  <StyledCategoryGrid role="list" aria-label={categoryLabels[category]}>
+                  <StyledCategoryGrid role="list" aria-label={label}>
                     {techs.map((tech, index) => (
                       <TechnologyCard key={tech.id} technology={tech} index={index} />
                     ))}
