@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { getCssForElement } from '@/test-utils/css';
 import { Section } from './Section';
 
 describe('Section', () => {
@@ -13,20 +14,28 @@ describe('Section', () => {
     expect(screen.getByRole('region', { name: /custom label/i })).toBeInTheDocument();
   });
 
-  it('applies size classes', () => {
-    const { container: sm } = render(<Section id="test" size="sm">Small</Section>);
-    expect(sm.firstChild).toHaveClass('sm');
+  it('applies size styles', () => {
+    render(<Section id="test" size="sm">Small</Section>);
+    expect(getCssForElement(screen.getByText('Small'))).toContain(
+      'padding-block: var(--space-10)'
+    );
 
-    const { container: xl } = render(<Section id="test" size="xl">Extra Large</Section>);
-    expect(xl.firstChild).toHaveClass('xl');
+    render(<Section id="test" size="xl">Extra Large</Section>);
+    expect(getCssForElement(screen.getByText('Extra Large'))).toContain(
+      'padding-block: var(--space-20)'
+    );
   });
 
-  it('applies background classes', () => {
-    const { container: muted } = render(<Section id="test" background="muted">Muted</Section>);
-    expect(muted.firstChild).toHaveClass('muted');
+  it('applies background styles', () => {
+    render(<Section id="test" background="default">Default</Section>);
+    expect(getCssForElement(screen.getByText('Default'))).toContain(
+      'background: var(--color-background)'
+    );
 
-    const { container: accent } = render(<Section id="test" background="accent">Accent</Section>);
-    expect(accent.firstChild).toHaveClass('accent');
+    render(<Section id="test" background="muted">Muted</Section>);
+    expect(getCssForElement(screen.getByText('Muted'))).toContain(
+      'background: var(--color-bg-muted)'
+    );
   });
 
   it('renders children', () => {
@@ -41,7 +50,7 @@ describe('Section', () => {
   });
 
   it('applies custom className', () => {
-    const { container } = render(<Section id="test" className="custom-class">Custom</Section>);
-    expect(container.firstChild).toHaveClass('custom-class');
+    render(<Section id="test" className="custom-class">Custom</Section>);
+    expect(screen.getByText('Custom')).toHaveClass('custom-class');
   });
 });

@@ -1,6 +1,7 @@
 import type { HTMLAttributes } from 'react';
 import { forwardRef, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { Link } from 'react-router-dom';
 import { Navigation } from '@/components/layout/Navigation';
 import { MobileMenu } from '@/components/layout/MobileMenu';
 import { Icon } from '@/components/ui/Icon';
@@ -46,7 +47,7 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
       >
         <StyledInner ref={innerRef}>
           <StyledBrand>
-            <StyledLogo href="/" aria-label="Go to homepage">
+            <StyledLogo as={Link} to="/" aria-label="Go to Homepage">
               Ismael Marot
             </StyledLogo>
           </StyledBrand>

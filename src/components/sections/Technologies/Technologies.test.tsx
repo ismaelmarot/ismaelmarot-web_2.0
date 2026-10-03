@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { getCssForElement } from '@/test-utils/css';
 import { Technologies } from './Technologies';
 import type { ProficiencyLevel } from '@/types/project';
 
@@ -39,6 +40,6 @@ describe('Technologies', () => {
   it('applies technologies section composition', () => {
     render(<Technologies technologies={mockTechnologies} />);
     const section = screen.getByRole('region', { name: /technologies/i });
-    expect(section).toHaveAttribute('style', expect.stringContaining('min-height'));
+    expect(getCssForElement(section)).toContain('min-height');
   });
 });

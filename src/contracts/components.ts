@@ -181,7 +181,6 @@ export interface StatItem {
 
 export interface ProjectsProps {
   projects: Project[];
-  featuredProjectIds?: string[];
   viewMode?: 'grid' | 'masonry' | 'carousel';
   showFilters?: boolean;
   emptyState?: {
@@ -226,8 +225,8 @@ export interface Project {
   stars?: number;
   forks?: number;
   lastUpdated: string;
-  isFeatured?: boolean;
   displayOrder?: number;
+  languages?: ('EN' | 'ES')[];
 }
 
 export interface TechnologiesProps {

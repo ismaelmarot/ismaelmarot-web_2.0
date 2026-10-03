@@ -21,7 +21,9 @@ export const ContactMethod = ({
   const iconName = method.iconName as IconName;
 
   return (
-    <StyledContactMethodWrapper ref={methodRef} $index={index} role="listitem">
+    // No role here on purpose: the list item wrapper lives in the parent section, and
+    // declaring it here nested a listitem inside a listitem, which breaks role="list".
+    <StyledContactMethodWrapper ref={methodRef} $index={index}>
       <StyledContactMethodLink
         as="a"
         href={href}

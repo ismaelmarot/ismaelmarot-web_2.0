@@ -8,24 +8,30 @@ describe('Badge', () => {
     expect(screen.getByText('Badge Text')).toBeInTheDocument();
   });
 
-  it('applies variant classes', () => {
-    const { container: defaultVariant } = render(<Badge variant="default">Default</Badge>);
-    expect(defaultVariant.firstChild).toHaveClass('default');
+  it('applies variant styles', () => {
+    render(<Badge variant="default">Default</Badge>);
+    expect(screen.getByText('Default')).toHaveStyle({
+      backgroundColor: 'var(--color-bg-muted)',
+    });
 
-    const { container: tech } = render(<Badge variant="tech">Tech</Badge>);
-    expect(tech.firstChild).toHaveClass('tech');
+    render(<Badge variant="tech">Tech</Badge>);
+    expect(screen.getByText('Tech')).toHaveStyle({
+      backgroundColor: 'var(--color-accent-light)',
+    });
   });
 
-  it('applies size classes', () => {
-    const { container: sm } = render(<Badge size="sm">Small</Badge>);
-    expect(sm.firstChild).toHaveClass('sm');
+  it('applies size styles', () => {
+    render(<Badge size="sm">Small</Badge>);
+    expect(screen.getByText('Small')).toHaveStyle({ fontSize: 'var(--text-label)' });
   });
 
   it('renders dot when dotColor is provided', () => {
     render(<Badge dotColor="#ff0000">With Dot</Badge>);
     const dotElement = screen.getByTestId('badge-dot');
     expect(dotElement).toBeInTheDocument();
-    expect(dotElement).toHaveStyle({ '--badge-dot-color': '#ff0000' });
+    expect(screen.getByText('With Dot')).toHaveStyle({
+      '--badge-dot-color': '#ff0000',
+    });
   });
 
   it('does not render dot when dotColor is not provided', () => {
@@ -34,8 +40,8 @@ describe('Badge', () => {
   });
 
   it('applies custom className', () => {
-    const { container } = render(<Badge className="custom-class">Custom</Badge>);
-    expect(container.firstChild).toHaveClass('custom-class');
+    render(<Badge className="custom-class">Custom</Badge>);
+    expect(screen.getByText('Custom')).toHaveClass('custom-class');
   });
 
   it('forwards ref', () => {

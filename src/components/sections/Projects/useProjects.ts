@@ -1,23 +1,41 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState } from 'react';
+import { ALL_PROJECTS, type Project, type ProjectCategoryFilterValue } from '@/types/project';
 
 export interface UseProjectsReturn {
-  gridRef: React.RefObject<HTMLDivElement>;
+  listRef: React.RefObject<HTMLUListElement>;
   isLoading: boolean;
   error: string | null;
+  activeCategory: ProjectCategoryFilterValue;
+  setActiveCategory: (category: ProjectCategoryFilterValue) => void;
+  visibleProjects: Project[];
+  hasNoProjectsAtAll: boolean;
+  hasNoProjectsInCategory: boolean;
 }
 
-export function useProjects(): UseProjectsReturn {
-  const gridRef = useRef<HTMLDivElement>(null!);
-  const [isLoading, setIsLoading] = useState(false);
+export function useProjects(projects: Project[] = []): UseProjectsReturn {
+  const listRef = useRef<HTMLUListElement>(null!);
+  const [isLoading] = useState(false);
   const [error] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<ProjectCategoryFilterValue>(
+    ALL_PROJECTS
+  );
 
-  useEffect(() => {
-    setIsLoading(false);
-  }, []);
+  // Filtering keeps the published order untouched: every project appears in the
+  // same position regardless of the selected category.
+  const visibleProjects =
+    activeCategory === ALL_PROJECTS
+      ? projects
+      : projects.filter((project) => project.categories?.includes(activeCategory));
 
   return {
-    gridRef,
+    listRef,
     isLoading,
     error,
+    activeCategory,
+    setActiveCategory,
+    visibleProjects,
+    hasNoProjectsAtAll: projects.length === 0,
+    hasNoProjectsInCategory:
+      projects.length > 0 && visibleProjects.length === 0,
   };
 }

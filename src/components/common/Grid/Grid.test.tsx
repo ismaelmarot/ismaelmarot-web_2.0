@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { getCssForElement } from '@/test-utils/css';
 import { Grid } from './Grid';
 
 describe('Grid', () => {
@@ -8,35 +9,50 @@ describe('Grid', () => {
     expect(screen.getByText('Grid Item')).toBeInTheDocument();
   });
 
-  it('applies column classes for number', () => {
-    const { container: twoCols } = render(<Grid columns={2}>Two Columns</Grid>);
-    expect(twoCols.firstChild).toHaveClass('2');
+  it('applies column styles for a number', () => {
+    render(<Grid columns={2}>Two Columns</Grid>);
+    expect(getCssForElement(screen.getByText('Two Columns'))).toContain(
+      'grid-template-columns: repeat(2, 1fr)'
+    );
 
-    const { container: fourCols } = render(<Grid columns={4}>Four Columns</Grid>);
-    expect(fourCols.firstChild).toHaveClass('4');
+    render(<Grid columns={4}>Four Columns</Grid>);
+    expect(getCssForElement(screen.getByText('Four Columns'))).toContain(
+      'grid-template-columns: repeat(4, 1fr)'
+    );
   });
 
   it('applies responsive columns for object', () => {
-    const { container } = render(<Grid columns={{ base: 1, md: 2, lg: 3, xl: 4 }}>Responsive</Grid>);
-    expect(container.firstChild).toHaveStyle({ '--grid-cols-md': 'repeat(2, 1fr)' });
+    render(<Grid columns={{ base: 1, md: 2, lg: 3, xl: 4 }}>Responsive</Grid>);
+    const css = getCssForElement(screen.getByText('Responsive'));
+    expect(css).toContain('grid-template-columns: repeat(1, 1fr)');
+    expect(css).toContain('grid-template-columns: repeat(2, 1fr)');
+    expect(css).toContain('grid-template-columns: repeat(3, 1fr)');
+    expect(css).toContain('grid-template-columns: repeat(4, 1fr)');
   });
 
-  it('applies gap classes', () => {
-    const { container: sm } = render(<Grid gap="sm">Small Gap</Grid>);
-    expect(sm.firstChild).toHaveClass('sm');
+  it('applies gap styles', () => {
+    render(<Grid gap="sm">Small Gap</Grid>);
+    expect(getCssForElement(screen.getByText('Small Gap'))).toContain('gap: var(--space-3)');
 
-    const { container: lg } = render(<Grid gap="lg">Large Gap</Grid>);
-    expect(lg.firstChild).toHaveClass('lg');
+    render(<Grid gap="lg">Large Gap</Grid>);
+    expect(getCssForElement(screen.getByText('Large Gap'))).toContain('gap: var(--space-8)');
   });
 
-  it('applies alignItems classes', () => {
-    const { container: center } = render(<Grid alignItems="center">Center</Grid>);
-    expect(center.firstChild).toHaveClass('center');
+  it('applies alignItems styles', () => {
+    render(<Grid alignItems="center">Center</Grid>);
+    expect(getCssForElement(screen.getByText('Center'))).toContain('align-items: center');
   });
 
-  it('applies justifyContent classes', () => {
-    const { container: between } = render(<Grid justifyContent="between">Between</Grid>);
-    expect(between.firstChild).toHaveClass('between');
+  it('applies justifyContent styles', () => {
+    render(<Grid justifyContent="between">Between</Grid>);
+    expect(getCssForElement(screen.getByText('Between'))).toContain(
+      'justify-content: space-between'
+    );
+
+    render(<Grid justifyContent="around">Around</Grid>);
+    expect(getCssForElement(screen.getByText('Around'))).toContain(
+      'justify-content: space-around'
+    );
   });
 
   it('forwards ref', () => {
@@ -46,7 +62,7 @@ describe('Grid', () => {
   });
 
   it('applies custom className', () => {
-    const { container } = render(<Grid className="custom-class">Custom</Grid>);
-    expect(container.firstChild).toHaveClass('custom-class');
+    render(<Grid className="custom-class">Custom</Grid>);
+    expect(screen.getByText('Custom')).toHaveClass('custom-class');
   });
 });

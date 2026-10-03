@@ -62,7 +62,7 @@ export const StyledCloseButton = styled.button`
   border: none;
   background: transparent;
   color: ${tokens.colors.textPrimary};
-  border-radius: ${tokens.radii.md};
+  border-radius: ${tokens.radii.full};
   cursor: pointer;
   transition: background-color 120ms ease-out;
 

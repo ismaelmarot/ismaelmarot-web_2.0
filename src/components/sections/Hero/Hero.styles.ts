@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { tokens } from '@/styles/tokens';
 
 export const StyledHero = styled.div`
@@ -53,7 +53,42 @@ export const StyledHeroCtaGroup = styled.div`
   margin-top: ${tokens.space[4]};
 `;
 
-export const StyledHeroCta = styled.a`
-  text-decoration: none;
+export const StyledHeroCta = styled.a<{ $variant?: 'primary' | 'ghost' }>`
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  padding: ${tokens.space[3]} ${tokens.space[6]};
+  font-family: ${tokens.fonts.sans};
+  font-size: ${tokens.fontSizes.lg};
+  font-weight: ${tokens.fontWeights.medium};
+  text-decoration: none;
+  white-space: nowrap;
+  border-radius: ${tokens.radii.full};
+  transition: background-color 120ms ease-out;
+
+  ${({ $variant }) =>
+    $variant === 'ghost'
+      ? css`
+          background-color: transparent;
+          color: ${tokens.colors.textPrimary};
+
+          &:hover {
+            background-color: ${tokens.colors.bgMuted};
+          }
+        `
+      : css`
+          background-color: ${tokens.colors.primary};
+          color: ${tokens.colors.white};
+
+          &:hover {
+            background-color: ${tokens.colors.primaryHover};
+            color: ${tokens.colors.white};
+          }
+        `}
+
+  &:focus-visible {
+    outline: 2px solid ${tokens.colors.focus};
+    outline-offset: 2px;
+  }
 `;

@@ -10,6 +10,10 @@ export const tokens = {
     black: 'var(--color-black)',
     white: 'var(--color-white)',
     accent: 'var(--color-accent)',
+    accentLight: 'var(--color-accent-light)',
+    accentHover: 'var(--color-accent-hover)',
+    accentText: 'var(--color-accent-text)',
+    accentTextHover: 'var(--color-accent-text-hover)',
 
     // Semantic aliases (new)
     textPrimary: 'var(--color-text-primary)',
@@ -23,8 +27,8 @@ export const tokens = {
 
     // Backward compatibility aliases (old token names)
     primary: 'var(--color-accent)',
-    primaryHover: 'var(--color-accent)',
-    primaryLight: 'var(--color-accent)',
+    primaryHover: 'var(--color-accent-hover)',
+    primaryLight: 'var(--color-accent-light)',
     textMuted: 'var(--color-text-tertiary)',
     bgAccent: 'var(--color-bg-muted)',
     borderSubtle: 'var(--color-border)',

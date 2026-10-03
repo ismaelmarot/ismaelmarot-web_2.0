@@ -9,6 +9,16 @@ const gapValues = {
   xl: tokens.space[12],
 } as const;
 
+// `between` and `around` are not valid CSS keywords; they must be expanded
+// to `space-between` / `space-around` or the declaration is dropped entirely.
+const justifyContentValues = {
+  start: 'start',
+  center: 'center',
+  end: 'end',
+  between: 'space-between',
+  around: 'space-around',
+} as const;
+
 export const StyledGrid = styled.div<{
   $columns: 1 | 2 | 3 | 4 | { base: number; md: number; lg: number; xl: number };
   $gap: keyof typeof gapValues;
@@ -19,7 +29,7 @@ export const StyledGrid = styled.div<{
   width: 100%;
   gap: ${({ $gap }) => gapValues[$gap]};
   align-items: ${({ $alignItems }) => $alignItems};
-  justify-content: ${({ $justifyContent }) => $justifyContent};
+  justify-content: ${({ $justifyContent }) => justifyContentValues[$justifyContent]};
 
   ${({ $columns }) => {
     if (typeof $columns === 'number') {

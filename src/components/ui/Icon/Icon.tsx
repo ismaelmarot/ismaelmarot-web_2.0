@@ -35,6 +35,8 @@ export const Icon = forwardRef<HTMLSpanElement, IconProps>(
         ref={ref}
         $size={size}
         className={className}
+        data-testid={`${name}-icon`}
+        role={decorative ? undefined : 'img'}
         aria-hidden={decorative}
         aria-label={decorative ? undefined : ariaLabel}
         {...props}

@@ -23,30 +23,16 @@ export const StyledCopyright = styled.p`
   margin: 0;
 `;
 
-export const StyledSocialLinks = styled.div`
+export const StyledSocialLinks = styled.ul`
   display: flex;
   align-items: center;
   gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 
   a {
     color: var(--color-text-secondary);
-    transition: color var(--transition-fast);
-
-    &:hover {
-      color: var(--color-accent);
-    }
-  }
-`;
-
-export const StyledNavWrapper = styled.nav`
-  display: flex;
-  align-items: center;
-  gap: var(--space-6);
-  font-size: var(--text-secondary);
-  color: var(--color-text-tertiary);
-
-  a {
-    color: var(--color-text-tertiary);
     transition: color var(--transition-fast);
 
     &:hover {

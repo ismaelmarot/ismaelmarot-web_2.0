@@ -1,31 +1,38 @@
 import type { HTMLAttributes } from 'react';
 import { forwardRef } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { StyledNav, StyledNavItem } from './Navigation.styles';
-import { useNavigation } from './useNavigation';
 
 export interface NavItem {
   label: string;
   href: string;
   external?: boolean;
   ariaLabel?: string;
+  /**
+   * Require the whole URL to match. Defaults to true for "/" so the home item is not
+   * reported as current on every route, which is what NavLink does without it.
+   */
+  end?: boolean;
 }
 
 export interface NavigationProps extends HTMLAttributes<HTMLElement> {
   items: NavItem[];
   variant?: 'header' | 'mobile' | 'footer';
-  activeSection?: string;
-  onNavigate?: (href: string) => void;
+  onNavigate?: () => void;
 }
 
 export const Navigation = forwardRef<HTMLElement, NavigationProps>(
-  ({ items, variant = 'header', activeSection, onNavigate, className, ...props }, ref) => {
-    const { handleSmoothScroll } = useNavigation();
+  ({ items, variant = 'header', onNavigate, className, ...props }, ref) => {
+    const { pathname } = useLocation();
 
-    const handleClick = (href: string, external?: boolean) => {
-      if (!external && href.startsWith('#')) {
-        handleSmoothScroll(href);
+    const handleItemClick = (item: NavItem) => {
+      onNavigate?.();
+
+      // Clicking the link of the route you are already on does not change the
+      // pathname, so ScrollToTop never fires. Scroll back up manually.
+      if (!item.external && item.href === pathname) {
+        window.scrollTo(0, 0);
       }
-      onNavigate?.(href);
     };
 
     return (
@@ -39,19 +46,15 @@ export const Navigation = forwardRef<HTMLElement, NavigationProps>(
         {items.map((item) => (
           <StyledNavItem
             key={item.href}
-            href={item.href}
+            as={item.external ? 'a' : NavLink}
+            to={item.external ? undefined : item.href}
+            href={item.external ? item.href : undefined}
             $variant={variant}
-            $active={item.href === activeSection}
-            aria-current={item.href === activeSection ? 'page' : undefined}
+            end={item.external ? undefined : (item.end ?? item.href === '/')}
             target={item.external ? '_blank' : undefined}
             rel={item.external ? 'noopener noreferrer' : undefined}
             aria-label={item.ariaLabel}
-            onClick={(e) => {
-              if (!item.external && item.href.startsWith('#')) {
-                e.preventDefault();
-                handleClick(item.href, item.external);
-              }
-            }}
+            onClick={() => handleItemClick(item)}
           >
             {item.label}
           </StyledNavItem>

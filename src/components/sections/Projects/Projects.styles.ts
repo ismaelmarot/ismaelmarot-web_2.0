@@ -5,7 +5,7 @@ export const StyledProjects = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: ${tokens.space[8]};
+  gap: ${tokens.space[6]};
 `;
 
 export const StyledProjectsHeader = styled.div`
@@ -29,21 +29,21 @@ export const StyledProjectsHeadline = styled.h2`
   }
 `;
 
-export const StyledProjectsGrid = styled.div<{ $hasSkeleton?: boolean }>`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: ${tokens.space[8]};
+export const StyledProjectsFilterWrapper = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${tokens.space[3]};
+`;
 
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (min-width: 1024px) {
-    /* Asymmetric layout: 1 featured large + 2 smaller, or custom arrangement */
-    grid-template-columns: 2fr 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    gap: ${tokens.space[6]};
-  }
+/* Single-column list: one project per row, published order preserved. */
+export const StyledProjectsList = styled.ul`
+  display: flex;
+  flex-direction: column;
+  gap: ${tokens.space[4]};
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-width: ${tokens.containers.lg};
 `;
 
 export const StyledProjectsEmpty = styled.div`
@@ -77,18 +77,23 @@ export const StyledProjectsError = styled.div`
   }
 
   button {
-    padding: ${tokens.space[3]} ${tokens.space[6]};
+    padding: ${tokens.space[2]} ${tokens.space[4]};
     font-size: var(--text-label);
     font-weight: 500;
     color: var(--color-white);
     background: var(--color-accent);
     border: none;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-full);
     cursor: pointer;
-    transition: background var(--transition-fast);
+    transition: background-color var(--transition-fast);
 
     &:hover {
-      opacity: 0.8;
+      background: var(--color-accent-hover);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: var(--shadow-focus);
     }
   }
 `;

@@ -5,6 +5,5 @@ export {
   StyledInner,
   StyledCopyright,
   StyledSocialLinks,
-  StyledNavWrapper,
 } from './Footer.styles';
 export { useFooter } from './useFooter';

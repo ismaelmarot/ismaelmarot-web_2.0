@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { getCssForElement } from '@/test-utils/css';
 import { Container } from './Container';
 
 describe('Container', () => {
@@ -8,20 +9,24 @@ describe('Container', () => {
     expect(screen.getByText('Container Content')).toBeInTheDocument();
   });
 
-  it('applies size classes', () => {
-    const { container: sm } = render(<Container size="sm">Small</Container>);
-    expect(sm.firstChild).toHaveClass('sm');
+  it('applies size styles', () => {
+    render(<Container size="sm">Small</Container>);
+    expect(getCssForElement(screen.getByText('Small'))).toContain(
+      'max-width: var(--container-sm)'
+    );
 
-    const { container: full } = render(<Container size="full">Full</Container>);
-    expect(full.firstChild).toHaveClass('full');
+    render(<Container size="full">Full</Container>);
+    expect(getCssForElement(screen.getByText('Full'))).toContain('max-width: none');
   });
 
-  it('applies padding classes', () => {
-    const { container: none } = render(<Container padding="none">No Padding</Container>);
-    expect(none.firstChild).toHaveClass('none');
+  it('applies padding styles', () => {
+    render(<Container padding="none">No Padding</Container>);
+    expect(getCssForElement(screen.getByText('No Padding'))).toContain('padding-inline: 0');
 
-    const { container: lg } = render(<Container padding="lg">Large Padding</Container>);
-    expect(lg.firstChild).toHaveClass('lg');
+    render(<Container padding="lg">Large Padding</Container>);
+    expect(getCssForElement(screen.getByText('Large Padding'))).toContain(
+      'padding-inline: var(--space-8)'
+    );
   });
 
   it('forwards ref', () => {
@@ -31,7 +36,7 @@ describe('Container', () => {
   });
 
   it('applies custom className', () => {
-    const { container } = render(<Container className="custom-class">Custom</Container>);
-    expect(container.firstChild).toHaveClass('custom-class');
+    render(<Container className="custom-class">Custom</Container>);
+    expect(screen.getByText('Custom')).toHaveClass('custom-class');
   });
 });

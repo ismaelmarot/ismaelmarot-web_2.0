@@ -29,7 +29,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
         style={dotColor ? { '--badge-dot-color': dotColor } as CSSProperties : undefined}
         {...props}
       >
-        {dotColor && <StyledDot aria-hidden="true" />}
+        {dotColor && <StyledDot data-testid="badge-dot" aria-hidden="true" />}
         {children}
       </StyledBadge>
     );

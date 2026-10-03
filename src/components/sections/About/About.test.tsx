@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { getCssForElement } from '@/test-utils/css';
 import { About } from './About';
 
 describe('About', () => {
@@ -18,7 +19,7 @@ describe('About', () => {
 
   it('renders content text', () => {
     render(<About {...defaultProps} />);
-    expect(screen.getByText('I am a passionate web developer')).toBeInTheDocument();
+    expect(screen.getByText(/I am a passionate web developer/)).toBeInTheDocument();
   });
 
   it('renders stats when provided', () => {
@@ -37,6 +38,6 @@ describe('About', () => {
   it('applies about section composition', () => {
     render(<About {...defaultProps} />);
     const section = screen.getByRole('region', { name: /about/i });
-    expect(section).toHaveAttribute('style', expect.stringContaining('min-height'));
+    expect(getCssForElement(section)).toContain('min-height');
   });
 });

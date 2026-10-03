@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { getCssForElement } from '@/test-utils/css';
 import { Contact } from './Contact';
 
 const mockMethods = [
@@ -25,9 +26,17 @@ describe('Contact', () => {
     expect(screen.getByRole('link', { name: 'LinkedIn' })).toBeInTheDocument();
   });
 
+  it('exposes the methods as one list with no nested list items', () => {
+    render(<Contact methods={mockMethods} />);
+    expect(screen.getByRole('list', { name: /contact methods/i })).toBeInTheDocument();
+    // Exactly one list item per method. A role="listitem" nested inside another one
+    // would double this count, which is what axe reports as aria-required-parent.
+    expect(screen.getAllByRole('listitem')).toHaveLength(mockMethods.length);
+  });
+
   it('applies contact section composition', () => {
     render(<Contact methods={mockMethods} />);
     const section = screen.getByRole('region', { name: /contact/i });
-    expect(section).toHaveAttribute('style', expect.stringContaining('min-height'));
+    expect(getCssForElement(section)).toContain('min-height');
   });
 });

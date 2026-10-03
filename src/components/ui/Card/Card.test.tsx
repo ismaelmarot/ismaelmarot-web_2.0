@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { getCssForElement } from '@/test-utils/css';
 import { Card } from './Card';
 
 describe('Card', () => {
@@ -8,30 +9,40 @@ describe('Card', () => {
     expect(screen.getByText('Card Content')).toBeInTheDocument();
   });
 
-  it('applies variant classes', () => {
-    const { container: defaultVariant } = render(<Card variant="default">Default</Card>);
-    expect(defaultVariant.firstChild).toHaveClass('default');
+  it('applies variant styles', () => {
+    render(<Card variant="default">Default</Card>);
+    expect(getCssForElement(screen.getByText('Default'))).toContain(
+      'border: 1px solid var(--color-border)'
+    );
 
-    const { container: elevated } = render(<Card variant="elevated">Elevated</Card>);
-    expect(elevated.firstChild).toHaveClass('elevated');
+    render(<Card variant="elevated">Elevated</Card>);
+    const elevatedCss = getCssForElement(screen.getByText('Elevated'));
+    expect(elevatedCss).toContain('box-shadow: var(--shadow-sm)');
+    expect(elevatedCss).not.toContain('border: 1px solid var(--color-border)');
   });
 
-  it('applies padding classes', () => {
-    const { container: sm } = render(<Card padding="sm">Small Padding</Card>);
-    expect(sm.firstChild).toHaveClass('sm');
+  it('applies padding styles', () => {
+    render(<Card padding="sm">Small Padding</Card>);
+    expect(getCssForElement(screen.getByText('Small Padding'))).toContain(
+      'padding: var(--space-3)'
+    );
 
-    const { container: lg } = render(<Card padding="lg">Large Padding</Card>);
-    expect(lg.firstChild).toHaveClass('lg');
+    render(<Card padding="lg">Large Padding</Card>);
+    expect(getCssForElement(screen.getByText('Large Padding'))).toContain(
+      'padding: var(--space-6)'
+    );
   });
 
-  it('applies interactive styles when hoverable', () => {
-    const { container } = render(<Card hoverable>Hoverable</Card>);
-    expect(container.firstChild).toHaveClass('interactive');
+  it('adds a border when hoverable', () => {
+    render(<Card hoverable>Hoverable</Card>);
+    const hoverableCss = getCssForElement(screen.getByText('Hoverable'));
+    expect(hoverableCss).toContain('border: 1px solid var(--color-border)');
+    expect(hoverableCss).toContain('transform: translateY(-2px)');
   });
 
   it('applies custom className', () => {
-    const { container } = render(<Card className="custom-class">Custom</Card>);
-    expect(container.firstChild).toHaveClass('custom-class');
+    render(<Card className="custom-class">Custom</Card>);
+    expect(screen.getByText('Custom')).toHaveClass('custom-class');
   });
 
   it('forwards ref', () => {

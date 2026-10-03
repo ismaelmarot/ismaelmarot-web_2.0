@@ -38,15 +38,21 @@ export const StyledNav = styled.nav<{ $variant: 'header' | 'mobile' | 'footer' }
       case 'footer':
         return css`
           display: flex;
-          gap: ${tokens.space[6]};
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: ${tokens.space[4]} ${tokens.space[6]};
           font-size: ${tokens.fontSizes.sm};
           color: ${tokens.colors.textMuted};
+
+          @media (max-width: 480px) {
+            gap: ${tokens.space[2]} ${tokens.space[4]};
+          }
         `;
     }
   }}
 `;
 
-export const StyledNavItem = styled.a<{ $active?: boolean; $variant?: 'header' | 'mobile' | 'footer' }>`
+export const StyledNavItem = styled.a<{ $variant?: 'header' | 'mobile' | 'footer' }>`
   color: ${tokens.colors.textSecondary};
   font-size: ${tokens.fontSizes.label};
   font-weight: ${tokens.fontWeights.medium};
@@ -79,9 +85,16 @@ export const StyledNavItem = styled.a<{ $active?: boolean; $variant?: 'header' |
       }
     `}
 
-  ${({ $active }) =>
-    $active &&
-    css`
-      color: ${tokens.colors.accent};
-    `}
+  /* NavLink marks the item that resolves to the current URL with .active and sets
+     aria-current="page". Styling that class keeps the current section in sync with the
+     router instead of reimplementing route matching here. Kept last so it wins over the
+     colour the mobile variant sets, and hover darkens instead of lightening so both
+     states keep meeting AA on --color-bg-muted. */
+  &.active {
+    color: ${tokens.colors.accentText};
+  }
+
+  &.active:hover {
+    color: ${tokens.colors.accentTextHover};
+  }
 `;

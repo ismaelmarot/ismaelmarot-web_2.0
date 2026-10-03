@@ -1,8 +1,21 @@
-import { StyledHero, StyledHeroContent, StyledHeroHeadline, StyledHeroTagline, StyledHeroCtaGroup, StyledHeroCta } from './Hero.styles';
+import {
+  StyledHero,
+  StyledHeroContent,
+  StyledHeroHeadline,
+  StyledHeroTagline,
+  StyledHeroCtaGroup,
+  StyledHeroCta,
+} from './Hero.styles';
 import { useHero } from './useHero';
-import { Button } from '@/components/ui/Button';
 import { Section } from '@/components/common/Section';
 import { Container } from '@/components/common/Container';
+import { Link } from 'react-router-dom';
+
+export interface HeroSectionLink {
+  label: string;
+  summary: string;
+  href: string;
+}
 
 export interface HeroProps {
   name: string;
@@ -16,6 +29,7 @@ export interface HeroProps {
     label: string;
     href: string;
   };
+  sections?: HeroSectionLink[];
 }
 
 export const Hero = ({
@@ -49,17 +63,13 @@ export const Hero = ({
             {(cta || secondaryCta) && (
               <StyledHeroCtaGroup>
                 {cta && (
-                  <StyledHeroCta as="a" href={cta.href} ref={ctaRef}>
-                    <Button variant="primary" size="lg" fullWidth={false}>
-                      {cta.label}
-                    </Button>
+                  <StyledHeroCta as={Link} to={cta.href} $variant="primary" ref={ctaRef}>
+                    {cta.label}
                   </StyledHeroCta>
                 )}
                 {secondaryCta && (
-                  <StyledHeroCta as="a" href={secondaryCta.href} ref={secondaryCtaRef}>
-                    <Button variant="ghost" size="lg" fullWidth={false}>
-                      {secondaryCta.label}
-                    </Button>
+                  <StyledHeroCta as={Link} to={secondaryCta.href} $variant="ghost" ref={secondaryCtaRef}>
+                    {secondaryCta.label}
                   </StyledHeroCta>
                 )}
               </StyledHeroCtaGroup>

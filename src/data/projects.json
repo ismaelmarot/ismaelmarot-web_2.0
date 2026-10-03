@@ -1,46 +1,202 @@
 [
   {
-    "id": "1",
-    "name": "awesome-project",
-    "description": "A sample project showcasing modern web development practices with React and TypeScript.",
+    "id": "1176188329",
+    "name": "trash2treasure",
+    "description": "App for track stuff for recycling.",
     "primaryLanguage": "TypeScript",
-    "technologies": ["React", "TypeScript", "Vite", "CSS Modules"],
-    "githubUrl": "https://github.com/ismaelmarot/awesome-project",
-    "demoUrl": "https://awesome-project.example.com",
-    "screenshotUrls": [],
-    "stars": 42,
-    "forks": 5,
-    "lastUpdated": "2024-01-15T10:30:00Z",
-    "isFeatured": true,
-    "displayOrder": 1
+    "technologies": [
+      "TypeScript"
+    ],
+    "githubUrl": "https://github.com/ismaelmarot/trash2treasure",
+    "demoUrl": "https://trash2treasure-app.vercel.app/",
+    "screenshotUrls": [
+      "https://raw.githubusercontent.com/ismaelmarot/trash2treasure/main/docs/screenshots/screenshot-01.png",
+      "https://raw.githubusercontent.com/ismaelmarot/trash2treasure/main/docs/screenshots/screenshot-02.png",
+      "https://raw.githubusercontent.com/ismaelmarot/trash2treasure/main/docs/screenshots/screenshot-03.png",
+      "https://raw.githubusercontent.com/ismaelmarot/trash2treasure/main/docs/screenshots/screenshot-04.png",
+      "https://raw.githubusercontent.com/ismaelmarot/trash2treasure/main/docs/screenshots/screenshot-05.png",
+      "https://raw.githubusercontent.com/ismaelmarot/trash2treasure/main/docs/screenshots/screenshot-06.png"
+    ],
+    "stars": 1,
+    "forks": 0,
+    "lastUpdated": "2026-05-25T09:45:45Z",
+    "sizeKb": 25977,
+    "displayOrder": 1,
+    "iconUrl": "https://raw.githubusercontent.com/ismaelmarot/trash2treasure/main/frontend/public/icon-192.png",
+    "projectType": "web"
   },
   {
-    "id": "2",
-    "name": "utility-library",
-    "description": "A lightweight utility library for common JavaScript/TypeScript operations.",
+    "id": "904467125",
+    "name": "car-expense-tracker",
+    "description": "App for recording vehicle expenses",
     "primaryLanguage": "TypeScript",
-    "technologies": ["TypeScript", "Vitest", "ESLint", "Prettier"],
-    "githubUrl": "https://github.com/ismaelmarot/utility-library",
-    "screenshotUrls": [],
-    "stars": 18,
-    "forks": 2,
-    "lastUpdated": "2024-02-20T14:45:00Z",
-    "isFeatured": true,
-    "displayOrder": 2
+    "technologies": [
+      "TypeScript"
+    ],
+    "githubUrl": "https://github.com/ismaelmarot/car-expense-tracker",
+    "screenshotUrls": [
+      "https://raw.githubusercontent.com/ismaelmarot/car-expense-tracker/main/assets/mob-v2-01.png",
+      "https://raw.githubusercontent.com/ismaelmarot/car-expense-tracker/main/assets/mob-v2-02.png",
+      "https://raw.githubusercontent.com/ismaelmarot/car-expense-tracker/main/assets/mob-v2-03.png",
+      "https://raw.githubusercontent.com/ismaelmarot/car-expense-tracker/main/assets/mob-v2-04.png",
+      "https://raw.githubusercontent.com/ismaelmarot/car-expense-tracker/main/assets/mob-v2-05.png",
+      "https://raw.githubusercontent.com/ismaelmarot/car-expense-tracker/main/assets/mob-v2-06.png"
+    ],
+    "stars": 1,
+    "forks": 0,
+    "lastUpdated": "2026-05-03T00:02:23Z",
+    "sizeKb": 33961,
+    "appSizeBytes": 113859089,
+    "downloadUrl": "https://github.com/ismaelmarot/car-expense-tracker/releases",
+    "versions": [
+      {
+        "version": "v2.0.4",
+        "date": "2026-05-03T00:11:23Z",
+        "url": "https://github.com/ismaelmarot/car-expense-tracker/releases/tag/v2.0.4"
+      },
+      {
+        "version": "v2.0.1",
+        "date": "2026-03-31T17:54:14Z",
+        "url": "https://github.com/ismaelmarot/car-expense-tracker/releases/tag/v2.0.1"
+      },
+      {
+        "version": "v2.0.0",
+        "date": "2026-03-31T15:45:44Z",
+        "url": "https://github.com/ismaelmarot/car-expense-tracker/releases/tag/v2.0.0"
+      },
+      {
+        "version": "v1.1.5",
+        "date": "2025-11-24T12:15:06Z",
+        "url": "https://github.com/ismaelmarot/car-expense-tracker/releases/tag/v1.1.5"
+      },
+      {
+        "version": "v1.1.4",
+        "date": "2025-11-24T03:44:43Z",
+        "url": "https://github.com/ismaelmarot/car-expense-tracker/releases/tag/v1.1.4"
+      },
+      {
+        "version": "v1.0.0",
+        "date": "2025-11-23T15:55:57Z",
+        "url": "https://github.com/ismaelmarot/car-expense-tracker/releases/tag/v1.0.0"
+      }
+    ],
+    "displayOrder": 2,
+    "iconUrl": "https://raw.githubusercontent.com/ismaelmarot/car-expense-tracker/main/app-icon.png",
+    "projectType": "web"
   },
   {
-    "id": "3",
-    "name": "blog-platform",
-    "description": "A modern blog platform built with Next.js, featuring MDX support and syntax highlighting.",
+    "id": "1218376438",
+    "name": "LinkIO",
+    "description": "Save, organize and manage links in a fast and simple way.",
     "primaryLanguage": "TypeScript",
-    "technologies": ["Next.js", "React", "MDX", "Tailwind CSS"],
-    "githubUrl": "https://github.com/ismaelmarot/blog-platform",
-    "demoUrl": "https://blog.example.com",
-    "screenshotUrls": [],
-    "stars": 25,
-    "forks": 3,
-    "lastUpdated": "2024-03-10T09:15:00Z",
-    "isFeatured": false,
-    "displayOrder": 3
+    "technologies": [
+      "TypeScript"
+    ],
+    "githubUrl": "https://github.com/ismaelmarot/LinkIO",
+    "screenshotUrls": [
+      "https://raw.githubusercontent.com/ismaelmarot/LinkIO/main/assets/captures/capture_01.png",
+      "https://raw.githubusercontent.com/ismaelmarot/LinkIO/main/assets/captures/capture_02.png",
+      "https://raw.githubusercontent.com/ismaelmarot/LinkIO/main/assets/captures/capture_03.png"
+    ],
+    "stars": 1,
+    "forks": 0,
+    "lastUpdated": "2026-08-01T17:26:16Z",
+    "sizeKb": 8446,
+    "appSizeBytes": 121502098,
+    "downloadUrl": "https://github.com/ismaelmarot/LinkIO/releases",
+    "versions": [
+      {
+        "version": "v1.0.0",
+        "date": "2026-04-25T13:55:54Z",
+        "url": "https://github.com/ismaelmarot/LinkIO/releases/tag/v1.0.0"
+      }
+    ],
+    "displayOrder": 3,
+    "iconUrl": "https://raw.githubusercontent.com/ismaelmarot/LinkIO/main/frontend/public/Linkio-icon-256.png",
+    "projectType": "web"
+  },
+  {
+    "id": "1202000505",
+    "name": "QEntry",
+    "description": "A personnel entry and exit management system designed to track and monitor staff access in real time.",
+    "primaryLanguage": "TypeScript",
+    "technologies": [
+      "TypeScript"
+    ],
+    "githubUrl": "https://github.com/ismaelmarot/QEntry",
+    "screenshotUrls": [
+      "https://raw.githubusercontent.com/ismaelmarot/QEntry/main/frontend/src/captures/mobile-01.png",
+      "https://raw.githubusercontent.com/ismaelmarot/QEntry/main/frontend/src/captures/mobile-02.png",
+      "https://raw.githubusercontent.com/ismaelmarot/QEntry/main/frontend/src/captures/mobile-03.png",
+      "https://raw.githubusercontent.com/ismaelmarot/QEntry/main/frontend/src/captures/mobile-04.png"
+    ],
+    "stars": 1,
+    "forks": 0,
+    "lastUpdated": "2026-08-15T00:35:11Z",
+    "sizeKb": 4006,
+    "appSizeBytes": 130318991,
+    "downloadUrl": "https://github.com/ismaelmarot/QEntry/releases",
+    "versions": [
+      {
+        "version": "v1.0.0",
+        "date": "2026-04-22T17:59:24Z",
+        "url": "https://github.com/ismaelmarot/QEntry/releases/tag/v1.0.0"
+      }
+    ],
+    "displayOrder": 4,
+    "iconUrl": "https://raw.githubusercontent.com/ismaelmarot/QEntry/main/frontend/src/assets/app-icon.png",
+    "projectType": "web"
+  },
+  {
+    "id": "1230404944",
+    "name": "NauticAcademy",
+    "description": "NauticAcademy is a modern nautical learning platform for Yacht Skipper training, featuring structured content, quizzes, gamification, and a mobile-first PWA experience.",
+    "primaryLanguage": "TypeScript",
+    "technologies": [
+      "TypeScript"
+    ],
+    "githubUrl": "https://github.com/ismaelmarot/NauticAcademy",
+    "demoUrl": "https://nautic-academy.vercel.app",
+    "screenshotUrls": [
+      "https://raw.githubusercontent.com/ismaelmarot/NauticAcademy/main/frontend/public/images/app_captures/cap_01.PNG",
+      "https://raw.githubusercontent.com/ismaelmarot/NauticAcademy/main/frontend/public/images/app_captures/cap_02.jpg",
+      "https://raw.githubusercontent.com/ismaelmarot/NauticAcademy/main/frontend/public/images/app_captures/cap_03.jpg",
+      "https://raw.githubusercontent.com/ismaelmarot/NauticAcademy/main/frontend/public/images/app_captures/cap_04.jpg",
+      "https://raw.githubusercontent.com/ismaelmarot/NauticAcademy/main/frontend/public/images/app_captures/cap_05.jpg",
+      "https://raw.githubusercontent.com/ismaelmarot/NauticAcademy/main/frontend/public/images/app_captures/cap_06.jpg"
+    ],
+    "stars": 1,
+    "forks": 0,
+    "lastUpdated": "2026-05-23T01:10:42Z",
+    "sizeKb": 16830,
+    "displayOrder": 5,
+    "iconUrl": "https://raw.githubusercontent.com/ismaelmarot/NauticAcademy/main/frontend/public/images/app_icons/icon-ios-192.png",
+    "projectType": "web"
+  },
+  {
+    "id": "1055132737",
+    "name": "cash-counter",
+    "description": "Money counter by quantities.",
+    "primaryLanguage": "TypeScript",
+    "technologies": [
+      "TypeScript"
+    ],
+    "githubUrl": "https://github.com/ismaelmarot/cash-counter",
+    "demoUrl": "https://ismaelmarot.github.io/cash-counter/",
+    "screenshotUrls": [
+      "https://raw.githubusercontent.com/ismaelmarot/cash-counter/main/src/screenshots/mobile_v100_00.png",
+      "https://raw.githubusercontent.com/ismaelmarot/cash-counter/main/src/screenshots/mobile_v110_01.png",
+      "https://raw.githubusercontent.com/ismaelmarot/cash-counter/main/src/screenshots/mobile_v110_02.png",
+      "https://raw.githubusercontent.com/ismaelmarot/cash-counter/main/src/screenshots/mobile_v110_03.png",
+      "https://raw.githubusercontent.com/ismaelmarot/cash-counter/main/src/screenshots/mobile_v100_01.png",
+      "https://raw.githubusercontent.com/ismaelmarot/cash-counter/main/src/screenshots/mobile_v100_02.png"
+    ],
+    "stars": 1,
+    "forks": 0,
+    "lastUpdated": "2026-07-01T15:55:25Z",
+    "sizeKb": 2367,
+    "displayOrder": 6,
+    "iconUrl": "https://raw.githubusercontent.com/ismaelmarot/cash-counter/main/public/icons/android-chrome-192x192.png",
+    "projectType": "web"
   }
 ]

@@ -1,20 +1,35 @@
-import { StyledProjects, StyledProjectsHeader, StyledProjectsHeadline, StyledProjectsGrid, StyledProjectsEmpty, StyledProjectsError } from './Projects.styles';
+import {
+  StyledProjects,
+  StyledProjectsHeader,
+  StyledProjectsHeadline,
+  StyledProjectsFilterWrapper,
+  StyledProjectsList,
+  StyledProjectsEmpty,
+  StyledProjectsError,
+} from './Projects.styles';
 import { useProjects } from './useProjects';
-import { ProjectCard } from '@/components/sections/ProjectCard';
+import { ProjectRow } from '@/components/sections/ProjectRow';
+import { ProjectCategoryFilter } from '@/components/sections/ProjectCategoryFilter';
 import { Section } from '@/components/common/Section';
 import { Container } from '@/components/common/Container';
+import { ALL_PROJECTS } from '@/types/project';
 import type { Project } from '@/types/project';
 
 export interface ProjectsProps {
   projects?: Project[];
-  featuredProjectIds?: string[];
 }
 
-export const Projects = ({
-  projects = [],
-  featuredProjectIds = [],
-}: ProjectsProps) => {
-  const { gridRef, isLoading, error } = useProjects();
+export const Projects = ({ projects = [] }: ProjectsProps) => {
+  const {
+    listRef,
+    isLoading,
+    error,
+    activeCategory,
+    setActiveCategory,
+    visibleProjects,
+    hasNoProjectsAtAll,
+    hasNoProjectsInCategory,
+  } = useProjects(projects);
 
   if (isLoading) {
     return (
@@ -32,11 +47,13 @@ export const Projects = ({
             <StyledProjectsHeader>
               <StyledProjectsHeadline as="h2">Proyectos</StyledProjectsHeadline>
             </StyledProjectsHeader>
-            <StyledProjectsGrid ref={gridRef} role="list" aria-label="Projects loading">
-              {[...Array(6)].map((_, i) => (
-                <ProjectCard key={i} project={{ id: `skeleton-${i}`, name: '', description: '', technologies: [], githubUrl: '', lastUpdated: '', screenshotUrls: [] }} isSkeleton />
+            <StyledProjectsList aria-hidden="true">
+              {[...Array(4)].map((_, i) => (
+                <li key={i}>
+                  <div style={{ height: '96px' }} />
+                </li>
               ))}
-            </StyledProjectsGrid>
+            </StyledProjectsList>
           </StyledProjects>
         </Container>
       </Section>
@@ -61,17 +78,13 @@ export const Projects = ({
             </StyledProjectsHeader>
             <StyledProjectsError>
               <p>Failed to load projects. Please try again later.</p>
-              <button onClick={() => window.location.reload()}>Retry</button>
+              <button type="button" onClick={() => window.location.reload()}>Retry</button>
             </StyledProjectsError>
           </StyledProjects>
         </Container>
       </Section>
     );
   }
-
-  const featuredProjects = projects.filter(p => featuredProjectIds.includes(p.id));
-  const regularProjects = projects.filter(p => !featuredProjectIds.includes(p.id));
-  const displayProjects = [...featuredProjects, ...regularProjects];
 
   return (
     <Section
@@ -84,26 +97,38 @@ export const Projects = ({
       verticalAlign="top"
     >
       <Container size="xl" padding="lg">
-        <StyledProjects ref={gridRef}>
+        <StyledProjects>
           <StyledProjectsHeader>
             <StyledProjectsHeadline as="h2">Proyectos</StyledProjectsHeadline>
           </StyledProjectsHeader>
 
-          {displayProjects.length === 0 ? (
+          {!hasNoProjectsAtAll && (
+            <StyledProjectsFilterWrapper>
+              <ProjectCategoryFilter
+                activeCategory={activeCategory}
+                onSelect={setActiveCategory}
+              />
+            </StyledProjectsFilterWrapper>
+          )}
+
+          {hasNoProjectsAtAll ? (
             <StyledProjectsEmpty>
               <p>No projects available yet.</p>
             </StyledProjectsEmpty>
+          ) : hasNoProjectsInCategory ? (
+            <StyledProjectsEmpty>
+              <p>
+                {activeCategory === ALL_PROJECTS
+                  ? 'No projects available yet.'
+                  : `No projects in ${activeCategory} yet.`}
+              </p>
+            </StyledProjectsEmpty>
           ) : (
-            <StyledProjectsGrid role="list" aria-label="Projects">
-              {displayProjects.map((project, index) => (
-                <ProjectCard
-                  key={project.id}
-                  project={project}
-                  isFeatured={featuredProjectIds.includes(project.id)}
-                  index={index}
-                />
+            <StyledProjectsList ref={listRef}>
+              {visibleProjects.map((project) => (
+                <ProjectRow key={project.id} project={project} />
               ))}
-            </StyledProjectsGrid>
+            </StyledProjectsList>
           )}
         </StyledProjects>
       </Container>

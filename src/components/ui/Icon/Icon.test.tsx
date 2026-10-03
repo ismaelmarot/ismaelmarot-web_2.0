@@ -9,16 +9,22 @@ describe('Icon', () => {
   });
 
   it('renders different sizes', () => {
-    const { container: sm } = render(<Icon name="github" size="sm" />);
-    expect(sm.firstChild).toHaveClass('sm');
+    render(<Icon name="github" size="sm" />);
+    expect(screen.getByTestId('github-icon')).toHaveStyle({ width: '16px', height: '16px' });
 
-    const { container: lg } = render(<Icon name="github" size="lg" />);
-    expect(lg.firstChild).toHaveClass('lg');
+    render(<Icon name="github" size="lg" />);
+    expect(screen.getAllByTestId('github-icon')[1]).toHaveStyle({
+      width: '32px',
+      height: '32px',
+    });
   });
 
   it('handles custom pixel size', () => {
-    const { container } = render(<Icon name="github" size={32} />);
-    expect(container.firstChild).toHaveStyle({ width: '32px', height: '32px' });
+    render(<Icon name="github" size={32} />);
+    expect(screen.getByTestId('github-icon')).toHaveStyle({
+      width: '32px',
+      height: '32px',
+    });
   });
 
   it('handles decorative icons (aria-hidden)', () => {
@@ -32,7 +38,7 @@ describe('Icon', () => {
   });
 
   it('warns for unknown icons', () => {
-    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, 'warn').mockReturnValue(undefined);
     // @ts-expect-error - testing unknown icon name
     render(<Icon name="unknown" />);
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Icon "unknown" not found'));
@@ -40,8 +46,8 @@ describe('Icon', () => {
   });
 
   it('applies custom className', () => {
-    const { container } = render(<Icon name="github" className="custom-class" />);
-    expect(container.firstChild).toHaveClass('custom-class');
+    render(<Icon name="github" className="custom-class" />);
+    expect(screen.getByTestId('github-icon')).toHaveClass('custom-class');
   });
 
   it('forwards ref', () => {

@@ -1,3 +1,5 @@
+export const NO_DESCRIPTION_FALLBACK = 'No description available';
+
 export function slugify(text: string): string {
   return text
     .toLowerCase()
@@ -12,17 +14,38 @@ export function truncate(text: string, maxLength: number): string {
   return text.slice(0, maxLength - 1).trimEnd() + '…';
 }
 
+const DEFAULT_DATE_OPTIONS: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+};
+
 export function formatDate(
   dateString: string,
-  options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' }
+  options: Intl.DateTimeFormatOptions = {}
 ): string {
   try {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return dateString;
-    return new Intl.DateTimeFormat('en-US', options).format(date);
+    return new Intl.DateTimeFormat('en-US', {
+      ...DEFAULT_DATE_OPTIONS,
+      ...options,
+    }).format(date);
   } catch {
     return dateString;
   }
+}
+
+export function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  const megabytes = bytes / (1024 * 1024);
+  if (megabytes < 1024) return `${megabytes.toFixed(1)} MB`;
+  return `${(megabytes / 1024).toFixed(1)} GB`;
+}
+
+export function formatKilobytes(kilobytes: number): string {
+  if (kilobytes < 1024) return `${kilobytes} KB`;
+  return `${(kilobytes / 1024).toFixed(1)} MB`;
 }
 
 export function getInitials(name: string): string {
@@ -62,6 +85,10 @@ export function getTechCategoryLabel(category: string): string {
     other: 'Other',
   };
   return labels[category] || category;
+}
+
+export function getProjectTypeLabel(projectType: string | undefined): string {
+  return projectType === 'mobile' ? 'Go Live App' : 'Go Live';
 }
 
 export function debounce<T extends (...args: unknown[]) => unknown>(

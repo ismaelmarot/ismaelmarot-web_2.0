@@ -6,8 +6,9 @@ import {
   StyledInner,
   StyledCopyright,
   StyledSocialLinks,
-  StyledNavWrapper,
 } from './Footer.styles';
+import { Navigation } from '@/components/layout/Navigation';
+import type { NavItem } from '@/components/layout/Navigation';
 import { useFooter } from './useFooter';
 import type { ContactMethod } from '@/types/contact';
 import type { IconName } from '@/components/ui/Icon/useIcon';
@@ -15,7 +16,7 @@ import type { IconName } from '@/components/ui/Icon/useIcon';
 export interface FooterProps extends HTMLAttributes<HTMLElement> {
   copyright?: string;
   socialLinks: ContactMethod[];
-  navigation?: { label: string; href: string }[];
+  navigation?: NavItem[];
   variant?: 'minimal' | 'full';
 }
 
@@ -35,27 +36,23 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(
             © {getCurrentYear()} {copyrightText || 'Ismael Marot'}
           </StyledCopyright>
 
-          <StyledSocialLinks role="list" aria-label="Social links">
+          <StyledSocialLinks aria-label="Social links">
             {socialLinksProp.map((link) => (
-              <a
-                key={link.id}
-                href={link.type === 'email' ? `mailto:${link.value}` : link.value}
-                target={link.type !== 'email' ? '_blank' : undefined}
-                rel={link.type !== 'email' ? 'noopener noreferrer' : undefined}
-                aria-label={link.label}
-                role="listitem"
-              >
-                <Icon name={link.iconName as IconName} size="md" decorative />
-              </a>
+              <li key={link.id}>
+                <a
+                  href={link.type === 'email' ? `mailto:${link.value}` : link.value}
+                  target={link.type !== 'email' ? '_blank' : undefined}
+                  rel={link.type !== 'email' ? 'noopener noreferrer' : undefined}
+                  aria-label={link.label}
+                >
+                  <Icon name={link.iconName as IconName} size="md" decorative />
+                </a>
+              </li>
             ))}
           </StyledSocialLinks>
 
           {navigation && navigation.length > 0 && (
-            <StyledNavWrapper aria-label="Footer navigation">
-              {navigation.map((item) => (
-                <a key={item.href} href={item.href}>{item.label}</a>
-              ))}
-            </StyledNavWrapper>
+            <Navigation items={navigation} variant="footer" />
           )}
         </StyledInner>
       </StyledFooter>

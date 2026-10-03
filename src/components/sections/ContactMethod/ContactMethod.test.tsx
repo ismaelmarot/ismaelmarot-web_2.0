@@ -18,7 +18,7 @@ describe('ContactMethod', () => {
   });
 
   it('renders external link with target blank', () => {
-    render(<ContactMethod method={{ ...mockMethod, type: 'github', value: 'https://github.com/user' }} index={0} />);
+    render(<ContactMethod method={{ ...mockMethod, type: 'github', label: 'GitHub', value: 'https://github.com/user' }} index={0} />);
     const link = screen.getByRole('link', { name: 'GitHub' });
     expect(link).toHaveAttribute('href', 'https://github.com/user');
     expect(link).toHaveAttribute('target', '_blank');

@@ -16,8 +16,8 @@ describe('VisuallyHidden', () => {
   });
 
   it('renders as span by default', () => {
-    const { container } = render(<VisuallyHidden>Span</VisuallyHidden>);
-    expect((container.firstChild as HTMLElement)?.tagName).toBe('SPAN');
+    render(<VisuallyHidden>Span</VisuallyHidden>);
+    expect(screen.getByText('Span').tagName).toBe('SPAN');
   });
 
   it('forwards ref', () => {

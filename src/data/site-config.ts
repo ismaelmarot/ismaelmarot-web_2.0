@@ -34,7 +34,6 @@ export const siteConfig: SiteConfig = {
       displayOrder: 3,
     },
   ],
-  featuredProjectIds: ['1', '2'],
   seo: {
     title: 'Ismael Marot | Web Developer Portfolio',
     description: 'Personal portfolio of Ismael Marot, a web developer specializing in React, TypeScript, and modern web technologies.',

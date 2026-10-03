@@ -10,12 +10,16 @@ export const StyledSkipLink = styled.a`
   background-color: ${tokens.colors.primary};
   color: white;
   font-weight: ${tokens.fontWeights.medium};
-  border-radius: ${tokens.radii.md};
+  border-radius: ${tokens.radii.full};
   z-index: ${tokens.zIndices.toast};
   transition: top 120ms ease-out;
   text-decoration: none;
 
   &:focus {
     top: ${tokens.space[4]};
+  }
+
+  &:hover {
+    background-color: ${tokens.colors.accentHover};
   }
 `;

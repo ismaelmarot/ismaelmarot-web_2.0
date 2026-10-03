@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { getCssForElement } from '@/test-utils/css';
 import { SkipLink } from './SkipLink';
 
 describe('SkipLink', () => {
@@ -11,24 +12,38 @@ describe('SkipLink', () => {
   });
 
   it('applies skip link styles', () => {
-    const { container } = render(<SkipLink targets={['main']} />);
-    expect(container.firstChild).toHaveClass('skipLink');
+    render(<SkipLink targets={['main']} />);
+    const css = getCssForElement(screen.getByRole('link', { name: /skip to main/i }));
+    expect(css).toContain('background-color: var(--color-accent)');
+    expect(css).toContain('top: -100%');
   });
 
   it('scrolls to section on click', () => {
-    const scrollToSection = vi.fn();
-    vi.spyOn(require('./useSkipLink'), 'useSkipLink').mockReturnValue({ scrollToSection });
-    
+    const target = document.createElement('div');
+    target.id = 'main';
+    const scrollIntoView = vi.fn();
+    const focus = vi.fn();
+    target.scrollIntoView = scrollIntoView;
+    target.focus = focus;
+    document.body.appendChild(target);
+
     render(<SkipLink targets={['main']} />);
     fireEvent.click(screen.getByRole('link', { name: /skip to main/i }));
-    expect(scrollToSection).toHaveBeenCalledWith('main');
+
+    expect(focus).toHaveBeenCalled();
+    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth' });
+
+    target.remove();
   });
 
   it('prevents default link behavior', () => {
-    const preventDefault = vi.fn();
     render(<SkipLink targets={['main']} />);
-    fireEvent.click(screen.getByRole('link', { name: /skip to main/i }), { preventDefault });
-    expect(preventDefault).toHaveBeenCalled();
+    const link = screen.getByRole('link', { name: /skip to main/i });
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+
+    link.dispatchEvent(event);
+
+    expect(event.defaultPrevented).toBe(true);
   });
 
   it('forwards ref to first link', () => {

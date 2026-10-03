@@ -35,8 +35,8 @@ export const StyledBadge = styled.span<{
       case 'tech':
         return css`
           background-color: ${tokens.colors.primaryLight};
-          color: ${tokens.colors.primary};
-          border: 1px solid ${tokens.colors.primary};
+          color: ${tokens.colors.textPrimary};
+          border: 1px solid ${tokens.colors.border};
         `;
     }
   }}

@@ -70,12 +70,12 @@ export const StyledCtaWrapper = styled.div`
   font-size: var(--text-label);
 
   a {
-    color: var(--color-accent);
+    color: var(--color-accent-text);
     text-decoration: none;
-    transition: opacity var(--transition-fast);
+    transition: color var(--transition-fast);
 
     &:hover {
-      opacity: 0.7;
+      color: var(--color-accent-text-hover);
     }
   }
 `;
@@ -89,7 +89,7 @@ export const StyledMenuButton = styled.button`
   border: none;
   background: transparent;
   color: var(--color-fg);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   cursor: pointer;
   transition: background-color var(--transition-fast), color var(--transition-fast);
 

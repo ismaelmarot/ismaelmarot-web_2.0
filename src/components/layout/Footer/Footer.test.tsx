@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { getCssForElement } from '@/test-utils/css';
 import { Footer } from './Footer';
 
 const mockSocialLinks = [
@@ -34,17 +36,47 @@ describe('Footer', () => {
   });
 
   it('renders navigation when provided', () => {
-    render(<Footer socialLinks={mockSocialLinks} navigation={mockNavigation} />);
+    render(
+      <MemoryRouter>
+        <Footer socialLinks={mockSocialLinks} navigation={mockNavigation} />
+      </MemoryRouter>
+    );
+    expect(screen.getByRole('navigation', { name: 'Footer navigation' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /privacy/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /terms/i })).toBeInTheDocument();
   });
 
-  it('applies variant classes', () => {
-    const { container: minimal } = render(<Footer socialLinks={mockSocialLinks} variant="minimal" />);
-    expect(minimal.firstChild).toHaveClass('minimal');
+  it('routes navigation through the router instead of reloading the document', () => {
+    render(
+      <MemoryRouter>
+        <Footer socialLinks={mockSocialLinks} navigation={mockNavigation} />
+      </MemoryRouter>
+    );
+    // NavLink renders a plain href too, so the client-side behaviour is asserted by
+    // checking the footer reuses the shared Navigation, not a hand-rolled anchor list.
+    expect(screen.getByRole('link', { name: /privacy/i })).toHaveAttribute('href', '/privacy');
+  });
 
-    const { container: full } = render(<Footer socialLinks={mockSocialLinks} variant="full" />);
-    expect(full.firstChild).toHaveClass('full');
+  it('marks the section of the current route as current', () => {
+    render(
+      <MemoryRouter initialEntries={['/terms']}>
+        <Footer socialLinks={mockSocialLinks} navigation={mockNavigation} />
+      </MemoryRouter>
+    );
+    expect(screen.getByRole('link', { name: /terms/i })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: /privacy/i })).not.toHaveAttribute('aria-current');
+  });
+
+  it('applies variant styles', () => {
+    render(<Footer socialLinks={mockSocialLinks} variant="minimal" />);
+    expect(getCssForElement(screen.getByRole('contentinfo'))).toContain(
+      'padding-block: var(--space-8)'
+    );
+
+    render(<Footer socialLinks={mockSocialLinks} variant="full" />);
+    expect(getCssForElement(screen.getAllByRole('contentinfo')[1])).toContain(
+      'padding-block: var(--space-16)'
+    );
   });
 
   it('forwards ref', () => {

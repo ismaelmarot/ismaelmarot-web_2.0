@@ -1,68 +1,50 @@
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
-import { SkipLink } from '@/components/layout/SkipLink';
 import { Hero } from '@/components/sections/Hero';
-import { About } from '@/components/sections/About';
-import { Projects } from '@/components/sections/Projects';
-import { Technologies } from '@/components/sections/Technologies';
-import { Contact } from '@/components/sections/Contact';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
-import type { NavItem } from '@/components/layout/Header';
+import { SectionSummary } from '@/components/sections/SectionSummary';
 import { siteConfig } from '@/data/site-config';
-import type { SiteConfig } from '@/types/site';
+import { StyledIndexPage } from './Index.styles';
 
-const navigation: NavItem[] = [
-  { label: 'Sobre mí', href: '#about' },
-  { label: 'Proyectos', href: '#projects' },
-  { label: 'Tecnologías', href: '#technologies' },
-  { label: 'Contacto', href: '#contact' },
-];
-
-const cta: NavItem = {
-  label: 'GitHub',
-  href: 'https://github.com/ismaelmarot',
-  external: true,
-  ariaLabel: 'View GitHub profile (opens in new tab)',
-};
-
-export default function IndexPage() {
-  useReducedMotion();
-
-  const config: SiteConfig = siteConfig;
-
+export const IndexPage = () => {
   return (
-    <>
-      <SkipLink targets={['about', 'projects', 'technologies', 'contact']} />
-      <Header navigation={navigation} cta={cta} />
-      <main>
-        <Hero
-          name={config.name}
-          title={config.title}
-          tagline={config.tagline}
-          cta={{ label: 'Ver Proyectos', href: '#projects' }}
-          secondaryCta={{ label: 'Contactar', href: '#contact' }}
-        />
-        <About
-          content={config.aboutText}
-          stats={[
-            { label: 'Años de experiencia', value: '5+', description: 'Desarrollo profesional' },
-            { label: 'Proyectos completados', value: '20+', description: 'Open source y trabajo cliente' },
-            { label: 'Tecnologías', value: '15+', description: 'Lenguajes y frameworks' },
-          ]}
-        />
-        <Projects
-          projects={[]}
-          featuredProjectIds={config.featuredProjectIds}
-        />
-        <Technologies
-          technologies={[]}
-        />
-        <Contact
-          methods={config.socialLinks}
-          introText="¿Tienes un proyecto en mente o quieres colaborar? Estoy a un mensaje de distancia."
-        />
-      </main>
-      <Footer copyright="Ismael Marot" socialLinks={config.socialLinks} />
-    </>
+    <StyledIndexPage>
+      <Hero
+        name={siteConfig.name}
+        title={siteConfig.title}
+        tagline={siteConfig.tagline}
+        cta={{ label: 'Ver Proyectos', href: '/projects' }}
+        secondaryCta={{ label: 'Contactar', href: '/contact' }}
+      />
+      <SectionSummary
+        id="about-summary"
+        title="Sobre mí"
+        description="Una breve introducción sobre quién soy, mi recorrido y mi forma de trabajar."
+        ctaLabel="Conocé más"
+        ctaHref="/about"
+        background="muted"
+      />
+      <SectionSummary
+        id="projects-summary"
+        title="Proyectos"
+        description="Una selección de proyectos en los que trabajé, tecnologías utilizadas y problemas que resolví."
+        ctaLabel="Ver proyectos"
+        ctaHref="/projects"
+        background="default"
+      />
+      <SectionSummary
+        id="technologies-summary"
+        title="Tecnologías"
+        description="Las tecnologías y herramientas que utilizo para construir aplicaciones web modernas."
+        ctaLabel="Ver tecnologías"
+        ctaHref="/technologies"
+        background="muted"
+      />
+      <SectionSummary
+        id="contact-summary"
+        title="Contacto"
+        description="¿Tienes un proyecto en mente o quieres colaborar? Estoy a un mensaje de distancia."
+        ctaLabel="Contactar"
+        ctaHref="/contact"
+        background="default"
+      />
+    </StyledIndexPage>
   );
-}
+};

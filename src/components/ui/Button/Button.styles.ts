@@ -18,7 +18,7 @@ export const StyledButton = styled.button<{
   font-family: ${tokens.fonts.sans};
   font-weight: ${tokens.fontWeights.medium};
   border: none;
-  border-radius: ${tokens.radii.md};
+  border-radius: ${tokens.radii.full};
   cursor: pointer;
   transition: all 120ms ease-out;
   text-decoration: none;
@@ -58,6 +58,7 @@ export const StyledButton = styled.button<{
           border: 1px solid ${tokens.colors.primary};
           &:hover:not(:disabled) {
             background-color: ${tokens.colors.primaryLight};
+            color: ${tokens.colors.primaryHover};
           }
         `;
     }

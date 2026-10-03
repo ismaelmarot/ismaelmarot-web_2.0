@@ -16,7 +16,6 @@ export interface SiteConfig {
   email: string;
   githubUsername: string;
   socialLinks: ContactMethod[];
-  featuredProjectIds?: string[];
   seo: SEOConfig;
 }
 
@@ -54,7 +53,6 @@ export const defaultSiteConfig: SiteConfig = {
       displayOrder: 3,
     },
   ],
-  featuredProjectIds: [],
   seo: {
     title: 'Ismael Marot | Web Developer Portfolio',
     description: 'Personal portfolio of Ismael Marot, a web developer specializing in React, TypeScript, and modern web technologies.',

@@ -8,20 +8,24 @@ describe('Button', () => {
     expect(screen.getByRole('button', { name: /click me/i })).toBeInTheDocument();
   });
 
-  it('applies variant classes', () => {
-    const { container: primary } = render(<Button variant="primary">Primary</Button>);
-    expect(primary.firstChild).toHaveClass('primary');
+  it('applies variant styles', () => {
+    render(<Button variant="primary">Primary</Button>);
+    expect(screen.getByRole('button', { name: /primary/i })).toHaveStyle({
+      backgroundColor: 'var(--color-accent)',
+    });
 
-    const { container: secondary } = render(<Button variant="secondary">Secondary</Button>);
-    expect(secondary.firstChild).toHaveClass('secondary');
+    render(<Button variant="secondary">Secondary</Button>);
+    expect(screen.getByRole('button', { name: /secondary/i })).toHaveStyle({
+      backgroundColor: 'var(--color-bg-muted)',
+    });
   });
 
-  it('applies size classes', () => {
-    const { container: sm } = render(<Button size="sm">Small</Button>);
-    expect(sm.firstChild).toHaveClass('sm');
+  it('applies size styles', () => {
+    render(<Button size="sm">Small</Button>);
+    expect(screen.getByRole('button', { name: /small/i })).toHaveStyle({ height: '36px' });
 
-    const { container: lg } = render(<Button size="lg">Large</Button>);
-    expect(lg.firstChild).toHaveClass('lg');
+    render(<Button size="lg">Large</Button>);
+    expect(screen.getByRole('button', { name: /large/i })).toHaveStyle({ height: '52px' });
   });
 
   it('handles disabled state', () => {
@@ -64,9 +68,9 @@ describe('Button', () => {
     expect(handleClick).not.toHaveBeenCalled();
   });
 
-  it('applies fullWidth class when prop is true', () => {
-    const { container } = render(<Button fullWidth>Full Width</Button>);
-    expect(container.firstChild).toHaveClass('fullWidth');
+  it('stretches to full width when the prop is true', () => {
+    render(<Button fullWidth>Full Width</Button>);
+    expect(screen.getByRole('button', { name: /full width/i })).toHaveStyle({ width: '100%' });
   });
 
   it('forwards ref correctly', () => {
