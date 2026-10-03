@@ -14,14 +14,25 @@ export const StyledTechnologyCard = styled.div<{ $index?: number }>`
   /* On the section's muted background, so the chip carries its own white surface. That is what
      keeps the mark legible against a coloured card and gives the row a consistent edge. */
   background-color: var(--color-bg);
+  /* Apple's hairline is a light neutral rather than a colour, and it sits on a raised surface
+     rather than standing alone, so the chip gets a shadow as well as an edge. */
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  /* A 40px-tall chip at 8px reads as a rectangle with softened corners. 16px is the point
+     where it reads as a deliberate pill-shaped chip, and it matches the radius on the
+     contribution tile above so the section keeps one corner language. */
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xs);
   font-size: var(--text-body);
   font-weight: 400;
   line-height: 1.5;
   color: var(--color-text-primary);
   white-space: nowrap;
-  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+  /* No transform in the transition, and none on hover. fadeInUp ends at translateY(0) with
+     fill-mode forwards, so the animated value keeps overriding whatever :hover sets: the chip
+     appeared to lift and never moved. The hover state is carried by the shadow growing from xs
+     to sm, which reads as elevation without fighting the entrance animation. */
+  transition: background-color var(--transition-fast), border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 
   opacity: 0;
   animation: fadeInUp var(--duration-normal) var(--ease-out) forwards;
@@ -30,6 +41,7 @@ export const StyledTechnologyCard = styled.div<{ $index?: number }>`
   &:hover {
     background-color: var(--color-bg-muted);
     border-color: var(--color-accent);
+    box-shadow: var(--shadow-sm);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -39,6 +51,9 @@ export const StyledTechnologyCard = styled.div<{ $index?: number }>`
 
   @media (max-width: 767px) {
     padding: ${tokens.space[1]} ${tokens.space[3]};
+    /* The chip is shorter here, so the radius comes down with it: the same 16px on a 30px
+       chip would start to look like a lozenge rather than a rounded card. */
+    border-radius: var(--radius-lg);
     font-size: var(--text-secondary);
   }
 `;
