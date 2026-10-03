@@ -66,10 +66,15 @@ describe('ProjectRow', () => {
     expect(frame).toContain('height: 120px');
   });
 
-  it('paints the card near-black with no border', () => {
+  // The gradient's lightest stop, not its midpoint, is what every colour on the
+  // card has to clear 4.5:1 against, because the name sits over that end.
+  it('paints the card as a diagonal grey gradient with no border', () => {
     renderRow(mockProject);
     const css = getCssForElement(screen.getByRole('article'));
-    expect(css).toContain('background: var(--color-card)');
+    expect(css).toContain('linear-gradient(');
+    expect(css).toContain('135deg');
+    expect(css).toContain('var(--color-card-from)');
+    expect(css).toContain('var(--color-card-to)');
     expect(css).not.toContain('border:');
     expect(css).toContain('box-shadow: var(--shadow-card)');
     expect(css).toContain('border-radius: var(--radius-2xl)');
@@ -84,6 +89,15 @@ describe('ProjectRow', () => {
     expect(getCssForElement(screen.getByText('A test project description'))).toContain(
       'color: var(--color-card-fg-muted)'
     );
+  });
+
+  // The muted colour was lightened from #A1A1A6 because that measured 3.55:1 on the
+  // gradient's lightest stop, where the flat near-black card needed only 6.54:1.
+  it('lightens the muted text so it clears AA on the lightest stop', () => {
+    renderRow(mockProject);
+    const css = getCssForElement(screen.getByText('A test project description'));
+    expect(css).toContain('color: var(--color-card-fg-muted)');
+    expect(css).not.toContain('#A1A1A6');
   });
 
   // The hover rules were removed outright rather than softened, so there is nothing

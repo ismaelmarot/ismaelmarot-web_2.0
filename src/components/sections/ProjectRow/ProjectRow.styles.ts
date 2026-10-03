@@ -5,8 +5,13 @@ export const StyledProjectRowItem = styled.div`
   height: 100%;
 `;
 
-/* A dark surface on a light section, drawn by shadow alone with no border: dark
+/* A grey gradient on a light section, drawn by shadow alone with no border: grey
    against #F5F5F7 separates on its own, and the shadow softens the edge.
+   135deg puts the light stop at the top left, which is where the eye starts and
+   which reads as the surface facing the light rather than as a flat rectangle.
+   The lightest stop is #48484A at 8.38:1 against the name colour, which is the
+   figure the card's text colours are chosen for: every colour on this card has
+   to clear 4.5:1 on that stop, not on the average of the two.
    There is deliberately no :hover rule. A dark card does not need to lift, and
    the request asked for the hover effect gone rather than made subtler. */
 export const StyledProjectRow = styled.article`
@@ -16,7 +21,11 @@ export const StyledProjectRow = styled.article`
   height: 100%;
   padding: ${tokens.space[8]};
   border-radius: ${tokens.radii['2xl']};
-  background: ${tokens.colors.card};
+  background: linear-gradient(
+    135deg,
+    ${tokens.colors.cardFrom},
+    ${tokens.colors.cardTo}
+  );
   color: ${tokens.colors.cardFg};
   box-shadow: var(--shadow-card);
 `;

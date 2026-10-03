@@ -12,18 +12,25 @@
   --color-accent-light: #EAF3FE;
   --color-accent-hover: #0062C4;
 
-  /* Project card: a dark surface on a light section. Scoped rather than global on
+  /* Project card: a grey gradient on a light section. Scoped rather than global on
      purpose, because the site is light-only, so inverting the global foreground
      tokens would invert every section instead of this card. The surface is the
-     same near-black as --color-fg, so card and body text share one value.
      The hairline is translucent white because a solid #D2D2D7 border would read
-     as a bright line on a dark card, and the frame is a step lighter than the
-     card so an icon with transparent corners resolves against a visible tile. */
-  --color-card: #1D1D1F;
+     as a bright line on a dark card, and the frame lightens whatever the
+     gradient puts behind it so an icon with transparent corners still resolves
+     against a visible tile. */
+  --color-card-from: #48484A;
+  --color-card-to: #2C2C2E;
   --color-card-fg: #F5F5F7;
-  --color-card-fg-muted: #A1A1A6;
+  /* Lightened from #A1A1A6 on purpose. On the flat near-black card the muted text
+     measured 6.54:1, but a gradient has to pass on its lightest stop: at #48484A
+     #A1A1A6 falls to 3.55:1 and fails AA. #BFBFC4 measures 4.98:1 there, and still
+     sits well below the name's 8.38:1 so the two keep their hierarchy. */
+  --color-card-fg-muted: #BFBFC4;
   --color-card-border: rgba(255, 255, 255, 0.14);
-  --color-card-frame: #2C2C2E;
+  /* Translucent white rather than a fixed grey: the card behind it is a gradient,
+     so a fixed colour would look lighter at one end of it than at the other. */
+  --color-card-frame: rgba(255, 255, 255, 0.09);
   /* Accent for TEXT. --color-accent is 4.31:1 on --color-bg-muted, below AA 4.5:1 for small text. */
   --color-accent-text: #0062C4;
   --color-accent-text-hover: #0059B0;

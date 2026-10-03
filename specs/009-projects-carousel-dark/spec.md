@@ -146,6 +146,35 @@ A visitor identifies a project by its icon and its name from across the screen, 
 - **SC-011**: Cumulative layout shift stays below 0.1 on load, measured because the icon frame grew from 88px to 120px.
 - **SC-012**: The full test suite passes, and existing carousel tests keep passing unchanged where they do not contradict this feature.
 
+## Amendment 1 - Grey gradient surface
+
+**Applied**: 2026-10-03, after implementation and deployment.
+
+**Request**: "las tarjetas que sean en un gris y con un efecto degradado".
+
+The flat near-black surface this feature shipped is replaced by a diagonal grey
+gradient. Recorded here rather than in a new specification because it revises one
+visual decision this feature already owns, and nothing else about it changes.
+
+- **FR-001** now reads: cards MUST paint a `linear-gradient(135deg, ...)` from
+  `#48484A` at the top left to `#2C2C2E` at the bottom right, MUST have no border,
+  and MUST keep a shadow that separates them from the `#F5F5F7` section.
+- **FR-002** is unchanged in intent but had to move its colour. The muted foreground
+  went from `#A1A1A6` to `#BFBFC4`, because a gradient has to be judged on its
+  **lightest** stop rather than its average: `#A1A1A6` measured 6.54:1 on the flat
+  near-black card but only 3.55:1 on `#48484A`, which fails AA. `#BFBFC4` measures
+  4.98:1 there and still sits well below the name's 8.38:1, so the hierarchy between
+  the two survives.
+- **The icon frame background became translucent white** (`rgba(255, 255, 255, 0.09)`)
+  instead of a fixed `#2C2C2E`. A fixed colour behind a gradient looks lighter at one
+  end of it than at the other; a translucent white lightens whatever is behind it
+  equally at both ends.
+- **SC-002** is re-anchored: both text colours must clear 4.5:1 against `#48484A`, not
+  against the card's average tone. Measured: name 8.38:1, description 4.98:1.
+
+Measured after the change: gradient present at 135deg on every viewport, no horizontal
+overflow, axe clean at 1440, 390 and 320, section still 900 of 900 on desktop.
+
 ## Assumptions
 
 - The site stays light-only, so `#1D1D1F` cards are a designed dark surface rather than a dark theme. No `prefers-color-scheme` work is included.
