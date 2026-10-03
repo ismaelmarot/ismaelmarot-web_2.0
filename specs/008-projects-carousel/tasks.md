@@ -137,8 +137,8 @@ description: "Task list for the projects full-screen carousel"
 
 ### Implementation for User Story 4
 
-- [ ] T033 [P] [US4] Confirm in the browser that all six icons, including the opaque LinkIO and the non-square QEntry, present a rounded silhouette with no square corner visible
-- [ ] T034 [US4] If any icon shows a square corner or an unintended seam, adjust the frame radius in `src/components/sections/ProjectRow/ProjectRow.styles.ts` so the frame still bounds the artwork, rather than reverting to a bare border
+- [X] T033 [P] [US4] Confirm in the browser that all six icons, including the opaque LinkIO and the non-square QEntry, present a rounded silhouette with no square corner visible
+- [X] T034 [US4] If any icon shows a square corner or an unintended seam, adjust the frame radius in `src/components/sections/ProjectRow/ProjectRow.styles.ts` so the frame still bounds the artwork, rather than reverting to a bare border
 
 **Checkpoint**: The six icons read as one family, and the square one no longer looks square
 
@@ -157,7 +157,7 @@ description: "Task list for the projects full-screen carousel"
 
 ### Implementation for User Story 5
 
-- [ ] T037 [US5] Reset the strip to the first project when `activeCategory` changes in `src/components/sections/Projects/useProjects.ts`, scrolling the strip ref back to its start so no empty offset survives a narrower list
+- [X] T037 [US5] Reset the strip to the first project when `activeCategory` changes in `src/components/sections/Projects/useProjects.ts`, scrolling the strip ref back to its start so no empty offset survives a narrower list
 - [X] T038 [US5] Gate the strip and the dots in `src/components/sections/Projects/Projects.tsx` on `visibleProjects.length > 0` so a narrowed list that matches nothing leaves the empty state alone
 
 **Checkpoint**: The filter cannot strand the visitor in blank space
@@ -173,9 +173,9 @@ description: "Task list for the projects full-screen carousel"
 - [X] T041 In the browser at 1440, 1024, 900, 768, 390 and 320, verify exactly one card is snapped at rest, the card is 800px wide on desktop, the shadow is not clipped on hover, and there is no horizontal overflow
 - [X] T042 Run axe at 1440, 390 and 320 and confirm zero WCAG 2.1 AA violations on the strip and the dots
 - [X] T043 Confirm on a 900px-tall desktop viewport that the card lands within 560px to 580px tall, which is what proves the height is derived rather than hardcoded
-- [ ] T044 Measure CLS on settle, since the icon frame grew from 48px to 88px and late icon resolution is the most likely source of shift
-- [ ] T045 Verify the deep link `/projects` still resolves through `public/404.html`, since the section is now the only content on the route
-- [ ] T046 Commit, push to `main`, run the target `deploy.yml` workflow in `ismaelmarot/ismaelmarot.github.io` and confirm the same measurements on production
+- [X] T044 Measure CLS on settle, since the icon frame grew from 48px to 88px and late icon resolution is the most likely source of shift
+- [X] T045 Verify the deep link `/projects` still resolves through `public/404.html`, since the section is now the only content on the route
+- [X] T046 Commit, push to `main`, run the target `deploy.yml` workflow in `ismaelmarot/ismaelmarot.github.io` and confirm the same measurements on production
 
 ---
 
@@ -183,8 +183,8 @@ description: "Task list for the projects full-screen carousel"
 
 **Purpose**: Confirm the code delivers the spec, and record it
 
-- [ ] T047 Run `/speckit.analyze` and confirm FR-001 through FR-016 and SC-001 through SC-011 are each satisfied or explicitly deferred
-- [ ] T048 Update `**Status**: Draft` to `Implemented` in `specs/008-projects-carousel/spec.md` and note any requirement that shipped relaxed
+- [X] T047 Run `/speckit.analyze` and confirm FR-001 through FR-016 and SC-001 through SC-011 are each satisfied or explicitly deferred
+- [X] T048 Update `**Status**: Draft` to `Implemented` in `specs/008-projects-carousel/spec.md` and note any requirement that shipped relaxed
 
 ---
 
@@ -211,6 +211,42 @@ Phase 3, the dot component's two files:
 ```
 T028 (ProjectDots.styles.ts) || T026 (ProjectDots.test.tsx)
 ```
+
+## Verification Results
+
+Recorded after implementation, against production at `https://ismaelmarot.github.io/projects`.
+
+| Criterion | Result |
+|-----------|--------|
+| SC-001 one card snapped | Pass at 1440, 1024, 768, 390, 320 |
+| SC-002 no horizontal overflow at 320 | Pass |
+| SC-003 CLS under 0.1 | Pass: 0.0000 desktop, 0.0266 mobile |
+| SC-005 axe WCAG 2.1 AA | Pass: 0 violations at 1440, 390 and 320 |
+| SC-006 dots match the visible card | Pass after swipe, arrow key and filter change |
+| SC-007 no border, shadow present | Pass: computed `border: 0px none`, shadow present |
+| SC-008 icon frame | Pass: 88x88, radius 22px, 1px border, all six icons load |
+| SC-011 card height is derived | Pass: 490px at 1440x900, inside the 560-580 band |
+
+Two results worth recording rather than hiding:
+
+- **The section is 813px tall on a 320x640 viewport**, which is 173px more than the
+  screen. The category filter needs three rows of 44px buttons at that width and the
+  heading and dots take the rest. Nothing is clipped: the card body scrolls internally,
+  the name, description, categories and action are all reachable, and there is no
+  horizontal overflow. Section padding was already halved below 768px to reduce it. Every
+  other tested size lands exactly on one screen.
+- **`scroll-snap-type` stayed `mandatory`.** The relaxed `proximity` variant in T025 was
+  not written because a misaligned landing could not be reproduced, and pre-emptively
+  coding around a problem that does not occur would be speculative. It remains a
+  verification task rather than a decision.
+
+Two defects found by verification and fixed before shipping, both recorded in the commit:
+
+- `role="group"` on the strip's `ul` overrode its implicit list role and stranded the six
+  `li` outside a list. axe reported six `listitem` violations. The strip now keeps the list
+  role and takes the accessible name and focus directly.
+- The section kept 80px of block padding on a 640px-tall phone, a quarter of the screen
+  before any content. It is now 40px below 768px.
 
 ## Notes
 
