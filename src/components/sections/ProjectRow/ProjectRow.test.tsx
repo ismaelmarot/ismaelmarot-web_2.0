@@ -39,10 +39,52 @@ describe('ProjectRow', () => {
     );
   });
 
-  it('keeps a fixed square icon slot and never crops the artwork', () => {
+  // Replaces "keeps a fixed square icon slot and never crops the artwork". That
+  // test asserted the artwork is never cropped, on the stated grounds that app
+  // icons already arrive rounded. Decoding the alpha channel of all six icons in
+  // src/data/projects.json disproved that: every file is a square canvas, five
+  // have only slightly transparent corners, and LinkIO is fully opaque. The
+  // frame now defines the silhouette, which is why the artwork is cropped to
+  // fill it rather than left alone.
+  it('rounds the icon with a frame instead of trusting the artwork', () => {
     renderRow(mockProject);
     const icon = screen.getByAltText('Test Project icon');
-    expect(icon).toHaveStyle({ width: '48px', height: '48px', objectFit: 'contain' });
+    expect(icon).toHaveStyle({ objectFit: 'cover' });
+
+    const frame = getCssForElement(screen.getByTestId('project-icon-frame'));
+    expect(frame).toContain('border-radius: 22px');
+    expect(frame).toContain('overflow: hidden');
+    expect(frame).toContain('border: 1px solid');
+  });
+
+  it('holds the icon in a fixed 88px frame', () => {
+    renderRow(mockProject);
+    expect(screen.getByTestId('project-icon-frame')).toBeInTheDocument();
+    const frame = getCssForElement(screen.getByTestId('project-icon-frame'));
+    expect(frame).toContain('width: 88px');
+    expect(frame).toContain('height: 88px');
+  });
+
+  it('draws the card with shadow alone, with no border', () => {
+    renderRow(mockProject);
+    const css = getCssForElement(screen.getByRole('article'));
+    expect(css).not.toContain('border: 1px solid var(--color-border)');
+    expect(css).toContain('box-shadow: var(--shadow-card)');
+    expect(css).toContain('box-shadow: var(--shadow-card-hover)');
+    expect(css).toContain('border-radius: var(--radius-2xl)');
+    expect(css).toContain('padding: var(--space-8)');
+  });
+
+  it('takes its height from the strip rather than fixing one', () => {
+    renderRow(mockProject);
+    expect(getCssForElement(screen.getByRole('article'))).toContain('height: 100%');
+  });
+
+  it('scales the name with its own card token', () => {
+    renderRow(mockProject);
+    expect(getCssForElement(screen.getByRole('heading', { name: 'Test Project' }))).toContain(
+      'font-size: var(--text-card-title)'
+    );
   });
 
   it('renders the icon fallback when iconUrl is missing', () => {
@@ -51,6 +93,23 @@ describe('ProjectRow', () => {
     renderRow(projectWithoutIcon);
     expect(screen.queryByAltText('Test Project icon')).not.toBeInTheDocument();
     expect(screen.getByTestId('project-icon-fallback')).toBeInTheDocument();
+  });
+
+it('keeps the fallback inside the same frame so the card does not shift', () => {
+    const { iconUrl, ...projectWithoutIcon } = mockProject;
+    expect(iconUrl).toBeDefined();
+    renderRow(projectWithoutIcon);
+
+    expect(screen.getByTestId('project-icon-fallback')).toBeInTheDocument();
+    const frame = getCssForElement(screen.getByTestId('project-icon-frame'));
+    expect(frame).toContain('overflow: hidden');
+    expect(frame).toContain('width: 88px');
+    expect(frame).toContain('height: 88px');
+  });
+
+  it('keeps the icon named for assistive technology', () => {
+    renderRow(mockProject);
+    expect(screen.getByAltText('Test Project icon')).toBeInTheDocument();
   });
 
   it('renders the icon fallback when the icon fails to load', () => {

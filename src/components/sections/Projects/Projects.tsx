@@ -1,17 +1,22 @@
 import {
   StyledProjects,
+  StyledProjectsSection,
+  StyledProjectsContainer,
   StyledProjectsHeader,
   StyledProjectsHeadline,
   StyledProjectsFilterWrapper,
   StyledProjectsList,
+  StyledProjectCard,
+  StyledProjectsSkeletonCard,
+  StyledProjectsDots,
   StyledProjectsEmpty,
   StyledProjectsError,
 } from './Projects.styles';
 import { useProjects } from './useProjects';
+import { useProjectsCarousel } from './useProjectsCarousel';
 import { ProjectRow } from '@/components/sections/ProjectRow';
+import { ProjectDots } from '@/components/sections/ProjectDots';
 import { ProjectCategoryFilter } from '@/components/sections/ProjectCategoryFilter';
-import { Section } from '@/components/common/Section';
-import { Container } from '@/components/common/Container';
 import { ALL_PROJECTS } from '@/types/project';
 import type { Project } from '@/types/project';
 
@@ -21,7 +26,6 @@ export interface ProjectsProps {
 
 export const Projects = ({ projects = [] }: ProjectsProps) => {
   const {
-    listRef,
     isLoading,
     error,
     activeCategory,
@@ -31,47 +35,51 @@ export const Projects = ({ projects = [] }: ProjectsProps) => {
     hasNoProjectsInCategory,
   } = useProjects(projects);
 
+  const { stripRef, currentIndex, goTo, onScroll, onKeyDown } = useProjectsCarousel({
+    count: visibleProjects.length,
+  });
+
   if (isLoading) {
     return (
-      <Section
+      <StyledProjectsSection
         id="projects"
         ariaLabel="Projects"
         size="xl"
-        background="default"
+        background="muted"
         fullViewport={true}
         composition="projects"
         verticalAlign="top"
       >
-        <Container size="xl" padding="lg">
+        <StyledProjectsContainer size="xl" padding="lg">
           <StyledProjects>
             <StyledProjectsHeader>
               <StyledProjectsHeadline as="h2">Proyectos</StyledProjectsHeadline>
             </StyledProjectsHeader>
             <StyledProjectsList aria-hidden="true">
               {[...Array(4)].map((_, i) => (
-                <li key={i}>
-                  <div style={{ height: '96px' }} />
-                </li>
+                <StyledProjectCard key={i}>
+                  <StyledProjectsSkeletonCard />
+                </StyledProjectCard>
               ))}
             </StyledProjectsList>
           </StyledProjects>
-        </Container>
-      </Section>
+        </StyledProjectsContainer>
+      </StyledProjectsSection>
     );
   }
 
   if (error) {
     return (
-      <Section
+      <StyledProjectsSection
         id="projects"
         ariaLabel="Projects"
         size="xl"
-        background="default"
+        background="muted"
         fullViewport={true}
         composition="projects"
         verticalAlign="center"
       >
-        <Container size="xl" padding="lg">
+        <StyledProjectsContainer size="xl" padding="lg">
           <StyledProjects>
             <StyledProjectsHeader>
               <StyledProjectsHeadline as="h2">Proyectos</StyledProjectsHeadline>
@@ -81,22 +89,22 @@ export const Projects = ({ projects = [] }: ProjectsProps) => {
               <button type="button" onClick={() => window.location.reload()}>Retry</button>
             </StyledProjectsError>
           </StyledProjects>
-        </Container>
-      </Section>
+        </StyledProjectsContainer>
+      </StyledProjectsSection>
     );
   }
 
   return (
-    <Section
+    <StyledProjectsSection
       id="projects"
       ariaLabel="Projects"
       size="xl"
-      background="default"
+      background="muted"
       fullViewport={true}
       composition="projects"
       verticalAlign="top"
     >
-      <Container size="xl" padding="lg">
+      <StyledProjectsContainer size="xl" padding="lg">
         <StyledProjects>
           <StyledProjectsHeader>
             <StyledProjectsHeadline as="h2">Proyectos</StyledProjectsHeadline>
@@ -124,14 +132,38 @@ export const Projects = ({ projects = [] }: ProjectsProps) => {
               </p>
             </StyledProjectsEmpty>
           ) : (
-            <StyledProjectsList ref={listRef}>
-              {visibleProjects.map((project) => (
-                <ProjectRow key={project.id} project={project} />
-              ))}
-            </StyledProjectsList>
+            <>
+              {/* The strip keeps its implicit list role: giving the ul role="group"
+                  overrides it, which strands the six li outside a list and fails
+                  the listitem rule. The name and the focus go on the ul itself,
+                  which supports both. No aria-live either, because the strip never
+                  moves without the visitor moving it. */}
+              <StyledProjectsList
+                ref={stripRef}
+                aria-label="Proyectos, desliza para ver más"
+                tabIndex={0}
+                onScroll={onScroll}
+                onKeyDown={onKeyDown}
+              >
+                {visibleProjects.map((project) => (
+                  <StyledProjectCard key={project.id}>
+                    <ProjectRow project={project} />
+                  </StyledProjectCard>
+                ))}
+              </StyledProjectsList>
+
+              <StyledProjectsDots>
+                <ProjectDots
+                  count={visibleProjects.length}
+                  currentIndex={currentIndex}
+                  names={visibleProjects.map((project) => project.name)}
+                  onSelect={goTo}
+                />
+              </StyledProjectsDots>
+            </>
           )}
         </StyledProjects>
-      </Container>
-    </Section>
+      </StyledProjectsContainer>
+    </StyledProjectsSection>
   );
 };

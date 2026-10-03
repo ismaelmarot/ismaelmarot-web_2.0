@@ -165,4 +165,69 @@ describe('Projects', () => {
     const section = screen.getByRole('region', { name: /projects/i });
     expect(getCssForElement(section)).toContain('min-height');
   });
+
+  it('exposes the strip as a labelled, focusable list', () => {
+    renderProjects(mockProjects);
+    const strip = screen.getByRole('list', { name: /desliza para ver más/i });
+    expect(strip).toHaveAttribute('tabindex', '0');
+  });
+
+  it('snaps the strip one card at a time instead of animating it', () => {
+    renderProjects(mockProjects);
+    const css = getCssForElement(screen.getByRole('list', { name: /desliza/i }));
+    expect(css).toContain('scroll-snap-type: x mandatory');
+    expect(css).toContain('overflow-x: auto');
+    expect(css).toContain('flex-direction: row');
+  });
+
+  it('takes the strip height from the viewport rather than fixing it', () => {
+    renderProjects(mockProjects);
+    const css = getCssForElement(screen.getByRole('list', { name: /desliza/i }));
+    expect(css).toContain('flex: 1');
+    expect(css).toContain('min-height: 0');
+  });
+
+  it('does not announce the strip, because nothing moves on its own', () => {
+    renderProjects(mockProjects);
+    const strip = screen.getByRole('list', { name: /desliza/i });
+    expect(strip).not.toHaveAttribute('aria-live');
+  });
+
+  it('renders one dot per project and marks the first', () => {
+    renderProjects(mockProjects);
+    expect(screen.getByRole('button', { name: /Proyecto 1 de 3: Trash2Treasure/ })).toHaveAttribute(
+      'aria-current',
+      'true'
+    );
+    expect(screen.getByRole('button', { name: /Proyecto 3 de 3: NauticAcademy/ })).toBeInTheDocument();
+  });
+
+  it('rebuilds the dots to match the filtered list', () => {
+    renderProjects(mockProjects);
+    fireEvent.click(screen.getByRole('button', { name: 'Education' }));
+    expect(
+      screen.getByRole('button', { name: /Proyecto 1 de 1: NauticAcademy/ })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Trash2Treasure/ })).not.toBeInTheDocument();
+  });
+
+  it('shows no dots when the filtered category is empty', () => {
+    const { categories, viewports: _viewports, platforms: _platforms, ...uncategorised } =
+      mockProjects[0];
+    expect(categories).toBeDefined();
+    renderProjects([uncategorised]);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Social' }));
+    expect(screen.getByText('No projects in Social yet.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Proyecto 1 de/ })).not.toBeInTheDocument();
+  });
+
+  it('moves to the next project with the arrow keys', () => {
+    renderProjects(mockProjects);
+    const strip = screen.getByRole('list', { name: /desliza/i });
+    fireEvent.keyDown(strip, { key: 'ArrowRight' });
+    expect(strip.scrollLeft).toBeGreaterThanOrEqual(0);
+    fireEvent.keyDown(strip, { key: 'ArrowLeft' });
+    expect(strip.scrollLeft).toBe(0);
+  });
 });

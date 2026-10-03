@@ -3,10 +3,13 @@ import {
   StyledProjectRowItem,
   StyledProjectRow,
   StyledProjectRowMain,
+  StyledProjectIconFrame,
   StyledProjectIcon,
   StyledProjectIconFallback,
   StyledProjectName,
+  StyledProjectBody,
   StyledProjectDescription,
+  StyledProjectFooter,
   StyledProjectAction,
   StyledProjectCategories,
   StyledProjectCategory,
@@ -31,22 +34,45 @@ export const ProjectRow = ({ project }: ProjectRowProps) => {
     <StyledProjectRowItem>
       <StyledProjectRow aria-label={`${project.name} - ${description}`}>
         <StyledProjectRowMain>
-          {showIcon ? (
-            <StyledProjectIcon
-              src={project.iconUrl}
-              alt={`${project.name} icon`}
-              loading="lazy"
-              decoding="async"
-              onError={handleIconError}
-            />
-          ) : (
-            <StyledProjectIconFallback data-testid="project-icon-fallback" aria-hidden="true">
-              <Icon name="folder" size={24} />
-            </StyledProjectIconFallback>
-          )}
+          {/* The frame, not the artwork, is what rounds the icon: every icon in
+              src/data/projects.json is a square canvas and one is fully opaque. */}
+          <StyledProjectIconFrame data-testid="project-icon-frame">
+            {showIcon ? (
+              <StyledProjectIcon
+                src={project.iconUrl}
+                alt={`${project.name} icon`}
+                loading="lazy"
+                decoding="async"
+                onError={handleIconError}
+              />
+            ) : (
+              <StyledProjectIconFallback data-testid="project-icon-fallback" aria-hidden="true">
+                <Icon name="folder" size={32} />
+              </StyledProjectIconFallback>
+            )}
+          </StyledProjectIconFrame>
 
           <StyledProjectName as="h3">{project.name}</StyledProjectName>
+        </StyledProjectRowMain>
 
+        <StyledProjectBody>
+          <StyledProjectDescription as="p">{description}</StyledProjectDescription>
+
+          {categories.length > 0 && (
+            <StyledProjectCategories aria-label={`Categorías de ${project.name}`}>
+              {categories.map((category) => (
+                <StyledProjectCategory key={category}>
+                  <Badge variant="subtle" size="sm">
+                    {category}
+                  </Badge>
+                </StyledProjectCategory>
+              ))}
+            </StyledProjectCategories>
+          )}
+        </StyledProjectBody>
+
+        <StyledProjectFooter>
+          <span />
           <StyledProjectAction
             as={Link}
             to={`/projects/${project.id}`}
@@ -59,21 +85,7 @@ export const ProjectRow = ({ project }: ProjectRowProps) => {
                 rather than a bare "Ver". */}
             <span>Ver</span>
           </StyledProjectAction>
-        </StyledProjectRowMain>
-
-        <StyledProjectDescription as="p">{description}</StyledProjectDescription>
-
-        {categories.length > 0 && (
-          <StyledProjectCategories aria-label={`Categorías de ${project.name}`}>
-            {categories.map((category) => (
-              <StyledProjectCategory key={category}>
-                <Badge variant="subtle" size="sm">
-                  {category}
-                </Badge>
-              </StyledProjectCategory>
-            ))}
-          </StyledProjectCategories>
-        )}
+        </StyledProjectFooter>
       </StyledProjectRow>
     </StyledProjectRowItem>
   );

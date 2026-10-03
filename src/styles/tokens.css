@@ -86,6 +86,13 @@
   --text-secondary: 0.875rem;                               /* Secondary text - weight 400 */
   --text-label: 0.75rem;                                    /* Labels & navigation - weight 500 */
 
+  /* Project card: its own scale because the card is a full-screen surface, not a
+     list row. The title is fluid so it shrinks on a 390px phone instead of
+     forcing the action onto its own line, and the body steps up one notch from
+     --text-body because 16px reads small across an 800px card. */
+  --text-card-title: clamp(1.5rem, 2.5vw, 2rem);            /* Project name - weight 600 */
+  --text-card-body: 1.0625rem;                               /* Project description - weight 400 */
+
   /* Font Weights - Only 4 weights permitted */
   --font-weight-normal: 400;
   --font-weight-medium: 500;
@@ -112,6 +119,14 @@
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
   --shadow-focus: 0 0 0 3px var(--color-accent);
+
+  /* Card shadows: two layers, wide and soft, because a project card is now a
+     full-screen surface rather than a list row. --shadow-xs is a 2px shadow
+     meant for a 167px row; on a card near 570px tall it is invisible, and the
+     card has no border, so the shadow is the only thing drawing its edge.
+     Spreading the layers keeps the edge soft rather than hard. */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04), 0 12px 32px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.06), 0 24px 56px rgba(0, 0, 0, 0.12);
 
   /* Transitions */
   --transition-fast: 120ms ease-out;
