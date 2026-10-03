@@ -1,10 +1,11 @@
+import { RouterProvider } from 'react-router-dom';
 import { ReducedMotionProvider } from '@/hooks/useReducedMotion';
-import { IndexPage } from '@/pages/Index';
+import { router } from '@/router';
 
 export default function App() {
   return (
     <ReducedMotionProvider>
-      <IndexPage />
+      <RouterProvider router={router} />
     </ReducedMotionProvider>
   );
 }
