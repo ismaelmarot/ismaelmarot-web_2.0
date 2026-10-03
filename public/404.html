@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ismael Marot | Web Developer</title>
+    <script>
+      // GitHub Pages serves this file for any path it cannot resolve, and it has no rewrite
+      // rule for a history-routed app. The requested path is stashed here and replayed by the
+      // script in index.html once the app has loaded, so a shared link or a refresh on
+      // /contact or /projects/... still opens that page instead of dying on a 404.
+      //
+      // The target must match the base in vite.config.ts. This site deploys to the account
+      // root, so '/' is correct.
+      (function () {
+        try {
+          var target = window.location.pathname + window.location.search;
+
+          // Only same-site absolute paths are replayed. A crafted link must not be able to
+          // bounce a visitor off to another origin.
+          if (target.indexOf('//') === 0) {
+            target = '/';
+          }
+
+          sessionStorage.setItem('gh-404-path', target);
+        } catch (error) {
+          // Private browsing can refuse storage. Falling through loses the path, which is
+          // acceptable, and is better than a blank page.
+        }
+
+        window.location.replace('/');
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>

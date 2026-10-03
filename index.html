@@ -6,6 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Ismael Marot - Web Developer Portfolio" />
     <title>Ismael Marot | Web Developer</title>
+    <script>
+      // Replays the path stashed by 404.html. This runs in <head>, before the module script,
+      // so the router initialises with the real URL already in place.
+      (function () {
+        try {
+          var stored = sessionStorage.getItem('gh-404-path');
+          if (!stored) return;
+
+          // Cleared in every case. Leaving a stale path behind would override a later
+          // navigation to a different page.
+          sessionStorage.removeItem('gh-404-path');
+
+          if (stored !== '/' && stored !== window.location.pathname) {
+            window.history.replaceState(null, '', stored);
+          }
+        } catch (error) {
+          // Storage unavailable: the app still loads, just at the root.
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
