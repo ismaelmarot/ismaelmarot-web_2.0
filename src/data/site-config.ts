@@ -29,7 +29,7 @@ export const siteConfig: SiteConfig = {
       id: 'linkedin',
       type: 'linkedin',
       label: 'LinkedIn',
-      value: 'https://linkedin.com/in/ismaelmarot',
+      value: 'https://linkedin.com/in/ismael-marot-1aab33440',
       iconName: 'linkedin',
       displayOrder: 3,
     },
