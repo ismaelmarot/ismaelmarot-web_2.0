@@ -39,4 +39,24 @@ describe('Contact', () => {
     const section = screen.getByRole('region', { name: /contact/i });
     expect(getCssForElement(section)).toContain('min-height');
   });
+
+  it('offers the contact form below the existing methods', () => {
+    vi.stubEnv('VITE_WEB3FORMS_ACCESS_KEY', 'w3f_test_key');
+    render(<Contact methods={mockMethods} />);
+
+    // The methods stay: a visitor who would rather not use a form still has them.
+    expect(screen.getByRole('link', { name: 'Email' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'GitHub' })).toBeInTheDocument();
+    expect(screen.getByLabelText(/nombre/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /enviar/i })).toBeInTheDocument();
+  });
+
+  it('shows the unavailability notice instead of a dead form when unconfigured', () => {
+    vi.stubEnv('VITE_WEB3FORMS_ACCESS_KEY', '');
+    render(<Contact methods={mockMethods} />);
+
+    expect(screen.getByText(/no está disponible/i)).toBeInTheDocument();
+    // The methods are unaffected: that is the whole point of the notice.
+    expect(screen.getByRole('link', { name: 'Email' })).toBeInTheDocument();
+  });
 });

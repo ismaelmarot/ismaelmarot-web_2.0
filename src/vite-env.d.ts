@@ -5,6 +5,12 @@
 interface ImportMetaEnv {
   readonly VITE_GITHUB_USERNAME: string;
   readonly VITE_SITE_URL: string;
+  /**
+   * Access key for the contact form relay. Absent in a build without the repository
+   * secret, which is why the form renders an unavailable state instead of submitting.
+   * Vite inlines it at build time, so .github/workflows/deploy.yml must pass it in.
+   */
+  readonly VITE_WEB3FORMS_ACCESS_KEY?: string;
 }
 
 interface ImportMeta {

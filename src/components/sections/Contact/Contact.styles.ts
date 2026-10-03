@@ -57,3 +57,14 @@ export const StyledContactMethod = styled.div`
   display: flex;
   justify-content: center;
 `;
+/**
+ * Separates the direct contact methods from the form. The detail page uses the same hairline
+ * between blocks, so it reads as part of the site rather than as part of this form.
+ */
+export const StyledContactDivider = styled.hr`
+  width: 100%;
+  height: 1px;
+  margin: 0;
+  border: none;
+  background-color: var(--color-border);
+`;

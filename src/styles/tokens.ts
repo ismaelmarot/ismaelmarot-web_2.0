@@ -14,6 +14,8 @@ export const tokens = {
     accentHover: 'var(--color-accent-hover)',
     accentText: 'var(--color-accent-text)',
     accentTextHover: 'var(--color-accent-text-hover)',
+    danger: 'var(--color-danger)',
+    success: 'var(--color-success)',
 
     // Semantic aliases (new)
     textPrimary: 'var(--color-text-primary)',
@@ -24,8 +26,12 @@ export const tokens = {
     borderDefault: 'var(--color-border-default)',
     interactive: 'var(--color-interactive)',
     interactiveHover: 'var(--color-interactive-hover)',
+    textDanger: 'var(--color-text-danger)',
+    textSuccess: 'var(--color-text-success)',
 
-    // Backward compatibility aliases (old token names)
+    // Backward compatibility aliases (old token names). The error/errorBg/success/successBg
+    // aliases were removed: nothing referenced them, and they all resolved to the accent
+    // colour, so tokens.colors.success would have painted a success message blue.
     primary: 'var(--color-accent)',
     primaryHover: 'var(--color-accent-hover)',
     primaryLight: 'var(--color-accent-light)',
@@ -33,10 +39,6 @@ export const tokens = {
     bgAccent: 'var(--color-bg-muted)',
     borderSubtle: 'var(--color-border)',
     focus: 'var(--color-accent)',
-    error: 'var(--color-accent)',
-    errorBg: 'var(--color-bg-muted)',
-    success: 'var(--color-accent)',
-    successBg: 'var(--color-bg-muted)',
   },
   space: {
     0: 'var(--space-0)',
