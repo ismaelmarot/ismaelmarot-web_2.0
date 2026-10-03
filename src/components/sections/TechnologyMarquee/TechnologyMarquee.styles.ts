@@ -51,25 +51,19 @@ export const StyledMarqueeHeader = styled.div`
 export const StyledMarqueeToggle = styled.button.attrs({ type: 'button' })`
   display: inline-flex;
   align-items: center;
-  gap: ${tokens.space[2]};
-  padding: ${tokens.space[1]} ${tokens.space[3]};
+  justify-content: center;
+  /* Square, because the control holds a glyph and nothing else. At this size the icon clears
+     3:1 against the section background for a non-text element with room to spare. */
+  width: 34px;
+  height: 34px;
+  padding: 0;
   background-color: transparent;
   border: 1px solid var(--color-border);
-  border-radius: ${tokens.radii.full};
-  font-family: ${tokens.fonts.sans};
-  font-size: var(--text-label);
-  font-weight: 500;
-  line-height: 1.4;
+  border-radius: ${tokens.radii.md};
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: background-color var(--transition-fast), border-color var(--transition-fast),
-    color var(--transition-fast);
-
-  &:hover {
-    background-color: var(--color-bg);
-    border-color: var(--color-accent);
-    color: var(--color-text-primary);
-  }
+  /* Deliberately no :hover. The state worth signalling is focus, and the accessible name
+     carries the meaning, since the glyph on its own says nothing about what the control does. */
 
   &:focus-visible {
     outline: 2px solid var(--color-accent);
@@ -115,25 +109,14 @@ export const StyledMarqueeRow = styled.div<{ $reverse?: boolean; $paused?: boole
   }
 `;
 
-/** One category: its label, then the pills that belong to it. */
+/**
+ * The pills of one category.
+ *
+ * 8px inside a group against 32px between groups on the track. The category names are gone, so
+ * the change of rhythm is what still marks where one group ends and the next begins.
+ */
 export const StyledMarqueeGroup = styled.div`
   display: flex;
   align-items: center;
-  gap: ${tokens.space[3]};
-`;
-
-/**
- * The category name, set apart from the pills it introduces.
- *
- * --color-text-tertiary measures 4.66:1 on this section's muted background, which clears the
- * 4.5:1 that small text needs. The accent was rejected: it measures 4.31:1 here and fails.
- */
-export const StyledMarqueeLabel = styled.span`
-  font-size: var(--text-label);
-  font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: var(--color-text-tertiary);
+  gap: ${tokens.space[2]};
 `;

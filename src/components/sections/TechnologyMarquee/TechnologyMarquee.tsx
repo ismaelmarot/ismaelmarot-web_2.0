@@ -5,9 +5,9 @@ import {
   StyledMarqueeRow,
   StyledMarqueeTrack,
   StyledMarqueeGroup,
-  StyledMarqueeLabel,
 } from './TechnologyMarquee.styles';
 import { useMarqueePause } from './useMarqueePause';
+import { Icon } from '@/components/ui/Icon';
 import { TechnologyPill } from '@/components/sections/TechnologyCard';
 import { getPopulatedCategories } from '@/data/technologies';
 import type { Technology } from '@/types/project';
@@ -17,7 +17,6 @@ export interface TechnologyMarqueeProps {
 }
 
 interface CategoryGroupProps {
-  label: string;
   technologies: Technology[];
   /**
    * Marks the second copy of the row. It is what closes the loop, and it is hidden from
@@ -27,13 +26,12 @@ interface CategoryGroupProps {
   idPrefix: string;
 }
 
-function CategoryGroup({ label, technologies, hidden, idPrefix }: CategoryGroupProps) {
+function CategoryGroup({ technologies, hidden, idPrefix }: CategoryGroupProps) {
   return (
     <StyledMarqueeGroup
       aria-hidden={hidden || undefined}
       data-testid={hidden ? 'marquee-group-copy' : 'marquee-group'}
     >
-      <StyledMarqueeLabel>{label}</StyledMarqueeLabel>
       {technologies.map((technology) => (
         <TechnologyPill
           key={`${idPrefix}-${technology.id}`}
@@ -65,10 +63,12 @@ export const TechnologyMarquee = ({ technologies }: TechnologyMarqueeProps) => {
     <StyledMarquee>
       <StyledMarqueeHeader>
         {/* One control for both rows, as W3C recommends when a page has several moving elements.
-            The name states the action rather than using aria-pressed, because a toggle button
-            whose label changes with its state reads two contradictory things at once. */}
+            Icon rather than text, so it reads as a control and not as another pill on the row.
+            The name still states the action rather than using aria-pressed, because a toggle
+            button whose label changes with its state reads two contradictory things at once,
+            and it is the whole accessible name since the glyph carries no text of its own. */}
         <StyledMarqueeToggle onClick={toggle} aria-label={action}>
-          {paused ? 'Reanudar' : 'Pausar'}
+          <Icon name={paused ? 'play' : 'pause'} size={14} aria-hidden="true" />
         </StyledMarqueeToggle>
       </StyledMarqueeHeader>
 

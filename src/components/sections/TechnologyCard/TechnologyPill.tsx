@@ -33,14 +33,9 @@ export const StyledTechnologyPill = styled.span`
   line-height: 1.5;
   color: var(--color-text-primary);
   white-space: nowrap;
-  transition: background-color var(--transition-fast), border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
-
-  &:hover {
-    background-color: var(--color-bg-muted);
-    border-color: var(--color-accent);
-    box-shadow: var(--shadow-sm);
-  }
+  /* Deliberately no hover state. The pill is not a link, not a button and has no tabindex, so
+     nothing happens when it is clicked. A hover that changed its colour would advertise an
+     interaction that does not exist. */
 
   @media (max-width: 767px) {
     padding: ${tokens.space[1]} ${tokens.space[3]};

@@ -122,10 +122,10 @@
   --duration-fast: 120ms;
   --duration-normal: 200ms;
   --duration-slow: 300ms;
-  /* One full lap of the technology marquee. One copy of the six categories measures roughly
-     3600px, so 40s works out near 90px/s, which is ambient rather than attention-seeking: the
-     visible window refreshes about every 11 seconds. */
-  --duration-marquee: 40s;
+  /* One full lap of the technology marquee. With the category names removed a copy measures
+     roughly 3270px, and 80s works out near 41px/s: the 1024px window refreshes about every
+     25 seconds, which is slow enough to read the pills as they pass. */
+  --duration-marquee: 80s;
   --ease-out: ease-out;
   --ease-in-out: ease-in-out;
   --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);

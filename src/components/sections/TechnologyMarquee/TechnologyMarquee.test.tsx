@@ -15,15 +15,16 @@ const row = (name: RegExp) => screen.getByRole('group', { name });
 const cssOf = (element: Element) => getCssForElement(element);
 
 describe('TechnologyMarquee', () => {
-  it('renders the category labels', () => {
+  // The category names were 576px of a 3846px copy and read as clutter moving past, so they came
+  // out. Grouping survives through the gap: 8px inside a group, 32px between groups.
+  it('shows the pills with no category name beside them', () => {
     render(<TechnologyMarquee technologies={technologies} />);
 
     const top = row(/fila superior/i);
-
-    // Once per copy, because the row holds the list twice to close the loop.
-    expect(within(top).getAllByText('Lenguajes')).toHaveLength(2);
-    expect(within(top).getAllByText('Frameworks')).toHaveLength(2);
-    expect(within(top).getAllByText('Herramientas')).toHaveLength(2);
+    expect(within(top).getAllByText('TypeScript')).toHaveLength(2);
+    expect(within(top).queryByText('Lenguajes')).not.toBeInTheDocument();
+    expect(within(top).queryByText('Frameworks')).not.toBeInTheDocument();
+    expect(within(top).queryByText('Herramientas')).not.toBeInTheDocument();
   });
 
   it('renders the two rows', () => {
@@ -86,11 +87,32 @@ describe('TechnologyMarquee', () => {
   });
 
   // WCAG 2.2.2 level A. The control is required, not a nicety.
-  it('offers a control that pauses the movement', () => {
+  // The glyph alone says nothing to a screen reader, so the accessible name is what carries
+  // the meaning now that the visible text is gone.
+  it('names the icon-only control by what it does', () => {
     render(<TechnologyMarquee technologies={technologies} />);
 
     const button = screen.getByRole('button', { name: /pausar el carrusel/i });
-    expect(button).toHaveTextContent('Pausar');
+    expect(button).toBeInTheDocument();
+    expect(button).toHaveTextContent('');
+  });
+
+  it('shows a pause glyph that is hidden from assistive technology', () => {
+    render(<TechnologyMarquee technologies={technologies} />);
+
+    // Icon wraps its svg in a span, and that span is what carries aria-hidden, so the glyph is
+    // reached through the testid Icon already sets rather than by digging out of the button.
+    const glyph = screen.getByTestId('pause-icon');
+    expect(glyph).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('swaps the glyph when the rows are paused', () => {
+    render(<TechnologyMarquee technologies={technologies} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /pausar el carrusel/i }));
+
+    expect(screen.queryByTestId('pause-icon')).not.toBeInTheDocument();
+    expect(screen.getByTestId('play-icon')).toBeInTheDocument();
   });
 
   // One control for both rows, as W3C recommends when a page has several moving elements.
@@ -99,9 +121,7 @@ describe('TechnologyMarquee', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /pausar el carrusel/i }));
 
-    expect(screen.getByRole('button', { name: /reanudar el carrusel/i })).toHaveTextContent(
-      'Reanudar'
-    );
+    expect(screen.getByRole('button', { name: /reanudar el carrusel/i })).toBeInTheDocument();
 
     for (const track of screen.getAllByTestId('marquee-track')) {
       expect(cssOf(track)).toContain('paused');
@@ -117,7 +137,7 @@ describe('TechnologyMarquee', () => {
     // Only the control's reported state is asserted here. Whether the rows actually move again
     // is checked in the browser by sampling the transform over time, because styled-components
     // leaves the paused rule in the stylesheet and its presence proves nothing either way.
-    expect(screen.getByRole('button', { name: /pausar el carrusel/i })).toHaveTextContent('Pausar');
+    expect(screen.getByRole('button', { name: /pausar el carrusel/i })).toBeInTheDocument();
   });
 
   it('renders nothing when there is nothing to scroll', () => {

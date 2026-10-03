@@ -161,6 +161,19 @@ const icons = {
       <path d="M2 19h20" />
     </svg>
   ),
+  // The marquee's pause control. Solid rather than stroked, like github and linkedin, so the
+  // bars keep their weight at 16px instead of thinning out.
+  pause: (
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <rect x="6" y="4" width="4" height="16" rx="1" />
+      <rect x="14" y="4" width="4" height="16" rx="1" />
+    </svg>
+  ),
+  play: (
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M8 5.14v13.72a1 1 0 0 0 1.54.84l10.78-6.86a1 1 0 0 0 0-1.68L9.54 4.3A1 1 0 0 0 8 5.14Z" />
+    </svg>
+  ),
 };
 
 export type IconName = keyof typeof icons;
