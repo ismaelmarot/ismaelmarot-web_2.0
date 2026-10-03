@@ -14,21 +14,19 @@ export const IndexPage = () => {
         cta={{ label: 'Ver Proyectos', href: '/projects' }}
         secondaryCta={{ label: 'Contactar', href: '/contact' }}
       />
-      <SectionSummary
-        id="about-summary"
-        title="Sobre mí"
-        description="Una breve introducción sobre quién soy, mi recorrido y mi forma de trabajar."
-        ctaLabel="Conocé más"
-        ctaHref="/about"
-        background="muted"
-      />
+      {/* Order: work first, then the tools, then the person, then the way to reach them.
+
+          The backgrounds alternate strictly, starting from the Hero's own default. Reordering
+          the blocks without also reassigning them left Tecnologías and Sobre mí both on
+          muted, two identical bands in a row, which reads as a mistake rather than a rhythm.
+          So each block moved and the band follows its position, not its name. */}
       <SectionSummary
         id="projects-summary"
         title="Proyectos"
         description="Una selección de proyectos en los que trabajé, tecnologías utilizadas y problemas que resolví."
         ctaLabel="Ver proyectos"
         ctaHref="/projects"
-        background="default"
+        background="muted"
       />
       <SectionSummary
         id="technologies-summary"
@@ -36,8 +34,16 @@ export const IndexPage = () => {
         description="Las tecnologías y herramientas que utilizo para construir aplicaciones web modernas."
         ctaLabel="Ver tecnologías"
         ctaHref="/technologies"
-        background="muted"
+        background="default"
         featuredItems={<TechnologyMarquee />}
+      />
+      <SectionSummary
+        id="about-summary"
+        title="Sobre mí"
+        description="Una breve introducción sobre quién soy, mi recorrido y mi forma de trabajar."
+        ctaLabel="Conocé más"
+        ctaHref="/about"
+        background="muted"
       />
       <SectionSummary
         id="contact-summary"
