@@ -300,12 +300,16 @@ Each story adds visible value without breaking the previous one.
   there. US3's value turned out to be the tests that prove it, which is where a silent gap
   would have cost a visitor their composed message.
 
-- End-to-end delivery is NOT confirmed from the development machine. Web3Forms answers every
-  request from this network with 403 and no CORS headers, including the browser preflight, so
-  the browser blocks the POST and the form reports a failure it cannot confirm. The evidence
-  points at the egress IP being refused by the edge in front of the provider rather than at a
-  defect here: the request contract matches the documented client-side integration, and the
-  refusal arrives identically for curl, for browser headers, and for every content type.
+- End-to-end delivery is BLOCKED, and the cause is the provider's free-tier policy, not this
+  code. Web3Forms answers every request from a github.io subdomain with no
+  Access-Control-Allow-Origin on the preflight, so the browser never sends the POST. Confirmed
+  three ways: curl, a browser from localhost, and a browser from the real
+  https://ismaelmarot.github.io origin. The request contract matches their documented
+  client-side integration, there is no CSP on this site, and their own troubleshooting guide
+  states the free plan does not allow the free sub-domain, only a custom domain or a paid plan.
+  The earlier reading of an IP block was wrong and is superseded: the production test disproved
+  it. Resolving this means choosing between the provider's paid plan, a custom domain, or a
+  different provider, and the last one is local to submitContactForm.ts by design.
   Two consequences were acted on regardless of the cause:
   - The network failure message no longer tells the visitor to check their connection. A
     rejected fetch cannot distinguish an offline visitor from a provider outage from a
