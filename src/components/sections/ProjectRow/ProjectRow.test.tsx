@@ -98,7 +98,28 @@ it('renders every category of the project', () => {
     const action = screen.getByTestId('project-view-action');
     expect(action).toHaveAttribute('href', '/projects/1');
     expect(action).not.toHaveAttribute('target');
-    expect(screen.getByText('Ver proyecto')).toBeInTheDocument();
+    expect(screen.getByText('Ver')).toBeInTheDocument();
+  });
+
+  // The visible label is the bare verb, but a screen reader must still hear where the link
+  // goes, or "Ver" on its own names nothing. WCAG 2.5.3 holds because "Ver" is contained in
+  // the accessible name.
+  it('names the action with the project, not just the verb', () => {
+    renderRow(mockProject);
+    expect(screen.getByRole('link', { name: `Ver ${mockProject.name}` })).toBeInTheDocument();
+  });
+
+  it('has no arrow glyph left in the action', () => {
+    renderRow(mockProject);
+    // Icon stamps a testid from its name, so the arrow is found without reaching into the DOM.
+    expect(screen.queryByTestId('arrowRight-icon')).not.toBeInTheDocument();
+  });
+
+  it('sets the label in caps with spacing rather than shipping it uppercase', () => {
+    renderRow(mockProject);
+    const css = getCssForElement(screen.getByTestId('project-view-action'));
+    expect(css).toContain('text-transform: uppercase');
+    expect(css).toContain('letter-spacing');
   });
 
   it('does not render a featured or enlarged layout', () => {

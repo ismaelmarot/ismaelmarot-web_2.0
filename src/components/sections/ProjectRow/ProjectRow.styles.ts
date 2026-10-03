@@ -76,13 +76,19 @@ export const StyledProjectAction = styled.a`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
   flex-shrink: 0;
   height: 44px;
-  padding: ${tokens.space[2]} ${tokens.space[4]};
+  /* 24px of horizontal padding rather than 16. Without the arrow the label alone rendered
+     the control at 58px wide, a sliver of a pill; the padding gives it back enough body to
+     read as a button without adding anything to say. */
+  padding: ${tokens.space[2]} ${tokens.space[6]};
   font-family: ${tokens.fonts.sans};
   font-size: var(--text-label);
   font-weight: ${tokens.fontWeights.medium};
+  /* Uppercase, and spaced to suit three letters. Set here rather than in the markup so the
+     text stays "Ver" for anything reading the source or the accessible tree. */
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   text-decoration: none;
   white-space: nowrap;
   border-radius: ${tokens.radii.full};
@@ -97,12 +103,6 @@ export const StyledProjectAction = styled.a`
   &:focus-visible {
     outline: none;
     box-shadow: ${tokens.shadows.focus};
-  }
-
-  /* Too narrow for icon + name + action on one line: the action moves to its
-     own full-width row. */
-  @media (max-width: 479px) {
-    width: 100%;
   }
 `;
 

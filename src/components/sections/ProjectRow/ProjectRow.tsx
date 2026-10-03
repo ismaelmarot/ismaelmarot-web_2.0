@@ -53,8 +53,11 @@ export const ProjectRow = ({ project }: ProjectRowProps) => {
             data-testid="project-view-action"
             aria-label={`Ver ${project.name}`}
           >
-            <Icon name="arrowRight" size={16} aria-hidden="true" />
-            <span>Ver proyecto</span>
+            {/* No arrow here: the control says "Ver" and the project name sits beside it, so
+                the verb is what the row needs and nothing else. The accessible name stays
+                "Ver <project>", which is why a screen reader still hears the destination
+                rather than a bare "Ver". */}
+            <span>Ver</span>
           </StyledProjectAction>
         </StyledProjectRowMain>
 
