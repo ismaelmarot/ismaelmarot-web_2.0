@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ProjectDots } from './ProjectDots';
+import { getCssForElement } from '@/test-utils/css';
 
 const names = ['Alpha', 'Beta', 'Gamma'];
 
@@ -55,11 +56,95 @@ describe('ProjectDots', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('offers no autoplay control', () => {
-    renderDots();
-    const labels = screen
-      .getAllByRole('button')
-      .map((dot) => dot.getAttribute('aria-label') ?? '');
-    expect(labels.some((label) => /play|pause|paus|reproduc/i.test(label))).toBe(false);
+});
+
+describe('ProjectDots carousel controls', () => {
+  const withControls = (overrides: Partial<React.ComponentProps<typeof ProjectDots>> = {}) =>
+    render(
+      <ProjectDots
+        count={3}
+        currentIndex={0}
+        names={names}
+        onSelect={vi.fn()}
+        playing
+        playStopLabel="Pausar"
+        onTogglePlay={vi.fn()}
+        onStep={vi.fn()}
+        {...overrides}
+      />
+    );
+
+  it('shows a stop glyph while the carousel is moving', () => {
+    withControls({ playing: true, playStopLabel: 'Pausar' });
+    expect(screen.getByTestId('pause-icon')).toBeInTheDocument();
+    expect(screen.queryByTestId('play-icon')).not.toBeInTheDocument();
+  });
+
+  it('shows a play glyph once the carousel is stopped', () => {
+    withControls({ playing: false, playStopLabel: 'Reproducir' });
+    expect(screen.getByTestId('play-icon')).toBeInTheDocument();
+    expect(screen.queryByTestId('pause-icon')).not.toBeInTheDocument();
+  });
+
+  // Same reasoning as the marquee control: a pressed toggle would be announced as
+  // "Pausar, pressed" while the carousel was in fact moving.
+  it('names the toggle for the action it performs, not with aria-pressed', () => {
+    withControls({ playing: true, playStopLabel: 'Pausar' });
+    const toggle = screen.getByTestId('carousel-play-toggle');
+    expect(toggle).toHaveAttribute('aria-label', 'Pausar');
+    expect(toggle).not.toHaveAttribute('aria-pressed');
+  });
+
+  it('toggles the auto-advance', () => {
+    const onTogglePlay = vi.fn();
+    withControls({ onTogglePlay });
+    fireEvent.click(screen.getByTestId('carousel-play-toggle'));
+    expect(onTogglePlay).toHaveBeenCalledTimes(1);
+  });
+
+  it('steps backward and forward by one project', () => {
+    const onStep = vi.fn();
+    withControls({ onStep });
+    fireEvent.click(screen.getByTestId('carousel-previous'));
+    expect(onStep).toHaveBeenLastCalledWith(-1);
+    fireEvent.click(screen.getByTestId('carousel-next'));
+    expect(onStep).toHaveBeenLastCalledWith(1);
+  });
+
+  it('names the arrow controls for what they do', () => {
+    withControls();
+    expect(screen.getByRole('button', { name: 'Proyecto anterior' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Proyecto siguiente' })).toBeInTheDocument();
+  });
+
+  it('reaches every control by keyboard', () => {
+    withControls();
+    for (const control of [
+      screen.getByTestId('carousel-play-toggle'),
+      screen.getByTestId('carousel-previous'),
+      screen.getByTestId('carousel-next'),
+    ]) {
+      expect(control).toHaveAttribute('type', 'button');
+    }
+  });
+
+  // No hover rule at all: a rule with nothing to change is dead CSS, and the
+  // request was for the hover behaviour gone rather than made subtler.
+  it('declares no hover styling on any control, while keeping focus styling', () => {
+    withControls();
+    for (const control of [
+      screen.getByTestId('carousel-play-toggle'),
+      screen.getByTestId('carousel-previous'),
+      screen.getByTestId('carousel-next'),
+    ]) {
+      const css = getCssForElement(control);
+      expect(css).not.toContain(':hover');
+      expect(css).toContain('box-shadow: var(--shadow-focus)');
+    }
+  });
+
+  it('omits the controls entirely when the carousel cannot advance', () => {
+    renderDots({ count: 0, names: [] });
+    expect(screen.queryByTestId('carousel-play-toggle')).not.toBeInTheDocument();
   });
 });

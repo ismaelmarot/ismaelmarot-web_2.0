@@ -174,6 +174,15 @@ const icons = {
       <path d="M8 5.14v13.72a1 1 0 0 0 1.54.84l10.78-6.86a1 1 0 0 0 0-1.68L9.54 4.3A1 1 0 0 0 8 5.14Z" />
     </svg>
   ),
+  // The project card's action, replacing a labelled "Ver" pill. Stroked to match
+  // check, code and the chevrons, so it does not read heavier than the rest of
+  // the row; solid at 20px it fills the circle it sits in.
+  plus: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M12 5v14" strokeLinecap="round" />
+      <path d="M5 12h14" strokeLinecap="round" />
+    </svg>
+  ),
 };
 
 export type IconName = keyof typeof icons;

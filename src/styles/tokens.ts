@@ -15,6 +15,14 @@ export const tokens = {
     accentText: 'var(--color-accent-text)',
     accentTextHover: 'var(--color-accent-text-hover)',
 
+    // Project card, a dark surface on a light section. Scoped so the rest of the
+    // light-only site is untouched.
+    card: 'var(--color-card)',
+    cardFg: 'var(--color-card-fg)',
+    cardFgMuted: 'var(--color-card-fg-muted)',
+    cardBorder: 'var(--color-card-border)',
+    cardFrame: 'var(--color-card-frame)',
+
     // Contribution heatmap, empty day first
   contributions: [
     'var(--contribution-0)',

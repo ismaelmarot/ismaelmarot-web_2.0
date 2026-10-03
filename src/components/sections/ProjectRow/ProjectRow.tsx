@@ -79,11 +79,11 @@ export const ProjectRow = ({ project }: ProjectRowProps) => {
             data-testid="project-view-action"
             aria-label={`Ver ${project.name}`}
           >
-            {/* No arrow here: the control says "Ver" and the project name sits beside it, so
-                the verb is what the row needs and nothing else. The accessible name stays
-                "Ver <project>", which is why a screen reader still hears the destination
-                rather than a bare "Ver". */}
-            <span>Ver</span>
+            {/* A plus glyph, not a text label: on a card this large the pill competed
+                with the project name. The accessible name stays "Ver <project>" on the
+                element above, so a screen reader still hears the destination and the
+                symbol is never the only name. */}
+            <Icon name="plus" size={22} aria-hidden="true" />
           </StyledProjectAction>
         </StyledProjectFooter>
       </StyledProjectRow>

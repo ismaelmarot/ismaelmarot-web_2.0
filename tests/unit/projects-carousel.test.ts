@@ -1,32 +1,53 @@
 import { renderHook, act } from '@testing-library/react';
 import { useProjectsCarousel } from '@/components/sections/Projects/useProjectsCarousel';
 
+const GAP = 32;
+const CARD = 800;
+const DESKTOP_VIEWPORT = 1216;
+
 /**
- * Builds a strip whose cards sit at 0, 800, 1600 and so on. jsdom reports
- * offsetLeft as 0 for everything, so the positions the logic depends on have to
- * be defined explicitly or every card would look like the first one. jsdom also
- * has no scrollTo on elements, so it is stubbed to record what was asked for.
+ * Builds a strip with the geometry the hook actually reads. jsdom reports
+ * offsetLeft, offsetWidth, clientWidth and scrollWidth all as 0, so each one has
+ * to be defined or the card under the viewport centre is undefined.
+ *
+ * Desktop is the default because it is the case that matters: there the cards are
+ * 800px inside a 1216px strip, so the last card starts past the maximum scroll
+ * position and the browser clamps it. That is what the clamping and the
+ * centre-based lookup exist for.
  */
-function mountStrip(count: number, cardWidth = 800) {
+function mountStrip(
+  count: number,
+  options: { cardWidth?: number; viewport?: number } = {}
+) {
+  const cardWidth = options.cardWidth ?? CARD;
+  const viewport = options.viewport ?? DESKTOP_VIEWPORT;
   const strip = document.createElement('ul');
   const scrollCalls: { left: number }[] = [];
+  const maxScroll = Math.max(0, count * cardWidth + (count - 1) * GAP - viewport);
+
   (strip as unknown as { scrollTo: (o: { left: number }) => void }).scrollTo = ({ left }) => {
-    scrollCalls.push({ left });
+    scrollCalls.push({ left: Math.min(left, maxScroll) });
   };
+
   for (let index = 0; index < count; index += 1) {
     const card = document.createElement('li');
-    Object.defineProperty(card, 'offsetLeft', { value: index * cardWidth });
+    Object.defineProperty(card, 'offsetLeft', { value: index * (cardWidth + GAP) });
+    Object.defineProperty(card, 'offsetWidth', { value: cardWidth });
     strip.appendChild(card);
   }
+
+  const contentWidth = count * cardWidth + (count - 1) * GAP;
+  Object.defineProperty(strip, 'clientWidth', { value: viewport, configurable: true });
+  Object.defineProperty(strip, 'scrollWidth', { value: contentWidth, configurable: true });
   document.body.appendChild(strip);
-  return { strip, scrollCalls };
+
+  return { strip, scrollCalls, maxScroll };
 }
 
 function setScrollLeft(strip: HTMLElement, value: number) {
   Object.defineProperty(strip, 'scrollLeft', { value, writable: true, configurable: true });
 }
 
-/** Sets the position, fires the event the hook listens to, then waits a frame. */
 async function scrollStripTo(strip: HTMLElement, value: number) {
   await act(async () => {
     setScrollLeft(strip, value);
@@ -35,16 +56,19 @@ async function scrollStripTo(strip: HTMLElement, value: number) {
   });
 }
 
-async function renderStrip(count: number) {
-  const { strip, scrollCalls } = mountStrip(count);
+async function renderStrip(
+  count: number,
+  options: { cardWidth?: number; viewport?: number } = {}
+) {
+  const { strip, scrollCalls, maxScroll } = mountStrip(count, options);
   const view = renderHook(() => useProjectsCarousel({ count }));
   (
     view.result.current as unknown as { stripRef: { current: HTMLElement | null } }
   ).stripRef.current = strip;
-  // The real component gets this from React's onScroll prop; here the ref is
-  // assigned directly, so the listener has to be wired up by hand.
+  // React would attach this from the onScroll prop; the ref is assigned by hand
+  // here, so the listener has to be wired up explicitly.
   strip.addEventListener('scroll', view.result.current.onScroll);
-  return { ...view, strip, scrollCalls };
+  return { ...view, strip, scrollCalls, maxScroll };
 }
 
 describe('useProjectsCarousel', () => {
@@ -61,63 +85,90 @@ describe('useProjectsCarousel', () => {
 
   it('reports a middle project from the scroll position', async () => {
     const { result, strip } = await renderStrip(4);
+    // Centre lands at 1600 + 608 = 2208, inside card 2 (1664 to 2464).
     await scrollStripTo(strip, 1600);
     expect(result.current.currentIndex).toBe(2);
   });
 
-  it('reports the last project', async () => {
-    const { result, strip } = await renderStrip(4);
-    await scrollStripTo(strip, 2400);
-    expect(result.current.currentIndex).toBe(3);
+  // The case the centre lookup exists for. Card 5 starts at 4160px but the strip
+  // only scrolls to 3744px, so nearest-by-offset ties at 416px each way and
+  // resolves to card 4 instead of card 5.
+  it('reports the last project when the strip is scrolled as far as it goes', async () => {
+    const { result, strip, maxScroll } = await renderStrip(6);
+    expect(maxScroll).toBe(3744);
+    await scrollStripTo(strip, maxScroll);
+    expect(result.current.currentIndex).toBe(5);
   });
 
-  it('rounds a partial offset to the nearest card, in both directions', async () => {
-    const { result, strip } = await renderStrip(4);
-    // Cards sit at 0, 800, 1600, 2400. 1180 is 380px past card 1 and 420px
-    // short of card 2, so it belongs to card 1...
+  it('reports the card holding the middle of the strip', async () => {
+    const { result, strip } = await renderStrip(4, { viewport: CARD });
     await scrollStripTo(strip, 1180);
     expect(result.current.currentIndex).toBe(1);
-
-    // ...and 1220 flips the same comparison, so it belongs to card 2.
-    await scrollStripTo(strip, 1220);
+    await scrollStripTo(strip, 1700);
     expect(result.current.currentIndex).toBe(2);
   });
 
   it('scrolls to the requested project', async () => {
     const { result, scrollCalls } = await renderStrip(4);
     await act(async () => result.current.goTo(2));
-    expect(scrollCalls.at(-1)?.left).toBe(1600);
+    expect(result.current.currentIndex).toBe(2);
+    expect(scrollCalls.at(-1)?.left).toBe(1664);
   });
 
-  it('clamps goTo to the strip instead of scrolling past the end', async () => {
-    const { result, scrollCalls } = await renderStrip(3);
+  // Clicking the last dot used to show the second-to-last card, because the last
+  // card's own start is past the maximum the strip can scroll.
+  it('scrolls the last dot as far as the strip allows', async () => {
+    const { result, scrollCalls, maxScroll } = await renderStrip(6);
+    await act(async () => result.current.goTo(5));
+    expect(result.current.currentIndex).toBe(5);
+    expect(scrollCalls.at(-1)?.left).toBe(maxScroll);
+  });
+
+  it('clamps goTo past the end to what the strip can scroll', async () => {
+    const { result, scrollCalls, maxScroll } = await renderStrip(3);
     await act(async () => result.current.goTo(99));
     expect(result.current.currentIndex).toBe(2);
-    expect(scrollCalls.at(-1)?.left).toBe(1600);
+    expect(scrollCalls.at(-1)?.left).toBe(maxScroll);
   });
 
   it('clamps goTo below zero', async () => {
-    const { result } = await renderStrip(3);
+    const { result, scrollCalls } = await renderStrip(3);
     await act(async () => result.current.goTo(-5));
     expect(result.current.currentIndex).toBe(0);
+    expect(scrollCalls.at(-1)?.left).toBe(0);
   });
 
   it('moves by exactly one project with step', async () => {
     const { result, scrollCalls } = await renderStrip(3);
     await act(async () => result.current.step(1));
     expect(result.current.currentIndex).toBe(1);
-    expect(scrollCalls.at(-1)?.left).toBe(800);
+    expect(scrollCalls.at(-1)?.left).toBe(832);
     await act(async () => result.current.step(-1));
     expect(result.current.currentIndex).toBe(0);
   });
 
-  it('does not move past the last or before the first project', async () => {
+  it('stops at both ends instead of wrapping, because a visitor pressed it', async () => {
     const { result } = await renderStrip(2);
     await act(async () => result.current.step(-1));
     expect(result.current.currentIndex).toBe(0);
     await act(async () => result.current.step(1));
     await act(async () => result.current.step(1));
     expect(result.current.currentIndex).toBe(1);
+  });
+
+  it('wraps from the last project back to the first when auto-advancing', async () => {
+    const { result } = await renderStrip(3);
+    await act(async () => result.current.goTo(2));
+    await act(async () => result.current.advance());
+    expect(result.current.currentIndex).toBe(0);
+  });
+
+  it('advances from wherever it is', async () => {
+    const { result } = await renderStrip(4);
+    await act(async () => result.current.advance());
+    expect(result.current.currentIndex).toBe(1);
+    await act(async () => result.current.advance());
+    expect(result.current.currentIndex).toBe(2);
   });
 
   it('returns to the first project when the list narrows past the current one', async () => {

@@ -52,27 +52,47 @@ describe('ProjectRow', () => {
     expect(icon).toHaveStyle({ objectFit: 'cover' });
 
     const frame = getCssForElement(screen.getByTestId('project-icon-frame'));
-    expect(frame).toContain('border-radius: 22px');
+    // 26px on a 120px frame, the same 22% ratio the 88px frame used at 22px.
+    expect(frame).toContain('border-radius: 26px');
     expect(frame).toContain('overflow: hidden');
     expect(frame).toContain('border: 1px solid');
   });
 
-  it('holds the icon in a fixed 88px frame', () => {
+  it('holds the icon in a fixed 120px frame', () => {
     renderRow(mockProject);
     expect(screen.getByTestId('project-icon-frame')).toBeInTheDocument();
     const frame = getCssForElement(screen.getByTestId('project-icon-frame'));
-    expect(frame).toContain('width: 88px');
-    expect(frame).toContain('height: 88px');
+    expect(frame).toContain('width: 120px');
+    expect(frame).toContain('height: 120px');
   });
 
-  it('draws the card with shadow alone, with no border', () => {
+  it('paints the card near-black with no border', () => {
     renderRow(mockProject);
     const css = getCssForElement(screen.getByRole('article'));
-    expect(css).not.toContain('border: 1px solid var(--color-border)');
+    expect(css).toContain('background: var(--color-card)');
+    expect(css).not.toContain('border:');
     expect(css).toContain('box-shadow: var(--shadow-card)');
-    expect(css).toContain('box-shadow: var(--shadow-card-hover)');
     expect(css).toContain('border-radius: var(--radius-2xl)');
     expect(css).toContain('padding: var(--space-8)');
+  });
+
+  it('reads light text on the dark card', () => {
+    renderRow(mockProject);
+    expect(getCssForElement(screen.getByRole('heading', { name: 'Test Project' }))).toContain(
+      'color: var(--color-card-fg)'
+    );
+    expect(getCssForElement(screen.getByText('A test project description'))).toContain(
+      'color: var(--color-card-fg-muted)'
+    );
+  });
+
+  // The hover rules were removed outright rather than softened, so there is nothing
+  // to assert at runtime: the card must simply declare no hover selector at all.
+  it('does not react to the pointer at all', () => {
+    renderRow(mockProject);
+    const css = getCssForElement(screen.getByRole('article'));
+    expect(css).not.toContain(':hover');
+    expect(css).not.toContain('transition:');
   });
 
   it('takes its height from the strip rather than fixing one', () => {
@@ -103,8 +123,8 @@ it('keeps the fallback inside the same frame so the card does not shift', () => 
     expect(screen.getByTestId('project-icon-fallback')).toBeInTheDocument();
     const frame = getCssForElement(screen.getByTestId('project-icon-frame'));
     expect(frame).toContain('overflow: hidden');
-    expect(frame).toContain('width: 88px');
-    expect(frame).toContain('height: 88px');
+    expect(frame).toContain('width: 120px');
+    expect(frame).toContain('height: 120px');
   });
 
   it('keeps the icon named for assistive technology', () => {
@@ -157,7 +177,23 @@ it('renders every category of the project', () => {
     const action = screen.getByTestId('project-view-action');
     expect(action).toHaveAttribute('href', '/projects/1');
     expect(action).not.toHaveAttribute('target');
-    expect(screen.getByText('Ver')).toBeInTheDocument();
+  });
+
+  it('shows a plus glyph rather than a text label', () => {
+    renderRow(mockProject);
+    const action = screen.getByTestId('project-view-action');
+    expect(screen.getByTestId('plus-icon')).toBeInTheDocument();
+    expect(action).toHaveTextContent('');
+  });
+
+  it('makes the action a round target', () => {
+    renderRow(mockProject);
+    const css = getCssForElement(screen.getByTestId('project-view-action'));
+    expect(css).toContain('width: 48px');
+    expect(css).toContain('height: 48px');
+    expect(css).toContain('border-radius: var(--radius-full)');
+    expect(css).toContain('padding: 0');
+    expect(css).toContain('box-shadow: var(--shadow-focus)');
   });
 
   // The visible label is the bare verb, but a screen reader must still hear where the link
@@ -174,11 +210,11 @@ it('renders every category of the project', () => {
     expect(screen.queryByTestId('arrowRight-icon')).not.toBeInTheDocument();
   });
 
-  it('sets the label in caps with spacing rather than shipping it uppercase', () => {
+  it('ships no uppercase label to style any more', () => {
     renderRow(mockProject);
     const css = getCssForElement(screen.getByTestId('project-view-action'));
-    expect(css).toContain('text-transform: uppercase');
-    expect(css).toContain('letter-spacing');
+    expect(css).not.toContain('text-transform: uppercase');
+    expect(css).not.toContain('letter-spacing');
   });
 
   it('does not render a featured or enlarged layout', () => {

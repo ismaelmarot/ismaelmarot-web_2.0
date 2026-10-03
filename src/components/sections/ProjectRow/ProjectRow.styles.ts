@@ -5,10 +5,10 @@ export const StyledProjectRowItem = styled.div`
   height: 100%;
 `;
 
-/* The card is a full-screen surface now, not a list row, so its height comes
-   from the strip rather than from a fixed value. No border: on the muted section
-   the shadow is the only thing drawing the edge, which is why it needs two
-   spread layers rather than the 2px --shadow-xs this replaced. */
+/* A dark surface on a light section, drawn by shadow alone with no border: dark
+   against #F5F5F7 separates on its own, and the shadow softens the edge.
+   There is deliberately no :hover rule. A dark card does not need to lift, and
+   the request asked for the hover effect gone rather than made subtler. */
 export const StyledProjectRow = styled.article`
   display: flex;
   flex-direction: column;
@@ -16,30 +16,26 @@ export const StyledProjectRow = styled.article`
   height: 100%;
   padding: ${tokens.space[8]};
   border-radius: ${tokens.radii['2xl']};
-  background: var(--color-bg);
+  background: ${tokens.colors.card};
+  color: ${tokens.colors.cardFg};
   box-shadow: var(--shadow-card);
-  transition: transform var(--transition-normal) var(--ease-out),
-    box-shadow var(--transition-normal) var(--ease-out);
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-card-hover);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
-
-    &:hover {
-      transform: none;
-    }
-  }
 `;
 
+/* The icon, the name and the round action share this row on wide screens. Below
+   about 520px a 120px icon plus a 48px action leaves the name almost no room, so
+   the action is moved to its own line instead of being squeezed: it is pinned to
+   the end of its own row and the icon and name stay together above it. */
 export const StyledProjectRowMain = styled.div`
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: ${tokens.space[4]};
+
+  @media (max-width: 519px) {
+    flex: 1;
+    align-content: center;
+    min-height: 0;
+  }
 `;
 
 /* Every icon in src/data/projects.json is a square canvas. Five have slightly
@@ -52,13 +48,19 @@ export const StyledProjectIconFrame = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 88px;
-  height: 88px;
-  flex: 0 0 88px;
+  width: 120px;
+  height: 120px;
+  flex: 0 0 120px;
   overflow: hidden;
-  border-radius: 22px;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
+  /* 22% of the width, the ratio a rounded app-icon tile uses. Scaling with the
+     frame rather than staying at a fixed 22px keeps the same silhouette at 120px
+     that it had at 88px. */
+  border-radius: 26px;
+  /* Translucent white: a solid #D2D2D7 border would read as a bright line on a
+     dark card. The background is a step lighter than the card so the icons whose
+     corners are transparent resolve against a visible tile and not into the card. */
+  border: 1px solid ${tokens.colors.cardBorder};
+  background: ${tokens.colors.cardFrame};
 `;
 
 export const StyledProjectIcon = styled.img`
@@ -73,10 +75,10 @@ export const StyledProjectIconFallback = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 88px;
-  height: 88px;
-  flex: 0 0 88px;
-  color: var(--color-text-tertiary);
+  width: 120px;
+  height: 120px;
+  flex: 0 0 120px;
+  color: ${tokens.colors.cardFgMuted};
 `;
 
 export const StyledProjectName = styled.h3`
@@ -84,39 +86,29 @@ export const StyledProjectName = styled.h3`
   margin: 0;
   font-size: var(--text-card-title);
   font-weight: 600;
-  line-height: 1.15;
+  line-height: 1.1;
   letter-spacing: -0.02em;
-  color: var(--color-text-primary);
+  color: ${tokens.colors.cardFg};
   overflow-wrap: break-word;
 `;
 
+/* A round plus, replacing the labelled "Ver" pill. The visible label went because
+   on a card this dark and this large the pill competed with the project name; the
+   accessible name stayed "Ver <project>" on the element, so the symbol is never
+   the only thing a screen reader has to go on.
+   48px rather than the 44px minimum, to match the scale of the 120px icon. */
 export const StyledProjectAction = styled.a`
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  height: 44px;
-  /* 24px of horizontal padding rather than 16. Without the arrow the label alone rendered
-     the control at 58px wide, a sliver of a pill; the padding gives it back enough body to
-     read as a button without adding anything to say. */
-  padding: ${tokens.space[2]} ${tokens.space[6]};
-  font-family: ${tokens.fonts.sans};
-  font-size: var(--text-label);
-  font-weight: ${tokens.fontWeights.medium};
-  /* Uppercase, and spaced to suit three letters. Set here rather than in the markup so the
-     text stays "Ver" for anything reading the source or the accessible tree. */
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  text-decoration: none;
-  white-space: nowrap;
+  width: 48px;
+  height: 48px;
+  padding: 0;
   border-radius: ${tokens.radii.full};
   background-color: var(--color-accent);
   color: var(--color-white);
-  transition: background-color var(--transition-normal);
-
-  &:hover {
-    background-color: var(--color-accent-hover);
-  }
+  text-decoration: none;
 
   &:focus-visible {
     outline: none;
@@ -129,7 +121,7 @@ export const StyledProjectDescription = styled.p`
   font-size: var(--text-card-body);
   font-weight: 400;
   line-height: 1.6;
-  color: var(--color-text-secondary);
+  color: ${tokens.colors.cardFgMuted};
   /* Clamped at 3 lines so every card is the same height, which is what keeps the
      section filling exactly one screen instead of varying with description length. */
   display: -webkit-box;
@@ -150,13 +142,15 @@ export const StyledProjectBody = styled.div`
   overflow-y: auto;
 `;
 
+/* Holds the round action alone, pinned to the end. On narrow screens this is a
+   row of its own under the icon and name rather than something wedged beside them. */
 export const StyledProjectFooter = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: ${tokens.space[4]};
   padding-top: ${tokens.space[4]};
+  flex-shrink: 0;
 `;
 
 export const StyledProjectCategories = styled.ul`

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   StyledProjects,
   StyledProjectsSection,
@@ -14,6 +15,7 @@ import {
 } from './Projects.styles';
 import { useProjects } from './useProjects';
 import { useProjectsCarousel } from './useProjectsCarousel';
+import { useProjectsAutoAdvance } from './useProjectsAutoAdvance';
 import { ProjectRow } from '@/components/sections/ProjectRow';
 import { ProjectDots } from '@/components/sections/ProjectDots';
 import { ProjectCategoryFilter } from '@/components/sections/ProjectCategoryFilter';
@@ -35,8 +37,18 @@ export const Projects = ({ projects = [] }: ProjectsProps) => {
     hasNoProjectsInCategory,
   } = useProjects(projects);
 
-  const { stripRef, currentIndex, goTo, onScroll, onKeyDown } = useProjectsCarousel({
+  const { stripRef, currentIndex, goTo, step, advance, onScroll, onKeyDown } = useProjectsCarousel({
     count: visibleProjects.length,
+  });
+
+  // Auto-advance holds still while anything in the section holds focus. Watching
+  // the whole section rather than just the strip matters: a visitor who tabs to
+  // the next control has focus here too, and the carousel moving out from under
+  // them would be the worst version of this feature.
+  const [focusInside, setFocusInside] = useState(false);
+  const { playing, toggle, label: playStopLabel } = useProjectsAutoAdvance({
+    onAdvance: advance,
+    pausedForFocus: focusInside,
   });
 
   if (isLoading) {
@@ -103,6 +115,12 @@ export const Projects = ({ projects = [] }: ProjectsProps) => {
       fullViewport={true}
       composition="projects"
       verticalAlign="top"
+      onFocusCapture={() => setFocusInside(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setFocusInside(false);
+        }
+      }}
     >
       <StyledProjectsContainer size="xl" padding="lg">
         <StyledProjects>
@@ -158,6 +176,10 @@ export const Projects = ({ projects = [] }: ProjectsProps) => {
                   currentIndex={currentIndex}
                   names={visibleProjects.map((project) => project.name)}
                   onSelect={goTo}
+                  playing={playing}
+                  playStopLabel={playStopLabel}
+                  onTogglePlay={toggle}
+                  onStep={step}
                 />
               </StyledProjectsDots>
             </>

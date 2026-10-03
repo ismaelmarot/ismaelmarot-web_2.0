@@ -14,6 +14,8 @@ export interface UseProjectsCarouselReturn {
   goTo: (index: number) => void;
   /** Move one card forward or backward, clamped at both ends. */
   step: (delta: number) => void;
+  /** Move one card forward, wrapping from the last back to the first. */
+  advance: () => void;
   /** Attach to the strip's onScroll. */
   onScroll: () => void;
   /** Attach to the strip's onKeyDown. */
@@ -28,6 +30,36 @@ function offsetOf(element: HTMLElement | null, index: number): number {
   // is already in the same coordinate space. Reading it rather than multiplying
   // by an index keeps this correct when the gutter changes with the breakpoint.
   return card.offsetLeft;
+}
+
+/** How far the strip can actually scroll. */
+function maxScrollOf(strip: HTMLElement | null): number {
+  if (!strip) return 0;
+  return Math.max(0, strip.scrollWidth - strip.clientWidth);
+}
+
+/**
+ * Which card the strip is showing, found from the middle of what is visible
+ * rather than from whichever card start is nearest.
+ *
+ * Nearest-by-offset ties on the last card and gets it wrong. The final card
+ * starts at 4160px but the strip can only scroll to 3744px, so the browser clamps
+ * it: the last card fills most of the view yet sits 416px from that start while
+ * the previous card's tail is also 416px away, and the tie goes to the earlier
+ * card. The middle of the viewport has no such ambiguity, because it can only be
+ * inside one card.
+ */
+function indexAtCentre(strip: HTMLElement, count: number): number {
+  const centre = strip.scrollLeft + strip.clientWidth / 2;
+
+  for (let index = 0; index < count; index += 1) {
+    const start = offsetOf(strip, index);
+    const card = strip.children[index] as HTMLElement | undefined;
+    const end = start + (card?.offsetWidth ?? 0);
+    if (centre < end) return index;
+  }
+
+  return Math.max(0, count - 1);
 }
 
 /**
@@ -49,19 +81,8 @@ export function useProjectsCarousel({
     const strip = stripRef.current;
     if (!strip || count === 0) return;
 
-    const scroll = strip.scrollLeft;
-    let closest = 0;
-    let closestDistance = Number.POSITIVE_INFINITY;
-
-    for (let index = 0; index < count; index += 1) {
-      const distance = Math.abs(offsetOf(strip, index) - scroll);
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closest = index;
-      }
-    }
-
-    setCurrentIndex((previous) => (previous === closest ? previous : closest));
+    const next = indexAtCentre(strip, count);
+    setCurrentIndex((previous) => (previous === next ? previous : next));
   }, [count]);
 
   const onScroll = useCallback(() => {
@@ -78,9 +99,13 @@ export function useProjectsCarousel({
     (index: number) => {
       const strip = stripRef.current;
       if (!strip || count === 0) return;
-      const next = Math.min(Math.max(index, 0), count - 1);
-      strip.scrollTo({ left: offsetOf(strip, next), behavior: 'smooth' });
-      setCurrentIndex(next);
+      const clamped = Math.min(Math.max(index, 0), count - 1);
+      // Clamped to what the strip can really scroll: the final card starts beyond
+      // the maximum scroll position, and asking for more than exists lands the
+      // strip short of it, which is how the last dot used to show the wrong card.
+      const left = Math.min(offsetOf(strip, clamped), maxScrollOf(strip));
+      strip.scrollTo({ left, behavior: 'smooth' });
+      setCurrentIndex(clamped);
     },
     [count]
   );
@@ -91,6 +116,17 @@ export function useProjectsCarousel({
     },
     [goTo, currentIndex]
   );
+
+  /**
+   * One step forward, wrapping past the last project back to the first. The arrow
+   * controls deliberately do not use this: stopping at the end is right for a
+   * control a visitor presses, but auto-advance has to come back around or the
+   * carousel would sit on the last card forever.
+   */
+  const advance = useCallback(() => {
+    const next = currentIndex + 1;
+    goTo(next > count - 1 ? 0 : next);
+  }, [goTo, currentIndex, count]);
 
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLUListElement>) => {
@@ -119,5 +155,5 @@ export function useProjectsCarousel({
     []
   );
 
-  return { stripRef, currentIndex, goTo, step, onScroll, onKeyDown };
+  return { stripRef, currentIndex, goTo, step, advance, onScroll, onKeyDown };
 }
