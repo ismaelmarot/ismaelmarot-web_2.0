@@ -86,7 +86,6 @@ export const technologies: Technology[] = [
   { id: 'javascript', name: 'JavaScript', category: 'language', iconSlug: 'javascript' },
   { id: 'html', name: 'HTML', category: 'language', iconSlug: 'html' },
   { id: 'css', name: 'CSS', category: 'language', iconSlug: 'css' },
-  { id: 'sql', name: 'SQL', category: 'language' },
 
   // Frameworks
   { id: 'react', name: 'React', category: 'framework', iconSlug: 'react' },

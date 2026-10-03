@@ -45,11 +45,16 @@ describe('technologies', () => {
     expect(technologies.map((t) => t.id)).not.toContain('playwright');
   });
 
-  // SQL has no icon: it is the one entry left without a slug, and the card is built to
-  // tolerate that.
-  it('leaves at most one technology without a mark', () => {
+  // Every published technology carries its official mark, with no tolerance left. This used to
+  // allow one exception, back when SQL had no slug and sat in the row without a mark; that read
+  // as something having failed to load. If a technology is added without a slug, this fails.
+  it('gives every technology a mark', () => {
     const without = technologies.filter((t: Technology) => !t.iconSlug);
-    expect(without.length).toBeLessThanOrEqual(1);
+    expect(without.map((t: Technology) => t.id)).toEqual([]);
+  });
+
+  it('never publishes SQL, which has no official mark', () => {
+    expect(technologies.map((t: Technology) => t.id)).not.toContain('sql');
   });
 
   it('never points a slug at a mark that does not exist', () => {

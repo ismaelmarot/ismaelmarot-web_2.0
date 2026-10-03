@@ -17,10 +17,12 @@ export const StyledTechnologyCard = styled.div<{ $index?: number }>`
   /* Apple's hairline is a light neutral rather than a colour, and it sits on a raised surface
      rather than standing alone, so the chip gets a shadow as well as an edge. */
   border: 1px solid var(--color-border);
-  /* A 40px-tall chip at 8px reads as a rectangle with softened corners. 16px is the point
-     where it reads as a deliberate pill-shaped chip, and it matches the radius on the
-     contribution tile above so the section keeps one corner language. */
-  border-radius: var(--radius-xl);
+  /* The same pill the "Ver proyecto" action, Button, Badge, ProjectCategoryFilter,
+     SectionSummary and ProjectDetail all use. Written as tokens.radii.full rather than
+     var(--radius-full) so the expression matches those files literally, not just in value.
+     On a 42px chip 9999px resolves to a 21px radius per side, which is a stadium rather than
+     a rounded rectangle, so this needs no separate value for the shorter mobile chip. */
+  border-radius: ${tokens.radii.full};
   box-shadow: var(--shadow-xs);
   font-size: var(--text-body);
   font-weight: 400;
@@ -51,9 +53,9 @@ export const StyledTechnologyCard = styled.div<{ $index?: number }>`
 
   @media (max-width: 767px) {
     padding: ${tokens.space[1]} ${tokens.space[3]};
-    /* The chip is shorter here, so the radius comes down with it: the same 16px on a 30px
-       chip would start to look like a lozenge rather than a rounded card. */
-    border-radius: var(--radius-lg);
+    /* No radius override here. It used to step down to 12px on the shorter chip, which is
+       pointless once the radius is a full pill: 9999px already resolves against whatever the
+       height is, so one value covers every breakpoint. */
     font-size: var(--text-secondary);
   }
 `;
