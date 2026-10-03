@@ -52,14 +52,15 @@ export const StyledMarqueeToggle = styled.button.attrs({ type: 'button' })`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  /* Square, because the control holds a glyph and nothing else. At this size the icon clears
-     3:1 against the section background for a non-text element with room to spare. */
+  /* Square box holding a glyph and nothing else, drawn as a circle. A full radius on a 34px
+     box resolves to 17px per corner, which is exactly a circle, and it matches the pill the
+     control sits among: the rows use --radius-full and so does this. */
   width: 34px;
   height: 34px;
   padding: 0;
   background-color: transparent;
   border: 1px solid var(--color-border);
-  border-radius: ${tokens.radii.md};
+  border-radius: ${tokens.radii.full};
   color: var(--color-text-secondary);
   cursor: pointer;
   /* Deliberately no :hover. The state worth signalling is focus, and the accessible name
