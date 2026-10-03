@@ -18,10 +18,10 @@ describe('Technologies', () => {
 
   it('renders technology categories', () => {
     render(<Technologies technologies={mockTechnologies} />);
-    expect(screen.getByText('Languages')).toBeInTheDocument();
+    expect(screen.getByText('Lenguajes')).toBeInTheDocument();
     expect(screen.getByText('Frameworks')).toBeInTheDocument();
-    expect(screen.getByText('Tools')).toBeInTheDocument();
-    expect(screen.getByText('Databases')).toBeInTheDocument();
+    expect(screen.getByText('Herramientas')).toBeInTheDocument();
+    expect(screen.getByText('Bases de datos')).toBeInTheDocument();
   });
 
   it('renders technology cards', () => {

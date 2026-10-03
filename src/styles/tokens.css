@@ -15,6 +15,22 @@
   --color-accent-text: #0062C4;
   --color-accent-text-hover: #0059B0;
 
+  /* Contribution heatmap. Five buckets, and the ramp starts darker than GitHub's on purpose:
+     a calendar cell is a non-text element, so WCAG 1.4.11 holds it to 3:1 against the
+     section's own background, #F5F5F7. GitHub's own levels 1 and 2 measure 1.32:1 and 2.08:1
+     there and fail. Measured here:
+       nivel 0  #E6E3F5   1.16:1   decorative, an empty day is not a value
+       nivel 1  #8B7BE8   3.16:1
+       nivel 2  #5B4BD6   5.64:1
+       nivel 3  #3E2CA8   9.05:1
+       nivel 4  #241663  14.08:1
+     Adjacent levels differ by at least 1.56:1, so the four steps read apart without a legend. */
+  --contribution-0: #E6E3F5;
+  --contribution-1: #8B7BE8;
+  --contribution-2: #5B4BD6;
+  --contribution-3: #3E2CA8;
+  --contribution-4: #241663;
+
   /* Brand gradients. Each contact card takes the identity of the service it links to, so the
      row reads as three destinations rather than three copies of the same button.
      Every card is a from/to pair rather than one colour, and each pair was measured against

@@ -98,6 +98,13 @@ export interface Technology {
   proficiency?: ProficiencyLevel;
   yearsExperience?: number;
   iconName?: string;
+  /**
+   * Key into the brand marks in src/data/technologies.ts. Kept as a slug rather than a colour
+   * on purpose: the official brand hexes are chosen to be recognisable, not legible, and nine
+   * of them measure under 3:1 on the chip, which would leave the JavaScript and Vitest marks
+   * effectively invisible. The icons render in the interface's ink instead.
+   */
+  iconSlug?: string;
   color?: string;
   displayOrder?: number;
 }

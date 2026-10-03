@@ -15,7 +15,16 @@ export const tokens = {
     accentText: 'var(--color-accent-text)',
     accentTextHover: 'var(--color-accent-text-hover)',
 
-    // Brand gradients, one pair per contact card
+    // Contribution heatmap, empty day first
+  contributions: [
+    'var(--contribution-0)',
+    'var(--contribution-1)',
+    'var(--contribution-2)',
+    'var(--contribution-3)',
+    'var(--contribution-4)',
+  ],
+
+  // Brand gradients, one pair per contact card
     brandEmailFrom: 'var(--brand-email-from)',
     brandEmailTo: 'var(--brand-email-to)',
     brandGithubFrom: 'var(--brand-github-from)',

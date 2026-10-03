@@ -2,6 +2,7 @@ import type { GitHubRepo, FetchConfig, FetchResult, ReleaseInfo, GitHubRelease }
 import { transformGitHubRepo, filterPortfolioRepos } from '../types/github';
 import { parseProfileProjects } from './profile-readme';
 import { projectEditorialMetadata } from './project-metadata';
+import { fetchContributions } from './fetch-contributions';
 import type { Project } from '../types/project';
 
 const GITHUB_API_BASE = 'https://api.github.com';
@@ -274,6 +275,38 @@ async function main() {
   fs.writeFileSync(outputPath, JSON.stringify(result.projects, null, 2));
   console.log(`Successfully fetched ${result.projects.length} projects.`);
   console.log(`Written to ${outputPath}`);
+
+  // The contribution calendar is a separate concern from the project list: it is GraphQL, it
+  // needs a token, and it degrades on its own. A failure here must not take the projects down
+  // with it, so it reports and keeps whatever contributions.json already holds.
+  const contributionsOutput =
+    process.env.OUTPUT_PATH_CONTRIBUTIONS || 'src/data/contributions.json';
+
+  const contributions = await fetchContributions(username, token);
+
+  if (!contributions.success || !contributions.data) {
+    console.warn('  ! Could not fetch the contribution calendar:');
+    for (const error of contributions.errors) {
+      console.warn(`    - ${error}`);
+    }
+    if (fs.existsSync(contributionsOutput)) {
+      console.warn(`    Keeping the existing ${contributionsOutput}.`);
+    } else {
+      console.warn('    No previous file to keep, so the section will render empty.');
+    }
+    return;
+  }
+
+  fs.writeFileSync(
+    contributionsOutput,
+    JSON.stringify(contributions.data, null, 2)
+  );
+  const { summary } = contributions.data;
+  console.log(
+    `Contribution calendar: ${summary.totalContributions} contributions, ` +
+      `${summary.activeDays} active days, streak ${summary.currentStreak}.`
+  );
+  console.log(`Written to ${contributionsOutput}`);
 }
 
 main().catch((error) => {
