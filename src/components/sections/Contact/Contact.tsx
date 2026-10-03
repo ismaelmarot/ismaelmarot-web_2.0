@@ -1,7 +1,6 @@
-import { StyledContact, StyledContactHeader, StyledContactHeadline, StyledContactIntro, StyledContactMethods, StyledContactMethod, StyledContactDivider } from './Contact.styles';
+import { StyledContact, StyledContactHeader, StyledContactHeadline, StyledContactIntro, StyledContactMethods, StyledContactMethod } from './Contact.styles';
 import { useContact } from './useContact';
 import { ContactMethod } from '@/components/sections/ContactMethod';
-import { ContactForm } from '@/components/sections/ContactForm';
 import { Section } from '@/components/common/Section';
 import { Container } from '@/components/common/Container';
 import type { ContactMethod as ContactMethodType } from '@/types/contact';
@@ -41,10 +40,6 @@ export const Contact = ({
               </StyledContactMethod>
             ))}
           </StyledContactMethods>
-
-          <StyledContactDivider role="presentation" />
-
-          <ContactForm />
         </StyledContact>
       </Container>
     </Section>

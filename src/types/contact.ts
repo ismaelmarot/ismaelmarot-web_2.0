@@ -46,37 +46,3 @@ export function getContactHref(method: ContactMethod): string {
 export function isExternalLink(type: ContactType): boolean {
   return type !== 'email';
 }
-/* ---------------------------------------------------------------------------------
- * Contact form
- *
- * The portfolio keeps no visitor data: these live in component state and are cleared
- * after a successful send.
- * -------------------------------------------------------------------------------- */
-
-/** Maximums are declared to the visitor before they type, so the limit is never a surprise. */
-export const CONTACT_FORM_LIMITS = {
-  name: 100,
-  email: 254,
-  message: 2000,
-} as const;
-
-export interface ContactFormValues {
-  name: string;
-  email: string;
-  message: string;
-  consent: boolean;
-}
-
-export type ContactFormValuesKey = keyof ContactFormValues;
-
-/**
- * Where one attempt stands. `sending` is the only state that blocks a further submit,
- * so a retry after a failure needs no extra step.
- */
-export type SubmissionStatus = 'idle' | 'invalid' | 'sending' | 'sent' | 'failed';
-
-/** Only the fields that failed appear, which is what lets each problem be pointed at. */
-export type ValidationErrors = Partial<Record<ContactFormValuesKey, string>>;
-
-/** Why a submission did not reach the service. */
-export type SubmitFailureReason = 'network' | 'timeout' | 'rejected' | 'provider';

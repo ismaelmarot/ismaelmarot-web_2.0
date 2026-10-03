@@ -5,6 +5,11 @@ description: "Task list for feature 007 contact form"
 
 # Tasks: Contact Form
 
+> **Retirada el 2026-10-03.** El formulario se implementó por completo (30 de 38 tareas) y se
+> desplegó, pero se retiró porque el proveedor elegido no entrega desde `*.github.io` en plan
+> gratuito. El código se eliminó del proyecto; estas tareas quedan como registro de lo que se
+> hizo y de por qué no llegó a producción. Ver `spec.md` para el detalle.
+
 **Input**: Design documents from `/specs/007-contact-form/`
 
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/contact-form.md, quickstart.md

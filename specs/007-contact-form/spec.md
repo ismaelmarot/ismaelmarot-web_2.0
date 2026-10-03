@@ -4,7 +4,18 @@
 
 **Created**: 2026-10-03
 
-**Status**: Draft
+**Status**: Retirada
+
+> **Retirada el 2026-10-03.** La implementación se completó, se probó y se desplegó, y luego se
+> retiró. El motivo es que ningún proveedor de relay sin servidor entrega desde un subdominio
+> `*.github.io` en plan gratuito: Web3Forms bloquea ese origen por política de antiabuso y lo
+> documenta como algo que no se aprueba sin plan de pago, y la entrega tampoco se produjo con su
+> segundo modo de envío. Un formulario visible que siempre falla es peor que no tener formulario,
+> así que el contacto queda como métodos directos con enlace `mailto`.
+>
+> El trabajo se conserva en `b4679e0` por si vuelve a hacer falta con un plan de pago, un dominio
+> propio u otro proveedor. Todo el diseño, la validación y los estados eran correctos e
+> independientes del proveedor; solo la entrega no tenía salida gratuita.
 
 **Input**: User description: "Add a contact form to my portfolio website. The website is a static React + TypeScript + Vite application deployed on GitHub Pages. The contact section must allow visitors to send a message to me using: Name, Email, Message, Submit button. The form must: Validate required fields. Validate email format. Show validation errors. Show a loading/submitting state. Prevent duplicate submissions while submitting. Show a success state after a successful submission. Show an error state if submission fails. Be keyboard accessible. Work correctly on desktop, tablet and mobile. Because the website is deployed on GitHub Pages, it must NOT require a custom backend, database, server, or server-side code. Use a third-party service designed for static websites, such as Formspree, Web3Forms, or EmailJS. The implementation should: Use the existing project architecture. Reuse existing components. Reuse existing styled-components and design tokens. Avoid unnecessary dependencies. Avoid introducing a new UI framework. Avoid unrelated refactoring. The contact form should visually match the existing portfolio. Before implementation, inspect the existing codebase and determine the appropriate integration point and architecture. The external form service should be selected during the planning phase based on simplicity, GitHub Pages compatibility, security, and suitability for a personal portfolio."
 

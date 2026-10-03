@@ -14,8 +14,6 @@ export const tokens = {
     accentHover: 'var(--color-accent-hover)',
     accentText: 'var(--color-accent-text)',
     accentTextHover: 'var(--color-accent-text-hover)',
-    danger: 'var(--color-danger)',
-    success: 'var(--color-success)',
 
     // Semantic aliases (new)
     textPrimary: 'var(--color-text-primary)',
@@ -26,8 +24,6 @@ export const tokens = {
     borderDefault: 'var(--color-border-default)',
     interactive: 'var(--color-interactive)',
     interactiveHover: 'var(--color-interactive-hover)',
-    textDanger: 'var(--color-text-danger)',
-    textSuccess: 'var(--color-text-success)',
 
     // Backward compatibility aliases (old token names). The error/errorBg/success/successBg
     // aliases were removed: nothing referenced them, and they all resolved to the accent
