@@ -5,7 +5,9 @@ import {
   StyledContributionsTitle,
   StyledContributionsPeriod,
   StyledContributionsScroller,
+  StyledContributionsContent,
   StyledContributionsGrid,
+  StyledContributionsToday,
   StyledContributionsLegend,
   StyledContributionsLegendScale,
   StyledContributionLegendCell,
@@ -35,6 +37,12 @@ const formatNumber = (value: number): string =>
 const formatTotal = (value: number): string =>
   value === 1 ? '1 contribución en total' : `${formatNumber(value)} contribuciones en total`;
 
+/** The day in words, with no date: the section header already states the period. */
+const describeToday = (count: number): string => {
+  if (count === 0) return 'sin contribuciones';
+  return `${formatNumber(count)} ${count === 1 ? 'contribución' : 'contribuciones'}`;
+};
+
 export const Contributions = ({ data }: ContributionsProps) => {
   const contributions = (data ?? contributionsData) as ContributionsData;
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -61,12 +69,14 @@ export const Contributions = ({ data }: ContributionsProps) => {
   }
 
   /* Compared against the current date rather than assuming the last cell is today: when a build is
-     stale the two diverge, and marking the final cell would present yesterday as today. The stored
-     dates are UTC midnight, so this uses the same basis. */
+     stale the two diverge and both the label and the cell's description would name yesterday. The
+     stored dates are UTC midnight, so this uses the same basis. */
   const today = new Date().toISOString().slice(0, 10);
 
   const { weeks, totalContributions } = contributions.calendar;
   const { summary } = contributions;
+
+  const todayDay = weeks.flatMap((week) => week.days).find((day) => day.date === today);
 
   const firstDay = weeks[0]!.days[0]!.date;
   const lastDay = weeks[weeks.length - 1]!.days.at(-1)!.date;
@@ -99,26 +109,35 @@ export const Contributions = ({ data }: ContributionsProps) => {
           lastDay
         )}. ${formatTotal(totalContributions)}. Desplazamiento horizontal para ver el año completo.`}
       >
-        <StyledContributionsGrid>
-          {/* Flattened into one grid rather than nested per week: the grid already lays itself
-              out in columns of seven, so wrapping each week in a fragment keeps the cells in
-              reading order without adding a layer of elements. */}
-          {weeks.flatMap((week) =>
-            week.days.map((day) => {
-              const isToday = day.date === today;
-              const description = getContributionDescription(day);
-              return (
-                <StyledContributionCell
-                  key={day.date}
-                  $level={getContributionLevel(day.count)}
-                  $isToday={isToday}
-                  title={isToday ? `${description} (hoy)` : description}
-                  aria-label={isToday ? `${description} (hoy)` : description}
-                />
-              );
-            })
+        <StyledContributionsContent data-testid="contributions-content">
+          <StyledContributionsGrid>
+            {/* Flattened into one grid rather than nested per week: the grid already lays itself
+                out in columns of seven, so wrapping each week in a fragment keeps the cells in
+                reading order without adding a layer of elements. */}
+            {weeks.flatMap((week) =>
+              week.days.map((day) => {
+                const isToday = day.date === today;
+                const description = getContributionDescription(day);
+                return (
+                  <StyledContributionCell
+                    key={day.date}
+                    $level={getContributionLevel(day.count)}
+                    title={isToday ? `${description} (hoy)` : description}
+                    aria-label={isToday ? `${description} (hoy)` : description}
+                  />
+                );
+              })
+            )}
+          </StyledContributionsGrid>
+
+          {/* Inside the scroller and sized to the grid, so it lands under today's column at
+              every viewport rather than under the container's right edge. */}
+          {todayDay && (
+            <StyledContributionsToday aria-hidden="true" data-testid="contributions-today">
+              Hoy · {describeToday(todayDay.count)}
+            </StyledContributionsToday>
           )}
-        </StyledContributionsGrid>
+        </StyledContributionsContent>
       </StyledContributionsScroller>
 
       <StyledContributionsLegend>

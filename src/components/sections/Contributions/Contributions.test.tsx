@@ -173,33 +173,62 @@ describe('Contributions most recent day', () => {
     expect(getStrip().scrollLeft).toBe(690);
   });
 
-  it('marks today and only today', () => {
-    render(<Contributions data={fixture([weekEndingToday([5, 1, 0, 2, 3, 1, 2])], 14)} />);
-    const cells = screen.getAllByRole('img');
-    const marked = cells.filter((cell) => shadowOf(cell).includes('inset'));
-    expect(marked).toHaveLength(1);
-    expect(marked[0]).toHaveAccessibleName(expect.stringContaining('(hoy)'));
+  it('names today in words under the grid', () => {
+    render(<Contributions data={fixture([weekEndingToday([5, 1, 0, 2, 3, 1, 4])], 16)} />);
+    const label = screen.getByTestId('contributions-today');
+    expect(label).toHaveTextContent('Hoy · 4 contribuciones');
+    expect(screen.getAllByTestId('contributions-today')).toHaveLength(1);
   });
 
-  it('marks today even when today has no contributions', () => {
+  it('says so plainly when today has no contributions', () => {
     render(<Contributions data={fixture([weekEndingToday([5, 1, 0, 2, 3, 1, 0])], 12)} />);
-    const cells = screen.getAllByRole('img');
-    const marked = cells.filter((cell) => shadowOf(cell).includes('inset'));
-    // An empty cell is the one most in need of the mark, since its colour says nothing.
-    expect(marked).toHaveLength(1);
-    expect(marked[0]).toHaveAccessibleName(expect.stringContaining('Sin contribuciones'));
+    // An empty day is the one most in need of naming, since its colour says nothing at all.
+    expect(screen.getByTestId('contributions-today')).toHaveTextContent(
+      'Hoy · sin contribuciones'
+    );
   });
 
-  it('marks no cell when the calendar does not reach today', () => {
+  it('uses the singular for a single contribution today', () => {
+    render(<Contributions data={fixture([weekEndingToday([5, 1, 0, 2, 3, 1, 1])], 13)} />);
+    expect(screen.getByTestId('contributions-today')).toHaveTextContent('Hoy · 1 contribución');
+  });
+
+  it('does not repeat the date, which the section header already states', () => {
+    render(<Contributions data={fixture([weekEndingToday([0, 0, 0, 0, 0, 0, 4])], 4)} />);
+    const label = screen.getByTestId('contributions-today');
+    expect(label).not.toHaveTextContent('octubre');
+    expect(label).not.toHaveTextContent('2026');
+  });
+
+  it('marks no cell at all, so no tile is distinguished', () => {
+    render(<Contributions data={fixture([weekEndingToday([5, 1, 0, 2, 3, 1, 4])], 16)} />);
+    const cells = screen.getAllByRole('img');
+    // Every cell computes the same, which is the point: the outline read as three different marks
+    // depending on the level, and none of them was a clean edge.
+    const shadows = new Set(cells.map((cell) => shadowOf(cell)));
+    // Identical is the point; jsdom reports an unset box-shadow as an empty string rather than none.
+    expect(shadows.size).toBe(1);
+    expect([...shadows][0] || 'none').toBe('none');
+  });
+
+  it('is not announced, because the cell already says it', () => {
+    render(<Contributions data={fixture([weekEndingToday([0, 0, 0, 0, 0, 0, 4])], 4)} />);
+    // The cell's accessible name is the single authoritative statement.
+    expect(screen.getByTestId('contributions-today')).toHaveAttribute('aria-hidden', 'true');
+    const cells = screen.getAllByRole('img');
+    expect(cells.at(-1)).toHaveAccessibleName(expect.stringContaining('(hoy)'));
+  });
+
+  it('shows no label when the calendar does not reach today', () => {
     // Seven days ENDING yesterday, so the calendar genuinely stops short of today. Starting two
     // days back would still reach today on its fifth day.
     const stale = new Date(`${todayIso}T00:00:00Z`);
     stale.setUTCDate(stale.getUTCDate() - 7);
     const staleIso = stale.toISOString().slice(0, 10);
     render(<Contributions data={fixture([week(staleIso, [1, 2, 3, 1, 2, 3, 1])], 13)} />);
+    // A stale build must not name its last day as today, in words or in a description.
+    expect(screen.queryByTestId('contributions-today')).not.toBeInTheDocument();
     const cells = screen.getAllByRole('img');
-    // A stale build must not present its last day as today.
-    expect(cells.filter((cell) => shadowOf(cell).includes('inset'))).toHaveLength(0);
     expect(cells.some((cell) => (cell.getAttribute('aria-label') ?? '').includes('(hoy)'))).toBe(
       false
     );
@@ -212,12 +241,13 @@ describe('Contributions most recent day', () => {
     expect(cells.at(-2)?.getAttribute('aria-label')).not.toContain('(hoy)');
   });
 
-  it('outlines today inwards, so the scroll container cannot clip it', () => {
-    render(<Contributions data={fixture([weekEndingToday([0, 0, 0, 0, 0, 0, 2])], 2)} />);
-    const shadow = shadowOf(screen.getAllByRole('img').at(-1) as Element);
-    // Two layers so one always contrasts on the purple ramp, and inset so overflow cannot crop it.
-    expect(shadow).toContain('inset 0 0 0 1px var(--color-bg)');
-    expect(shadow).toContain('inset 0 0 0 2px var(--color-fg)');
-    expect(shadow).not.toMatch(/^0 0 0/);
+  it('aligns the label to the grid, not to the scroll container', () => {
+    render(<Contributions data={fixture([weekEndingToday([0, 0, 0, 0, 0, 0, 4])], 4)} />);
+    // The grid is a fixed 686px while the container is not, so the label has to hang off a wrapper
+    // sized to the grid. Aligning to the container put it 420px away at 1440 and 164px at 1024.
+    expect(getCssForElement(screen.getByTestId('contributions-content'))).toContain(
+      'width: max-content'
+    );
+    expect(screen.getByTestId('contributions-today')).toHaveStyle({ textAlign: 'right' });
   });
 });

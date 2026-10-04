@@ -193,3 +193,49 @@ the marking works.
 - **The reduced-motion test asserts the scroll still happens rather than stubbing the media query**,
   because nothing in the component reads it. Pinning the behaviour is the point; the stub would only
   have tested the stub.
+
+---
+
+## Amendment 1: The Cell Is Not Marked; The Grid Is Labelled
+
+Added 2026-10-04, after the outline shipped and was reported as looking wrong. See "Amendment 1" in
+`spec.md` for the four measured reasons and for FR-011 through FR-015 and SC-009 through SC-011.
+
+- [X] A025 Measure which of the two outline layers is actually visible at each of the five levels, and record that level 1 shows both at 3.4 and 4.9, which is the bevel
+- [X] A026 Measure the cell's geometry against its radius and record that a 2px inset on a 2px radius degenerates the inner edge to radius 0
+- [X] A027 Measure the grid against the scroll container at each viewport and record that the grid is a fixed 686px, so a label aligned to the container would sit 420px away at 1440 and 164px at 1024
+- [X] A028 Remove the `$isToday` prop and the box-shadow from `StyledContributionCell` in `src/components/sections/Contributions/Contributions.styles.ts`, so every cell computes identically (FR-011)
+- [X] A029 Add `StyledContributionsContent`, a `width: max-content` wrapper inside the scroll container that holds the grid and the label, and move the grid's own `width: max-content` onto it (FR-013)
+- [X] A030 Add `StyledContributionsToday`, right-aligned under the grid, and render "Hoy · N contribuciones" or "Hoy · sin contribuciones" with no date (FR-012)
+- [X] A031 Mark the label `aria-hidden="true"` and keep "(hoy)" in the cell's accessible name as the single authoritative statement (FR-014)
+- [X] A032 [P] Rewrite the five outline tests into label tests: the text appears once, it reads "sin contribuciones" at zero, it uses the singular at one, it omits the date, all cells share one box shadow, it is `aria-hidden`, it is absent on a stale build, and it hangs off a `max-content` wrapper
+- [X] A033 Run `npm run lint`, `npm run typecheck`, `npm run test`, `npm run test:component` and `npm run build`
+- [X] A034 Verify in the browser that the label's text right edge coincides with today's column at 320, 390, 768, 1024 and 1440, and that the text itself is inside the visible area at each
+- [X] A035 Verify all 365 cells compute one single box-shadow value and that no page-level horizontal overflow appears
+- [X] A036 Run axe at 1440, 390 and 320 and confirm zero violations
+- [X] A037 Commit, push, deploy, and repeat the alignment and axe checks against production
+
+### Verification Results
+
+| Criterion | Result |
+|-----------|--------|
+| SC-009 label aligned to today's column | Pass: `gridRight`, cell right edge and text right edge are the same value at every viewport, 330 at 390px and 854 at 1440px |
+| SC-010 one box shadow across all cells | Pass: 1 distinct computed value, `none`, at every viewport |
+| SC-011 exactly one label, absent when stale | Pass: covered by fixture tests for today, for today at zero, and for a calendar that stops before today |
+| SC-007 axe | Pass: 0 violations at 1440, 390 and 320 |
+| SC-008 full suite | Pass: 91 unit and 314 component |
+
+Measured label text at each viewport: "Hoy · 2 contribuciones", `aria-hidden="true"`, inside the
+visible area at all five sizes, no page overflow at any of them.
+
+### Notes on this amendment
+
+- **A027 is the task that shaped the implementation.** Aligning the label to the scroll container was
+  the obvious construction and it is wrong by 420px on a desktop, because the grid is a fixed 686px
+  while the container is not. Measured first, so the wrapper exists for a reason rather than by habit.
+- **A034 had to measure the text node, not the element.** The label is a block filling the wrapper, so
+  its box spans the whole 686px and its right edge is correct while the text appears inset. A first
+  pass measured the element and reported the label as "not visible" on three viewports, which was a
+  measurement artefact rather than a layout fault. The screenshot was equally misleading at that size.
+- **A032's "one distinct box-shadow value" is a stronger assertion than "no shadow".** It would fail if
+  any cell were distinguished again, whatever colour or technique was used.

@@ -97,6 +97,64 @@ A visitor reads the legend, the period and the four figures to understand the ca
 - **Contribution calendar**: 53 weeks of days, plus the year's total. The unit the strip scrolls over.
 - **Level**: one of five buckets a count falls into, from no activity to the highest, painted in a purple ramp.
 
+## Amendment 1 - The Cell Is Not Marked; The Grid Is Labelled
+
+**Applied**: 2026-10-04, after implementation and deployment.
+
+**Request**: "En Tecnologias > Contribucuiones en GitHub, la nueva contribucion se ve extrana en su diseno o bordes. por que puede ser?"
+
+The two-tone outline was reported as looking wrong, and it was. Four measured reasons, all of them
+consequences of the outline rather than of the data or the scroll:
+
+1. **The outline rendered three different things depending on the level.** Its premise was that no
+   single colour clears 3:1 across the purple ramp, so guaranteeing that *at least one* of two tones
+   contrasts would cover every case. That guarantees a minimum but says nothing about the case where
+   *both* are visible. At level 1 white measures 3.4 and ink 4.9, so both pass and the cell gets a
+   white inner line plus a dark outer line: a bevel. At level 0 the white is invisible at 1.3 and only
+   the ink shows; at levels 2 to 4 the ink is invisible at 2.7, 1.7 and 1.1 and only the white shows.
+   One marker, three appearances.
+2. **Today's cell is level 3, where the white is what shows, and white does not read as an outline.**
+   It measures 9.9:1 against the cell but 1.09:1 against the `#F5F5F7` section, so it was never an
+   edge of the tile; it was a bright frame drawn inside it. On a grid of solid purple tiles, one tile
+   with a white inner frame reads as a hole.
+3. **The outline consumed the cell.** Two pixels of inset on a 10px cell leaves 6x6 of actual colour,
+   so the marked tile stopped matching its neighbours and, being inset, read as recessed.
+4. **The geometry was invalid.** The cell's radius is 2px. A 2px inset outline follows the same 2px arc
+   offset inward, so its inner edge degenerates to radius 0: a square inner corner inside a rounded
+   outer one. At 1px and 2px widths the corners collapse and anti-alias unevenly. This was the "odd
+   borders" as a rendering artefact rather than a matter of taste.
+
+The outline is removed. Today is now labelled with text under the grid instead, which is the more
+honest signal anyway: a cell's colour encodes how much was done and never which day it is.
+
+### Requirements superseded by this amendment
+
+- **FR-003** is superseded. Its premise was right and its solution was wrong: covering every level with
+  at least one of two tones permits the case where both show, and that is the bevel.
+- **FR-004** is superseded. Inset was genuinely necessary, since the scroll container clips an outward
+  outline, but it loses its reason to exist along with the marker.
+
+FR-001, FR-002 and FR-005 through FR-010 stand unchanged.
+
+### Requirements added by this amendment
+
+- **FR-011**: No cell may carry any box shadow. Every cell MUST compute identically, so that no day is
+  distinguished by the tile itself.
+- **FR-012**: Today's count MUST be stated in words under the grid, reading "Hoy · N contribuciones", or
+  "Hoy · sin contribuciones" when the count is zero, and MUST NOT repeat the date.
+- **FR-013**: The label MUST sit inside the horizontal scroll container, in a wrapper sized to the grid's
+  own content width, and MUST be aligned to its right edge. The grid is a fixed 686px at every viewport
+  while the scroll container is not, so aligning to the container would place the label 420px away from
+  today's column at 1440px and 164px away at 1024px.
+- **FR-014**: The label MUST NOT be announced, because it repeats the accessible description the cell
+  already carries. The cell's description remains the single authoritative statement that the day is
+  today.
+- **FR-015**: No label may be rendered when the calendar does not reach today, matching FR-005.
+- **SC-009**: The label's right edge is within 2px of the right edge of today's column, at 320, 390, 768,
+  1024 and 1440.
+- **SC-010**: All 365 cells compute the same box shadow, which is `none`.
+- **SC-011**: Exactly one label is rendered, and it is absent when the calendar does not reach today.
+
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes

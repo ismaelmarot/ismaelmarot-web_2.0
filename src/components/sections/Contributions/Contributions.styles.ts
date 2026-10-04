@@ -75,7 +75,28 @@ export const StyledContributionsGrid = styled.div`
   gap: 3px;
   /* Anchored to the newest week on the right, matching the order people read the data. */
   direction: ltr;
+`;
+
+/* The grid is a fixed 686px at every viewport while the scroll container is not: 1108px at 1440 and
+   274px at 390. This wrapper is what lets the "today" label sit under today's column instead of
+   under the container, which put it 420px away on a desktop and 164px away at 1024. Sized to content
+   so it scrolls with the grid, and block children so the grid keeps its own row template. */
+export const StyledContributionsContent = styled.div`
   width: max-content;
+`;
+
+/* Replaces the outline the cell used to carry. A ring was the wrong signal at this size: it read as
+   three different marks depending on the level, the white layer did not read as an edge against the
+   page, two pixels of it left only 6x6 of the cell's own colour, and a 2px inset on a 2px radius
+   degenerated to a square inner corner. Words say which day it is; a 10px tile cannot.
+   Not announced: the cell's accessible name already states the count and that the day is today. */
+export const StyledContributionsToday = styled.p`
+  margin: ${tokens.space[2]} 0 0;
+  text-align: right;
+  font-family: ${tokens.fonts.sans};
+  font-size: var(--text-secondary);
+  font-weight: ${tokens.fontWeights.medium};
+  color: var(--color-text-secondary);
 `;
 
 /**
@@ -86,7 +107,6 @@ export const StyledContributionsGrid = styled.div`
  */
 export const StyledContributionCell = styled.div.attrs({ role: 'img' })<{
   $level: number;
-  $isToday: boolean;
 }>`
   width: 10px;
   height: 10px;
@@ -94,25 +114,6 @@ export const StyledContributionCell = styled.div.attrs({ role: 'img' })<{
   background-color: ${({ $level }) =>
     tokens.colors.contributions[Math.min($level, tokens.colors.contributions.length - 1)]};
   transition: transform var(--transition-fast) var(--ease-out);
-
-  /* Today's cell is marked rather than coloured, because a cell's colour says how much was done
-     and never which day it is: today with two contributions is the same purple as any other day
-     with two.
-
-     Two tones, because no single colour clears 3:1 across this ramp. Measured against each level:
-     the accent gives 3.7 / 1.4 / 1.3 / 2.1 / 3.3 and dark ink gives 13.4 / 4.9 / 2.7 / 1.7 / 1.1,
-     so each fails at the opposite end from the other. A light hairline over a dark one means one
-     of the two always contrasts.
-
-     Inset, not outset: today is the last cell, so it sits in the rightmost column, and an outward
-     outline would lose its edge to the scroll container's overflow, which offers 2px of room. */
-  ${({ $isToday }) =>
-    $isToday &&
-    `
-      box-shadow:
-        inset 0 0 0 1px var(--color-bg),
-        inset 0 0 0 2px var(--color-fg);
-    `}
 
   &:hover {
     transform: scale(1.35);
