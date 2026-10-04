@@ -196,6 +196,89 @@ SC-014 passes at 4.66:1 for the inactive label, which clears AA by 0.16. It is t
 in this specification: raising `--color-fg-muted` or lightening the section would breach it without
 any test failing. Accepted knowingly.
 
+## Amendment 2 - Category Options Match the Main Navigation
+
+**Applied**: 2026-10-03, after implementation and deployment.
+
+**Request**: "usando SDD. Cambiemos las categorias al siguiente estilo: solo se resalta la palabra igual que en el menu general donde esta Home, Sobre mi, etc..."
+
+Amendment 2 changes the visual model of the same component Amendment 1 restyled, and it supersedes
+three of that amendment's requirements. They are listed below rather than deleted, because the reason
+each one is gone is the substance of this amendment.
+
+### The reference, measured from the live header rather than assumed
+
+| | value |
+|---|---|
+| inactive | `rgb(110, 110, 115)` |
+| active | `rgb(0, 98, 196)` |
+| background | transparent |
+| border | `0px` |
+| padding | `0px` |
+| height | `18px` |
+| font | `12px`, weight 500 |
+
+The active colour is `#0062C4`, not `#0071E3`.
+
+### Why the blue had to change with the style
+
+The previous state filled the active option with `#0071E3` and set its text to white, which measures
+4.70:1 and passes. As soon as the fill is gone and the colour becomes the text itself, `#0071E3`
+measures **4.31:1 against `#F5F5F7` and fails AA at 12px**. This is why the design system already
+separates `--color-accent` from `--color-accent-text`, and why the main navigation already uses the
+darker one. Matching the navigation and passing contrast therefore point at the same value,
+`#0062C4`, at 5.44:1. There was no trade-off to decide.
+
+The consequence is that two blues coexist in the page: the categories will be `#0062C4` while the
+project's `+` action and the carousel's active dot remain `#0071E3`. That is the token system's
+existing distinction between a fill colour and a text colour, not an inconsistency.
+
+### Requirements superseded by this amendment
+
+- **FR-028** is superseded. "Fills with `var(--color-accent)`" no longer applies: there is no fill.
+- **FR-029** is superseded. The option now does react on hover, by colour only.
+- **FR-030** is superseded. Its reason was that the shared focus token is the accent, and the active
+  fill was the accent, so the ring sat against its own background at 1:1. With no fill there is
+  nothing to contrast against. Both states return to the shared token, which measures 4.31:1
+  against the section and clears the 3:1 required of a non-text indicator.
+
+FR-026, FR-027 and the whole of Amendment 1's defect record stand unchanged.
+
+### Requirements added by this amendment
+
+- **FR-031**: The active option MUST mark itself with `var(--color-accent-text)` as text colour, with
+  no background, no border and no shadow.
+- **FR-032**: The inactive option MUST use the same colour, font size and weight as the main
+  navigation's inactive links, which is `var(--color-text-secondary)` at `--text-label` and medium.
+- **FR-033**: Hovering an option MUST change only its text colour: to `var(--color-text-primary)`
+  when inactive and `var(--color-accent-text-hover)` when active. It MUST NOT introduce a border, a
+  shadow or a background.
+- **FR-034**: The option MUST keep a hit area of at least 44px in height. The main navigation's
+  links are 18px tall, and this is a deliberate deviation from the reference: with a transparent
+  background the extra height is invisible, and it is the difference between a valid touch target
+  and a 18px one across seven options.
+- **SC-015**: The active option's text colour equals the main navigation's active link colour.
+- **SC-016**: No option computes a background, a border, or a box shadow while it is neither hovered
+  nor focused.
+- **SC-017**: Hovering changes the option's text colour and nothing else.
+- **SC-018**: Every option remains at least 44px tall and the selector shows no horizontal overflow
+  at 320, 768 and 1440.
+- **SC-019**: The active option's text measures at least 4.5:1 against `#F5F5F7` and the inactive
+  option's at least 4.5:1, and both focus indicators measure at least 3:1.
+
+### Semantic difference from the reference, kept on purpose
+
+The main navigation marks its current link with `aria-current="page"` because it navigates. These
+options filter the list in place, so they keep `aria-pressed`, which is what a toggle button means.
+Only the visual treatment is being matched; the semantics are not, and copying `aria-current` would
+tell assistive technology the page changed when it did not.
+
+### Recorded gap in the reference, not copied
+
+The main navigation declares no `:focus-visible` rule at all, so keyboard users get whatever
+outline the browser draws. These options keep an explicit focus ring instead. Copying the
+navigation's focus handling would import a gap rather than a style.
+
 ## Out of Scope for This Feature
 
 - The project detail page and everything it shows beyond the name: screenshots, viewport and platform icons, description, technologies and version history belong to the project detail feature

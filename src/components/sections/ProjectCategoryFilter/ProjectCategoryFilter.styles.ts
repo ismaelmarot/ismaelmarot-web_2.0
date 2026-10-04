@@ -7,6 +7,20 @@ export const StyledProjectCategoryFilter = styled.div`
   gap: ${tokens.space[2]};
 `;
 
+/**
+ * Visually identical to the main navigation's links: no fill, no border, and the active option is
+ * marked by its text colour alone. Measured from the live header rather than assumed — inactive
+ * #6E6E73, active #0062C4, 12px, weight 500.
+ *
+ * The active colour is `--color-accent-text` and not `--color-accent` because the fill is gone. With
+ * a fill, #0071E3 carried white text at 4.70:1; as 12px text on #F5F5F7 it measures 4.31:1 and fails
+ * AA. This is the same distinction the token system already draws between a fill colour and a text
+ * colour, and the same one the navigation already follows.
+ *
+ * The 44px height is a deliberate deviation from the reference: the navigation's links are 18px tall.
+ * With a transparent background the extra height is invisible, and it is the difference between a
+ * valid touch target and an 18px one across seven options (FR-034).
+ */
 export const StyledProjectCategoryOption = styled.button<{ $active: boolean }>`
   display: inline-flex;
   align-items: center;
@@ -30,31 +44,38 @@ export const StyledProjectCategoryOption = styled.button<{ $active: boolean }>`
      browser; only one survives a test. */
   border: 0;
   border-radius: ${tokens.radii.full};
-  transition: background-color var(--transition-normal), color var(--transition-normal);
+  background-color: transparent;
+  /* Colour only. The background no longer changes between states, so transitioning it
+     would be dead CSS. */
+  transition: color var(--transition-normal);
 
   ${({ $active }) =>
     $active
       ? `
-        background-color: var(--color-accent);
-        color: var(--color-white);
+        color: var(--color-accent-text);
       `
       : `
-        /* Transparent rather than white: the section is #F5F5F7 and a white pill on it
-           measures 1.09:1, so it had no silhouette to begin with. The border was the only
-           thing drawing it. No tone close enough to give it a shape keeps the 12px label
-           above 4.5:1, so the pill is carried by its text and by the filled active state. */
-        background-color: transparent;
         color: var(--color-text-secondary);
       `}
 
+  /* Colour only, exactly like the navigation: no border, no shadow, no fill appears
+     under the pointer (FR-033). Hover darkens rather than lightens, which is what the
+     navigation does so that both states keep meeting AA on this background. */
+  &:hover {
+    ${({ $active }) =>
+      $active
+        ? 'color: var(--color-accent-text-hover);'
+        : 'color: var(--color-text-primary);'}
+  }
+
   &:focus-visible {
     outline: none;
-    /* The shared focus token is the accent, which is also the active fill, so on the
-       active option the ring sat against its own background at 1:1 and indicated
-       nothing. Dark ink measures 3.58:1 against the fill and 15.46:1 against the
-       section, so it is the one colour that reads against either (FR-030). */
-    box-shadow: ${({ $active }) =>
-      $active ? '0 0 0 3px var(--color-fg)' : tokens.shadows.focus};
+    /* Both states share the token again. The dark ring this component needed in
+       Amendment 1 existed only because the active fill was the same blue as the ring,
+       giving 1:1 against its own background. With no fill there is nothing to contrast
+       against, and the shared token measures 4.31:1 against this section, clearing the
+       3:1 a non-text indicator needs. */
+    box-shadow: ${tokens.shadows.focus};
   }
 
   @media (prefers-reduced-motion: reduce) {

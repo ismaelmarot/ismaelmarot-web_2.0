@@ -259,3 +259,40 @@ for FR-026 through FR-030 and SC-011 through SC-014.
 - **A008 compares an option against its earlier width, not against the other options.** The labels
   have different lengths, so "All" is 47px and "Navigation" is 93px regardless of state; comparing
   across options would report a difference that is only the text.
+
+---
+
+## Amendment 2: Category Options Match the Main Navigation
+
+Added 2026-10-03 after implementation and deployment. See the "Amendment 2" section of `spec.md` for
+FR-031 through FR-034 and SC-015 through SC-019, and for the three requirements of Amendment 1 that
+it supersedes.
+
+- [X] A012 Measure the live header's link states instead of assuming them, and record that the active colour is `rgb(0, 98, 196)` rather than `#0071E3`
+- [X] A013 Measure `#0071E3` as 12px text on `#F5F5F7` at 4.31:1 and confirm it fails AA, which is why the active colour becomes `--color-accent-text` at 5.44:1
+- [X] A014 [P] Rewrite `StyledProjectCategoryOption` in `src/components/sections/ProjectCategoryFilter/ProjectCategoryFilter.styles.ts` to carry no fill in either state, mark the active option with `--color-accent-text`, and match the navigation's inactive colour, font size and weight
+- [X] A015 [P] Add the navigation's hover to both states: `--color-text-primary` when inactive and `--color-accent-text-hover` when active, touching colour only
+- [X] A016 Narrow the transition to `color`, since the background no longer changes between states and transitioning it would be dead CSS
+- [X] A017 Return both states to the shared focus ring, which now measures 4.31:1 against the section against the 3:1 a non-text indicator needs
+- [X] A018 [P] Keep the 44px hit area while the reference is 18px, and record it as a deliberate deviation rather than an oversight
+- [X] A019 Rewrite the three Amendment 1 tests that asserted the superseded intent: the accent fill, the absence of hover, and the active option's dark ring
+- [X] A020 [P] Add tests asserting that neither state declares a fill, that the inactive option matches the navigation's colour and type, that the hover rule touches colour only, that the active option darkens on hover, that both states share the focus ring, and that the hit area stays at 44px
+- [X] A021 Run `npm run lint`, `npm run typecheck`, `npm run test`, `npm run test:component` and `npm run build`
+- [X] A022 Verify in the browser that the active colour, font size and weight equal the live navigation's, that no option computes a fill, border or unfocused shadow, and that each hit area is 44px
+- [X] A023 Verify both hover states with a real pointer, checking that nothing but the text colour changes, and confirm axe reports no violations
+- [X] A024 Commit, push and deploy, then confirm the same computed colours on production
+
+### Notes on this amendment
+
+- **A012 avoided a wrong fix.** Assuming the navigation used `--color-accent` would have kept
+  `#0071E3` and produced a state that fails AA at 12px while looking correct.
+- **A014 and A015 supersede two Amendment 1 requirements rather than contradicting them.** The fill
+  and the removed hover were both correct decisions under the pill model, which is no longer the model.
+- **A016 removes CSS rather than adding it.** With no fill change, `background-color` in the
+  transition list was doing nothing.
+- **A019 is three rewrites.** Each of those tests encoded an intent that was right for the pill and
+  wrong for text, so they were changed rather than deleted, and the parts of Amendment 1 they
+  covered that still hold were kept in the surviving tests.
+- **A023 needs a real pointer.** Reading the colour after a scripted click measures the hover state,
+  not the resting one, because the pointer is still over the option. That is why "resting" was checked
+  again after moving the pointer away.
