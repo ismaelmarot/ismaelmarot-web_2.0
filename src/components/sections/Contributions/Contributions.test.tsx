@@ -112,3 +112,112 @@ describe('Contributions', () => {
     expect(container).toBeEmptyDOMElement();
   });
 });
+
+// Added by this feature. The defect was that the strip never moved from its left edge, so today's
+// cell was off-screen on any viewport narrower than the year. None of the seven tests above could
+// see it, because none of them looked at the scroll position.
+describe('Contributions most recent day', () => {
+  const todayIso = new Date().toISOString().slice(0, 10);
+
+  /** A week whose LAST day is today, because today is the final cell of the whole calendar. */
+  const weekEndingToday = (counts: number[]) => {
+    const start = new Date(`${todayIso}T00:00:00Z`);
+    start.setUTCDate(start.getUTCDate() - 6);
+    return week(start.toISOString().slice(0, 10), counts);
+  };
+
+  const shadowOf = (cell: Element) => getComputedStyle(cell).boxShadow;
+
+  /**
+   * jsdom reports scrollWidth and clientWidth as 0 on every element, and the mount effect reads
+   * them before any test code can reach the node. They are therefore defined on the prototype,
+   * before the render, so the effect sees the same geometry a phone would. Computed style is used
+   * for the outline instead of getCssForElement, which returns every rule sharing the element's
+   * generated class and therefore cannot tell one cell from another.
+   */
+  const getStrip = () => screen.getByRole('group', { name: /calendario de contribuciones/i });
+
+  const renderWithStrip = (data: ContributionsData, scrollWidth: number, clientWidth: number) => {
+    Object.defineProperty(HTMLDivElement.prototype, 'scrollWidth', {
+      value: scrollWidth,
+      configurable: true,
+    });
+    Object.defineProperty(HTMLDivElement.prototype, 'clientWidth', {
+      value: clientWidth,
+      configurable: true,
+    });
+    try {
+      render(<Contributions data={data} />);
+    } finally {
+      delete (HTMLDivElement.prototype as unknown as Record<string, unknown>).scrollWidth;
+      delete (HTMLDivElement.prototype as unknown as Record<string, unknown>).clientWidth;
+    }
+  };
+
+  it('opens the strip at its most recent end', () => {
+    renderWithStrip(fixture([weekEndingToday([0, 0, 0, 0, 0, 0, 2])], 2), 690, 274);
+    // 690 is the full year and 274 what a 390px phone shows, so the strip must land at the end.
+    expect(getStrip().scrollLeft).toBe(690);
+  });
+
+  it('opens the strip at its end where the year does not overflow', () => {
+    renderWithStrip(fixture([weekEndingToday([0, 0, 0, 0, 0, 0, 2])], 2), 1108, 1108);
+    // The assignment is a no-op without overflow and must not throw or go negative.
+    expect(getStrip().scrollLeft).toBeGreaterThanOrEqual(0);
+  });
+
+  it('still opens the strip under reduced motion, because a jump is not an animation', () => {
+    // Nothing reads the media query: the scroll is an instant assignment, not an animation, so it
+    // has to happen under reduced motion too. This pins that so nobody smooths it later.
+    renderWithStrip(fixture([weekEndingToday([0, 0, 0, 0, 0, 0, 2])], 2), 690, 274);
+    expect(getStrip().scrollLeft).toBe(690);
+  });
+
+  it('marks today and only today', () => {
+    render(<Contributions data={fixture([weekEndingToday([5, 1, 0, 2, 3, 1, 2])], 14)} />);
+    const cells = screen.getAllByRole('img');
+    const marked = cells.filter((cell) => shadowOf(cell).includes('inset'));
+    expect(marked).toHaveLength(1);
+    expect(marked[0]).toHaveAccessibleName(expect.stringContaining('(hoy)'));
+  });
+
+  it('marks today even when today has no contributions', () => {
+    render(<Contributions data={fixture([weekEndingToday([5, 1, 0, 2, 3, 1, 0])], 12)} />);
+    const cells = screen.getAllByRole('img');
+    const marked = cells.filter((cell) => shadowOf(cell).includes('inset'));
+    // An empty cell is the one most in need of the mark, since its colour says nothing.
+    expect(marked).toHaveLength(1);
+    expect(marked[0]).toHaveAccessibleName(expect.stringContaining('Sin contribuciones'));
+  });
+
+  it('marks no cell when the calendar does not reach today', () => {
+    // Seven days ENDING yesterday, so the calendar genuinely stops short of today. Starting two
+    // days back would still reach today on its fifth day.
+    const stale = new Date(`${todayIso}T00:00:00Z`);
+    stale.setUTCDate(stale.getUTCDate() - 7);
+    const staleIso = stale.toISOString().slice(0, 10);
+    render(<Contributions data={fixture([week(staleIso, [1, 2, 3, 1, 2, 3, 1])], 13)} />);
+    const cells = screen.getAllByRole('img');
+    // A stale build must not present its last day as today.
+    expect(cells.filter((cell) => shadowOf(cell).includes('inset'))).toHaveLength(0);
+    expect(cells.some((cell) => (cell.getAttribute('aria-label') ?? '').includes('(hoy)'))).toBe(
+      false
+    );
+  });
+
+  it('describes today in words, so the mark is not visual only', () => {
+    render(<Contributions data={fixture([weekEndingToday([0, 0, 0, 0, 0, 0, 2])], 2)} />);
+    const cells = screen.getAllByRole('img');
+    expect(cells.at(-1)?.getAttribute('aria-label')).toContain('(hoy)');
+    expect(cells.at(-2)?.getAttribute('aria-label')).not.toContain('(hoy)');
+  });
+
+  it('outlines today inwards, so the scroll container cannot clip it', () => {
+    render(<Contributions data={fixture([weekEndingToday([0, 0, 0, 0, 0, 0, 2])], 2)} />);
+    const shadow = shadowOf(screen.getAllByRole('img').at(-1) as Element);
+    // Two layers so one always contrasts on the purple ramp, and inset so overflow cannot crop it.
+    expect(shadow).toContain('inset 0 0 0 1px var(--color-bg)');
+    expect(shadow).toContain('inset 0 0 0 2px var(--color-fg)');
+    expect(shadow).not.toMatch(/^0 0 0/);
+  });
+});

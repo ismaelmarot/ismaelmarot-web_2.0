@@ -84,13 +84,35 @@ export const StyledContributionsGrid = styled.div`
  * received it. As an image the cell exposes the label as its accessible name, which is exactly
  * the intent, and the role is invisible in the accessibility tree beyond that name.
  */
-export const StyledContributionCell = styled.div.attrs({ role: 'img' })<{ $level: number }>`
+export const StyledContributionCell = styled.div.attrs({ role: 'img' })<{
+  $level: number;
+  $isToday: boolean;
+}>`
   width: 10px;
   height: 10px;
   border-radius: 2px;
   background-color: ${({ $level }) =>
     tokens.colors.contributions[Math.min($level, tokens.colors.contributions.length - 1)]};
   transition: transform var(--transition-fast) var(--ease-out);
+
+  /* Today's cell is marked rather than coloured, because a cell's colour says how much was done
+     and never which day it is: today with two contributions is the same purple as any other day
+     with two.
+
+     Two tones, because no single colour clears 3:1 across this ramp. Measured against each level:
+     the accent gives 3.7 / 1.4 / 1.3 / 2.1 / 3.3 and dark ink gives 13.4 / 4.9 / 2.7 / 1.7 / 1.1,
+     so each fails at the opposite end from the other. A light hairline over a dark one means one
+     of the two always contrasts.
+
+     Inset, not outset: today is the last cell, so it sits in the rightmost column, and an outward
+     outline would lose its edge to the scroll container's overflow, which offers 2px of room. */
+  ${({ $isToday }) =>
+    $isToday &&
+    `
+      box-shadow:
+        inset 0 0 0 1px var(--color-bg),
+        inset 0 0 0 2px var(--color-fg);
+    `}
 
   &:hover {
     transform: scale(1.35);

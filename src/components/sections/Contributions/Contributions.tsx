@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react';
 import {
   StyledContributions,
   StyledContributionsHeader,
@@ -36,12 +37,33 @@ const formatTotal = (value: number): string =>
 
 export const Contributions = ({ data }: ContributionsProps) => {
   const contributions = (data ?? contributionsData) as ContributionsData;
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
+  /* The strip is wider than any phone, so the browser leaves it at the far left, which is the
+     oldest week of the year. Today's cell sat 416px away at 390px wide and 486px at 320px: the
+     data was always right and the cell was simply off-screen, which is why this read as "no
+     pushes today" rather than as a scroll problem. GitHub's own graph opens at the recent end.
+
+     useLayoutEffect rather than useEffect so the jump happens before the first paint; with the
+     passive effect the browser would show the oldest month for a frame before correcting itself.
+     Assigning scrollLeft is not an animation, so it needs no reduced-motion branch, and where
+     there is no overflow the assignment is a no-op rather than an error. Mount only: re-running it
+     on re-render would fight a visitor who has scrolled the strip themselves. */
+  useLayoutEffect(() => {
+    const strip = scrollerRef.current;
+    if (strip) strip.scrollLeft = strip.scrollWidth;
+  }, []);
 
   // The whole section hides itself when the build could not fetch a calendar. An empty grid
   // would read as a year without work, which is the opposite of what happened.
   if (!contributions?.calendar?.weeks?.length) {
     return null;
   }
+
+  /* Compared against the current date rather than assuming the last cell is today: when a build is
+     stale the two diverge, and marking the final cell would present yesterday as today. The stored
+     dates are UTC midnight, so this uses the same basis. */
+  const today = new Date().toISOString().slice(0, 10);
 
   const { weeks, totalContributions } = contributions.calendar;
   const { summary } = contributions;
@@ -68,6 +90,7 @@ export const Contributions = ({ data }: ContributionsProps) => {
       </StyledContributionsHeader>
 
       <StyledContributionsScroller
+        ref={scrollerRef}
         tabIndex={0}
         role="group"
         aria-label={`Calendario de contribuciones de ${contributions.username}, de ${formatPeriod(
@@ -81,14 +104,19 @@ export const Contributions = ({ data }: ContributionsProps) => {
               out in columns of seven, so wrapping each week in a fragment keeps the cells in
               reading order without adding a layer of elements. */}
           {weeks.flatMap((week) =>
-            week.days.map((day) => (
-              <StyledContributionCell
-                key={day.date}
-                $level={getContributionLevel(day.count)}
-                title={getContributionDescription(day)}
-                aria-label={getContributionDescription(day)}
-              />
-            ))
+            week.days.map((day) => {
+              const isToday = day.date === today;
+              const description = getContributionDescription(day);
+              return (
+                <StyledContributionCell
+                  key={day.date}
+                  $level={getContributionLevel(day.count)}
+                  $isToday={isToday}
+                  title={isToday ? `${description} (hoy)` : description}
+                  aria-label={isToday ? `${description} (hoy)` : description}
+                />
+              );
+            })
           )}
         </StyledContributionsGrid>
       </StyledContributionsScroller>
