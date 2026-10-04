@@ -225,3 +225,37 @@ Task: "Replace the card with the row in Projects.tsx"
 - T007 is marked parallel because the resolver only needs the value sets, not the metadata file contents
 - No `research.md`, `data-model.md`, `contracts/` or `quickstart.md` exist for this feature; the task list is derived from `spec.md` and `plan.md`
 - The interim destination of the row action is the project repository until the project detail feature ships; changing it later is confined to that one navigation target
+---
+
+## Amendment 1: Borderless Category Options
+
+Added 2026-10-03 after implementation and deployment. See the "Amendment 1" section of `spec.md`
+for FR-026 through FR-030 and SC-011 through SC-014.
+
+- [X] A001 [P] Decode the border behaviour and confirm the active option was rendering the user-agent default `2px outset`, since only `border-color` was declared there while the base declared no `border` at all
+- [X] A002 Measure the inactive option against the `#F5F5F7` section and confirm the white fill measured 1.09:1, so the 1px border was the only thing drawing its silhouette
+- [X] A003 Measure the focus ring against the active fill and confirm the shared accent token gave 1:1, making the indicator invisible exactly where it was needed
+- [X] A004 Declare `border: 0` on the base button in `src/components/sections/ProjectCategoryFilter/ProjectCategoryFilter.styles.ts`, so no state branch can reintroduce the default border (FR-026)
+- [X] A005 Drop `border-color` from the active branch and set the inactive fill to `transparent`, removing the hover tint (FR-027, FR-028, FR-029)
+- [X] A006 Give the active option a focus ring of `0 0 0 3px var(--color-fg)`, which measures 3.58:1 against its own fill and 15.46:1 against the section, while the inactive option keeps the shared token (FR-030)
+- [X] A007 [P] Add tests in `src/components/sections/ProjectCategoryFilter/ProjectCategoryFilter.test.tsx` asserting the base declares no border, that exactly one border declaration exists in either state, that the active fill is the accent with no border, that the inactive fill is transparent with no hover, that every box shadow belongs to a focus indicator, and that the active ring is the dark one
+- [X] A008 [P] Verify each option keeps its own width when its state changes, using a real pointer click rather than a scripted one (SC-011)
+- [X] A009 [P] Verify the focus ring with a real Tab keypress, because `:focus-visible` does not match a programmatic `.focus()` (SC-013)
+- [X] A010 Run `npm run lint`, `npm run typecheck`, `npm run test`, `npm run test:component` and `npm run build`
+- [X] A011 Confirm axe reports no violations, and commit, push and deploy, then confirm the same computed styles on production
+
+### Notes on this amendment
+
+- **A004 writes `border: 0`, not `border: none`.** cssstyle, the CSS parser jsdom uses, cannot
+  represent the keyword and silently rewrites it to the initial `border: medium`, which would make
+  the regression untestable. Both spellings are identical to a browser.
+- **A007 asserts a count rather than an absence.** Asserting that the CSS does not contain the
+  substring `border:` would also match `border-radius`, and asserting `not.toContain('border:')`
+  cannot distinguish "the base declares none" from "no branch declares any". Counting the
+  declarations answers the question actually being asked.
+- **A009 exists because the first attempt to verify SC-013 proved nothing.** Focusing with
+  `element.focus()` does not make `:focus-visible` match in Chromium, so the ring read as `none` on
+  both states and the check would have passed for the wrong reason.
+- **A008 compares an option against its earlier width, not against the other options.** The labels
+  have different lengths, so "All" is 47px and "Navigation" is 93px regardless of state; comparing
+  across options would report a difference that is only the text.

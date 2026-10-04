@@ -129,6 +129,73 @@ New work appears in the profile README before it has been curated, and not every
 - **SC-009**: No project appears in a different position depending on the selected category
 - **SC-010**: The Projects section introduces no regression in accessibility conformance or in page load performance compared with its current state
 
+## Amendment 1 - Borderless Category Options
+
+**Applied**: 2026-10-03, after implementation and deployment.
+
+**Request**: "En la seccion de Proyectos, las categorias no deben tener efecto de border o shadow, al hacer onclick. El color de active al hacerles click debe ser el mismo celeste que en el resto de la aplicacion."
+
+Recorded as an amendment rather than a new specification because it revises the visual states of a
+component this feature already owns. No behaviour, data or public API changes; the six categories,
+the "All" option, the keyboard operation and the filtering semantics of FR-006 through FR-014 are
+untouched.
+
+### Three defects found while inspecting, only one of which was the request
+
+1. **The active option rendered `border: 2px outset`.** The base button declared no `border` at
+   all, the inactive branch declared `border: 1px solid`, and the active branch declared only
+   `border-color` — which sets a colour while leaving `border-width` and `border-style` at their
+   initial value. The browser therefore applied its own default button border. Two consequences:
+   an outset moulding appeared, and the active option measured 2px wider than the others, so
+   selecting a category visibly resized its own pill.
+2. **The inactive options had no visible shape.** The section is `#F5F5F7` and an inactive option
+   is white, which is 1.09:1. The 1px border was the only thing defining the pill's silhouette.
+   No near-white fill can do better: `#EAF3FE` measures 1.03:1 and every darker tone
+   (`#E4EFFC` at 1.07:1, `#DEEBFA` at 1.11:1) drops the 12px label below AA.
+3. **The focus ring was invisible on the active option.** `--shadow-focus` is
+   `0 0 0 3px var(--color-accent)`, the same `#0071E3` as the active fill, so the indicator sat
+   against its own background at 1:1. This predates the request.
+
+The active colour was already correct and needed no change: the active option, the project's `+`
+action and the carousel's active dot all resolve to `rgb(0, 113, 227)`. What made the active state
+look wrong on click was the outset border, not the colour.
+
+### Requirements added by this amendment
+
+- **FR-026**: The option button MUST declare `border: none` on its base, so that no user-agent
+  default border can apply in any state. Declaring it on the base rather than per state is
+  deliberate: it makes the defect unreachable by any future branch.
+- **FR-027**: Neither the active nor the inactive option MUST render a border, and neither MUST
+  render a box shadow except as a focus indicator.
+- **FR-028**: The active option MUST fill with `var(--color-accent)` and MUST keep its text white.
+  This is unchanged from the shipped behaviour and is restated because the request named the colour.
+- **FR-029**: The inactive option MUST have a transparent background and MUST NOT change appearance
+  on hover. This aligns it with the project cards and the carousel controls, which no longer react
+  to the pointer.
+- **FR-030**: The active option's focus indicator MUST contrast with its own fill at no less than
+  3:1. A ring the same colour as the fill is not an indicator.
+- **SC-011**: The active option measures exactly the same width as the inactive ones, so selecting
+  a category does not resize any pill.
+- **SC-012**: No option computes a border in either state, and no option computes a box shadow while
+  it is not focused.
+- **SC-013**: The active option's focus indicator measures at least 3:1 against its own fill.
+- **SC-014**: The inactive label measures at least 4.5:1 against the `#F5F5F7` section, and the
+  active label at least 4.5:1 against its fill.
+
+### Accepted consequence
+
+With no border, no fill and no hover, an inactive option has no silhouette: it renders as grey text
+on `#F5F5F7`. This is the segmented-control pattern, where only the selected option is filled, but
+it is less discoverable than a chip. The only remaining cue that the options are pressable is the
+pointer cursor and the filled active option. This was chosen over a hairline border and over a hover
+tint, and it is the first thing to revisit if the control reads as plain text in use.
+
+### Recorded fragility
+
+SC-014 passes at 4.66:1 for the inactive label, which clears AA by 0.16. It is the tightest number
+in this specification: raising `--color-fg-muted` or lightening the section would breach it without
+any test failing. Accepted knowingly.
+
 ## Out of Scope for This Feature
 
 - The project detail page and everything it shows beyond the name: screenshots, viewport and platform icons, description, technologies and version history belong to the project detail feature
