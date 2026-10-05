@@ -1,4 +1,5 @@
 import {
+  StyledHeroSection,
   StyledHeroBand,
   StyledHeroIdentity,
   StyledHero,
@@ -9,7 +10,6 @@ import {
   StyledHeroCta,
 } from './Hero.styles';
 import { useHero } from './useHero';
-import { Section } from '@/components/common/Section';
 import { Container } from '@/components/common/Container';
 import { Link } from 'react-router-dom';
 
@@ -44,19 +44,21 @@ export const Hero = ({
   const { ctaRef, secondaryCtaRef } = useHero();
 
   return (
-    <Section
+    <StyledHeroSection
       id="hero"
       ariaLabel="Hero"
       size="xl"
       background="default"
       fullViewport={true}
       composition="hero"
-      verticalAlign="center"
+      verticalAlign="top"
     >
       {/* The band is a sibling of the container, not a child, so that it can span the full
           viewport width. Nesting a Container inside it keeps the gutters identical to the rest
           of the page instead of repeating the numbers here and letting them drift. */}
-      <StyledHeroBand data-testid="hero-band">
+      {/* data-header-contrast is how the fixed header finds this band by itself: the header is
+          mounted in the layout, above the page, so it cannot be told about this from a prop. */}
+      <StyledHeroBand data-testid="hero-band" data-header-contrast="dark">
         <Container size="xl" padding="lg">
           <StyledHeroIdentity>
             <StyledHeroHeadline as="h1">
@@ -89,6 +91,6 @@ export const Hero = ({
           </StyledHeroContent>
         </StyledHero>
       </Container>
-    </Section>
+    </StyledHeroSection>
   );
 };

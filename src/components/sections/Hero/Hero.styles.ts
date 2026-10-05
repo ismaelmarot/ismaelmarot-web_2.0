@@ -1,5 +1,31 @@
 import styled, { css } from 'styled-components';
 import { tokens } from '@/styles/tokens';
+import { Section } from '@/components/common/Section';
+
+/* The Hero section with its top padding removed, so the band can start at y:0 and the fixed header
+   rests on black instead of over white.
+
+   The vertical alignment was the actual obstacle, not the padding: `verticalAlign` defaults to
+   `center`, which centred the whole content block inside the viewport and put the band at y:161 on a
+   1440px screen even though padding-top is only 80px. Removing the padding alone would have left it
+   at y:81.
+
+   The bottom padding is declared here rather than left to `size="xl"` because `padding-block` and
+   `padding-top` are both single properties, and which one wins comes down to stylesheet order.
+   Stating it removes the ambiguity. The values mirror what `size="xl"` provided: 80px from 1024 up,
+   48px between 768 and 1023, 40px below 768. */
+export const StyledHeroSection = styled(Section)`
+  padding-top: 0;
+  padding-bottom: ${tokens.space[20]};
+
+  @media (max-width: 1023px) {
+    padding-bottom: ${tokens.space[12]};
+  }
+
+  @media (max-width: 767px) {
+    padding-bottom: ${tokens.space[10]};
+  }
+`;
 
 /* The name and the title sit on this band, which is a direct child of the Hero section so that
    `width: 100%` already equals the viewport's client width. It is deliberately NOT `100vw`: that unit
@@ -42,6 +68,10 @@ export const StyledHero = styled.div`
   width: 100%;
   display: flex;
   justify-content: center;
+  /* Centres this block in whatever space is left below the band. The section now aligns to the
+     top so the band can reach y:0, which means the centring that used to come from the section has
+     to come from here instead. */
+  margin-block: auto;
 `;
 
 export const StyledHeroContent = styled.div`

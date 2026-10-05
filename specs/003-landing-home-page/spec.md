@@ -221,6 +221,101 @@ and the buttons stay exactly where they were, on white. Nothing is added, remove
 
 ---
 
+## Amendment 2 - The Band Reaches the Top and the Header Turns With It
+
+**Applied**: 2026-10-04, after implementation and deployment.
+
+**Request**: "Quiero que esa banda negra ocupe hasta arriba de todo. la barra de navegacion, al estar
+arriba de todo deberia verse en el mismo negro con tipografia blanca. Al hacer scroll y salir de la
+seccion con fondo negro deberia pasar al blanco que tiene ahora. Ademas, sin borde inferior: solo
+deberia tener el borde al pasar a fondo blanco."
+
+Amendment 1 made the band full width. This amendment makes it full height as well, so the fixed header
+rests on it, and gives the header a dark treatment while it does.
+
+### Why the band was not at the top, and why padding was not the reason
+
+Measured, the band sat at y=161 on a 1440px viewport while the section's padding-top is 80px. The
+other 81px came from `verticalAlign`, which defaults to `center`: the content block was centred inside
+the viewport, so the band could never reach the top. Removing the padding alone would have left it at
+y=81. The section therefore switches to `top` alignment, and the content below the band takes
+`margin-block: auto` so the tagline and the buttons stay centred in the space that remains, which is
+where they sat before.
+
+The section's bottom padding is then declared explicitly rather than left to `size="xl"`. `padding-block`
+and `padding-top` are both single properties whose order in the cascade decides the result, and leaving
+it to `size="xl"` would make the override depend on stylesheet order.
+
+### Why the switch cannot be a scroll offset
+
+The existing threshold is `window.scrollY > 20`, which exists because the hero was white. With a black
+band of 355px at 1440, a threshold of 20 would turn the header white while the band was still behind
+it. The switch is therefore driven by geometry: the header is dark while the region's bottom edge is
+below the header's own bottom edge.
+
+Measured thresholds, being the band height less the header's 52px:
+
+| Viewport | Band height | Switch at |
+|----------|-------------|-----------|
+| 1440 | 355px | 303px |
+| 1024 | 300px | 248px |
+| 390 | 212px | 160px |
+
+### Every colour in the header failed on black
+
+This was the largest part of the change and it was not obvious from the request. Measured against
+`#000000`:
+
+| Element | Colour today | Contrast | Result |
+|---------|--------------|----------|--------|
+| Logo | `#1D1D1F` | 1.25:1 | fails |
+| Navigation items | `#6E6E73` | 4.14:1 | fails |
+| GitHub CTA | `#0062C4` | 3.54:1 | fails |
+
+All three had to change. Because every style in the header subtree already references `var(--color-*)`
+rather than a literal, the whole treatment is a set of custom property overrides on the header itself,
+which cascade to the navigation, the brand and the menu button. No prop is threaded down and
+`Navigation`'s public API does not change.
+
+### Requirements added by this amendment
+
+- **FR-023**: The band MUST begin at the top of the document with no gap, so that the fixed header
+  rests on it rather than over white.
+- **FR-024**: While the header overlaps a region marked `data-header-contrast="dark"`, it MUST use a
+  `#000000` background, white text, and NO bottom border.
+- **FR-025**: When the header stops overlapping that region, it MUST return to the light treatment it
+  has today: white background, dark text and a 1px bottom border.
+- **FR-026**: Pages without a dark region MUST NOT change behaviour at all.
+- **FR-027**: Text over the dark region MUST be `#FFFFFF`, which measures 21:1.
+- **FR-028**: Every interactive element in the header MUST keep a visible hover and focus state over the
+  dark region.
+- **FR-029**: The switch MUST be driven by the region's bottom edge crossing the header's bottom edge,
+  and MUST NOT be a fixed scroll offset.
+- **SC-015**: The band starts at y:0 at 320, 390, 768, 1024, 1280, 1440 and 1600.
+- **SC-016**: At `scrollY` 0 and at `scrollY` 150 on a 390px viewport, the header is black with white
+  text and a zero bottom border.
+- **SC-017**: Past the measured threshold, the header is white with dark text and a 1px bottom border.
+- **SC-018**: On `/projects` and `/about`, the header behaves exactly as it did before.
+- **SC-019**: axe reports zero violations, and no header text measures below 4.5:1 against the black.
+
+### White leaves no room to brighten, so hover became an underline
+
+The header's existing hover moves a link from `--color-text-secondary` to `--color-text-primary`,
+which is a subtle darkening on a light background. Over black, with everything white, there is nothing
+brighter to move to. Hover is therefore expressed as an underline, introduced through a single custom
+property that defaults to `none`, so the light theme does not change by a single pixel.
+
+### Accepted consequences
+
+- **The GitHub CTA loses its colour distinction.** With everything white it reads like a navigation
+  item, distinguishable only by its underline on hover. This follows from the choice of white for the
+  whole palette. Leaving the CTA at `#4DA3FF`, which measures 8:1 on black, would restore it.
+- **The tagline and buttons move up by 161px on a 1440px viewport**, because the band now occupies the
+  space the vertical centring used to leave at the top. The Hero's vertical composition changes as a
+  direct result of the header resting on the band.
+
+---
+
 ## Assumptions
 
 - The existing design tokens, typography scale, and color palette will be reused without modification

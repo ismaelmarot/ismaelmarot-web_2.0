@@ -348,3 +348,63 @@ The section now measures exactly 640 of 640 at 320x640.
 - **The section's own `size="xl"` padding is 40px at 320**, which was part of what made the narrow case
   tight. It was left alone rather than reduced, because it belongs to the shared Section component and
   changing it would move every page.
+
+---
+
+## Amendment 2: The Band Reaches the Top and the Header Turns With It
+
+Added 2026-10-04, after implementation and deployment. See "Amendment 2" in `spec.md` for FR-023
+through FR-029 and SC-015 through SC-019.
+
+- [X] A013 [P] Measure why the band was not at the top: it sat at y:161 on a 1440px viewport against 80px of section padding, so 81px came from `verticalAlign` centring the content block, not from the padding
+- [X] A014 [P] Measure every colour currently in the header against `#000000` and confirm all three fail: logo 1.25:1, navigation 4.14:1, GitHub CTA 3.54:1
+- [X] A015 [P] Confirm every colour in the Header and Navigation styles is already a `var(--color-*)`, so a dark treatment can cascade without prop drilling or changing Navigation's API
+- [X] A016 [P] Measure where the switch has to happen, being the band height less the header's 52px: 303px at 1440, 248px at 1024, 160px at 390
+- [X] A017 Confirm the mobile menu is portaled to `document.body`, outside the header subtree, so it keeps its white panel without any of the dark treatment reaching it
+- [X] A018 Add `StyledHeroSection` in `src/components/sections/Hero/Hero.styles.ts` with `padding-top: 0` and the bottom padding declared explicitly, and switch the Hero to `verticalAlign="top"`
+- [X] A019 Give `StyledHero` in the same file `margin-block: auto` so the tagline and buttons stay centred in the space below the band
+- [X] A020 Mark the band `data-header-contrast="dark"` so the header can find it without being told from a prop
+- [X] A021 Rewrite `src/components/layout/Header/useHeader.ts` to add `overDark`, driven by the region's bottom edge against the header's own height, with the element cached and re-resolved only when disconnected
+- [X] A022 Add the `$overDark` branch to `StyledHeader` in `src/components/layout/Header/Header.styles.ts`: black, no border, and the custom property overrides that cascade to the brand, navigation and menu button
+- [X] A023 [P] Introduce `--link-hover-decoration`, defaulting to `none`, in `src/components/layout/Navigation/Navigation.styles.ts` and the CTA in the header, so white text has a hover that works and the light theme does not change
+- [X] A024 [P] Add five Header tests covering the dark treatment, that 150px of scroll does not turn it white, the boundary in both directions, and that a page with no dark region is untouched
+- [X] A025 Run `npm run lint`, `npm run typecheck`, `npm run test`, `npm run test:component` and `npm run build`
+- [X] A026 Verify the band starts at y:0 at 320, 390, 768, 1024, 1280, 1440 and 1600 with no horizontal overflow
+- [X] A027 Verify the header at 390px is black with no border at scrollY 0, 100 and 150, and white with a 1px border at 200 and 400, which brackets the measured 160px threshold
+- [X] A028 Verify `/projects`, `/about` and `/technologies` are unchanged: transparent at the top, white with a border when scrolled
+- [X] A029 Verify the nav items and CTA resolve to white over the black band, and that a real hover produces the underline with a 4px offset
+- [X] A030 Run axe on the home page and confirm zero violations
+
+### Verification Results
+
+| Criterion | Result |
+|-----------|--------|
+| SC-015 band at y:0 | Pass at 320, 390, 768, 1024, 1280, 1440 and 1600, with zero horizontal overflow at each |
+| SC-016 black at the top | Pass: at 390px the header is `rgb(0,0,0)` with a 0px border at scrollY 0, 100 and 150, logo `rgb(255,255,255)` |
+| SC-017 light past the threshold | Pass: white with a 1px border at scrollY 200 and 400, which brackets the measured 160px |
+| SC-018 other pages unchanged | Pass: `/projects`, `/about` and `/technologies` are transparent at the top and white with a border when scrolled |
+| SC-019 contrast and axe | Pass: logo 21:1, all header text `#FFFFFF`, axe 0 violations |
+
+Hover over the black band resolves to white text with `underline` and a 4px offset, and the light
+theme's own hover is untouched.
+
+### Notes on this amendment
+
+- **A013 corrected an assumption before it became a bug.** The band's top edge was 81px lower than the
+  section's padding accounted for, and the cause was vertical centring rather than padding. Removing
+  the padding alone would have left the band at y:81 with a white gap under the header, which is the
+  symptom this amendment is about.
+- **A014 is why this was not a one-line change.** Three of the header's colours fail on black, so
+  "make the header dark" meant recolouring the brand, the navigation and the CTA, not just its
+  background.
+- **A015 is why there are no new props.** Because every colour in the subtree was already a custom
+  property, the treatment is a block of overrides on the header and nothing else changes shape.
+- **A023 exists because white has nowhere to brighten to.** The existing hover darkens from
+  `--color-text-secondary` to `--color-text-primary`; with both white there is no visible change, so the
+  affordance became an underline behind a property that defaults to `none`.
+- **The Header tests stub two things jsdom does not implement.** `offsetHeight` is always 0, which
+  would collapse the switch to `bottom > 0`, and `window.scrollTo` does not move `scrollY`. Both are
+  stubbed to the real values, 52px and a set scrollY, so the boundary is exercised rather than
+  approximated. An earlier version of the test also appended a second region instead of moving the
+  first, which meant `querySelector` kept returning the original and the test passed for the wrong
+  reason.

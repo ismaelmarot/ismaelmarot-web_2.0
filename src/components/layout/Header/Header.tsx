@@ -33,7 +33,7 @@ export interface HeaderProps extends HTMLAttributes<HTMLElement> {
 export const Header = forwardRef<HTMLElement, HeaderProps>(
   ({ navigation, cta, sticky = true, transparent = true, className, ...props }, ref) => {
     const innerRef = useRef<HTMLDivElement>(null);
-    const { isScrolled, menuOpen, toggleMenu, closeMenu, isCompact } =
+    const { isScrolled, overDark, menuOpen, toggleMenu, closeMenu, isCompact } =
       useHeader(innerRef);
 
     return (
@@ -42,6 +42,7 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
         $sticky={sticky}
         $transparent={transparent}
         $isScrolled={isScrolled}
+        $overDark={overDark}
         className={className}
         {...props}
       >

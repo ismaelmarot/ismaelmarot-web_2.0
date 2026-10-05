@@ -61,6 +61,11 @@ export const StyledNavItem = styled.a<{ $variant?: 'header' | 'mobile' | 'footer
 
   &:hover {
     color: ${tokens.colors.textPrimary};
+    /* Defaults to none, so the light theme is untouched. The header sets it to underline only while
+       it is over a dark region, where every colour is white and the colour hover has nothing to
+       move to. */
+    text-decoration: var(--link-hover-decoration, none);
+    text-underline-offset: 4px;
   }
 
   ${({ $variant }) =>
