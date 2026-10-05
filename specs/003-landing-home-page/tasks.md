@@ -408,3 +408,52 @@ theme's own hover is untouched.
   approximated. An earlier version of the test also appended a second region instead of moving the
   first, which meant `querySelector` kept returning the original and the test passed for the wrong
   reason.
+
+---
+
+## Amendment 3: The Hero Is Distributed Like the Rest of the Page
+
+Added 2026-10-04, after the report that the name and title sat too high. See "Amendment 3" in
+`spec.md` for FR-030 through FR-034 and SC-020 through SC-024.
+
+- [X] A031 [P] Measure the vertical balance of every section on the Home page and confirm the Hero was the only one unbalanced at 0 above and 322 below, against 319/318 on three sections and 208/207 on the fourth
+- [X] A032 [P] Confirm the header's 52px is hardcoded in `StyledInner` with no token, which is why the band had no way to reserve it
+- [X] A033 Add `--header-height: 52px` to `src/styles/tokens.css` and use it for the header's height, so the header and the band read the same value
+- [X] A034 Move `margin-block: auto` from `StyledHero` to a new `StyledHeroBody` wrapping the content `Container`, because auto margins only distribute free space on a flex item and the Container is the section's direct child
+- [X] A035 [P] Set the band's top padding to `calc(var(--header-height) + var(--space-12))`, and `+ var(--space-8)` below 768px, leaving 48px and 32px of clearance under the header
+- [X] A036 [P] Keep the band's bottom padding on the 64px scale, matching the `padding-block` of the four summary sections
+- [X] A037 [P] Rewrite the Amendment 1 test that asserted a single fluid `padding-block`, since the top and bottom are now separate declarations, and add tests for the derived top padding, the 64px bottom and the placement of the centring margins
+- [X] A038 Run `npm run lint`, `npm run typecheck`, `npm run test`, `npm run test:component` and `npm run build`
+- [X] A039 Verify the clearance between the header's bottom edge and the name's top at 320, 390, 768, 1024, 1280, 1440 and 1600, and confirm the two never overlap
+- [X] A040 Verify the Hero's empty space above and below its content matches to within 1px at every one of those widths
+- [X] A041 Capture the Home page at 1440 and 390 and inspect the composition before committing
+
+### Verification Results
+
+| Criterion | Result |
+|-----------|--------|
+| SC-020 clearance between 32 and 64px | Pass: 48px at 768 and above, 32px below, at all seven widths |
+| SC-021 name never overlaps the header | Pass: name at y:100 against a header ending at y:52, and y:84 against y:52 on mobile |
+| SC-022 empty space balanced within 1px | Pass: 103/103 at 1440, 66/66 at 1280, 79/79 at 1024, 253/253 at 768, 167/167 at 390, 3/3 at 320 |
+| SC-023 band full width and at y:0 | Pass: y:0 and viewport width at all seven widths, unchanged by this amendment |
+| SC-024 suite | Pass: 91 unit and 327 component |
+
+### A measurement that first reported a false defect
+
+The first pass reported the Hero 24 to 40px out of balance at every width, which would have meant the
+fix did not work. It did not: the difference was exactly the band's own `margin-bottom` at each
+breakpoint, 40px at 1440, 35 at 1024, 27 at 768 and 24 at 390, which the measurement was counting as
+"empty above". The margin sits between the band and the content, so it is not part of the free space
+the auto margins distribute. Once excluded, every width balances to the pixel.
+
+### Notes on this amendment
+
+- **A031 is why this was a bug and not a preference.** Four sections sat at 319/318 and one at 0/322.
+  A design decision does not look like that next to its neighbours; a broken declaration does.
+- **A034 is the whole defect in one line.** Auto margins distribute free space on a flex item.
+  `StyledHero` is a grandchild, so the declaration was inert, and an inert declaration reads as a layout
+  that happens to be top-aligned rather than as an error.
+- **A033 is the smallest change that makes the relationship maintainable.** Writing `100px` would have
+  been one character shorter and would have broken silently the day the header changed height.
+- **A037 rewrites a test rather than deleting it.** The Amendment 1 test asserted a single fluid
+  `padding-block`, which is correct for that design and wrong for this one.

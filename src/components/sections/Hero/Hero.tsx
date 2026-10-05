@@ -1,5 +1,6 @@
 import {
   StyledHeroSection,
+  StyledHeroBody,
   StyledHeroBand,
   StyledHeroIdentity,
   StyledHero,
@@ -69,7 +70,7 @@ export const Hero = ({
         </Container>
       </StyledHeroBand>
 
-      <Container size="xl" padding="lg">
+      <StyledHeroBody size="xl" padding="lg" data-testid="hero-body">
         <StyledHero>
           <StyledHeroContent>
             <StyledHeroTagline as="p" $variant="description">{tagline}</StyledHeroTagline>
@@ -90,7 +91,7 @@ export const Hero = ({
             )}
           </StyledHeroContent>
         </StyledHero>
-      </Container>
+      </StyledHeroBody>
     </StyledHeroSection>
   );
 };

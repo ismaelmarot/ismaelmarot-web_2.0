@@ -314,6 +314,85 @@ property that defaults to `none`, so the light theme does not change by a single
   space the vertical centring used to leave at the top. The Hero's vertical composition changes as a
   direct result of the header resting on the band.
 
+## Amendment 3 - The Hero Is Distributed Like the Rest of the Page
+
+**Applied**: 2026-10-04.
+
+**Request**: "Ismael Marot + Web Developer quedo muy arriba. Utilizando metodologia SDD y practicas
+profecionales de diseno web, fijate de distribuir mejor la seccion home para una vista profesional
+estilo appe."
+
+This is a defect report rather than a preference, and measuring confirmed it. The Hero was the only
+section on the page whose content was not vertically balanced.
+
+### The cause was a misplaced declaration, not a taste difference
+
+Amendment 2 gave the content below the band `margin-block: auto`, intending to centre it in the space
+that remained. Auto margins only distribute free space on a flex item, and `StyledHero` is a grandchild
+of the section: the direct child is the `Container`. The declaration therefore did nothing at all. The
+content began immediately after the band's margin, at 395px, which is 355 plus 40.
+
+Measured against the other sections, all of which centre their content with `padding-block: 64px`:
+
+| Section | Empty above | Empty below |
+|---------|-------------|-------------|
+| **hero** | **0px** | **322px** |
+| projects-summary | 319px | 318px |
+| technologies-summary | 208px | 207px |
+| about-summary | 319px | 318px |
+| contact-summary | 319px | 318px |
+
+Four sections at 319/318 and the Hero at 0/322 is not a design position, it is a broken one.
+
+### The band also crowded the fixed header
+
+The name began at y:64 with the fixed header ending at y:52, leaving 12px. On a 390px viewport the
+name began at y:40, which is above the header's own bottom edge. A fixed header floating over the band
+means the band has to reserve the header's height plus breathing room.
+
+### The measure, and why it is derived rather than written
+
+The clearance between a fixed element and the content beneath it should be one step of the spacing
+scale, not an arbitrary number. The header's 52px is currently hardcoded in `StyledInner` and exists
+nowhere as a token, so this amendment introduces `--header-height` and expresses the band's top padding
+as the header's height plus a spacing step:
+
+- 768px and up: `calc(var(--header-height) + var(--space-12))`, which is 52 + 48 = **100px**
+- below 768px: `calc(var(--header-height) + var(--space-8))`, which is 52 + 32 = **84px**
+
+Deriving it means that if the header's height ever changes, the band follows it instead of silently
+breaking. The resulting clearances are 48px and 32px, both on the scale.
+
+The band's bottom padding stays at 64px, matching the `padding-block` of the four other sections. The
+asymmetry between 100 above and 64 below is deliberate: the name and title sit slightly above the
+band's optical centre to compensate for the fixed header above them. That is optical balancing.
+
+### Requirements added by this amendment
+
+- **FR-030**: The Hero's content below the band MUST be vertically distributed in the space that
+  remains, by placing the auto margins on the section's direct flex child rather than on a descendant.
+- **FR-031**: The band's top padding MUST be `calc(var(--header-height) + spacing)` at every viewport, so
+  the name never sits closer to the header than one spacing step.
+- **FR-032**: `--header-height` MUST be a token, used both by the header and by the band, so the two
+  cannot drift apart.
+- **FR-033**: The band's bottom padding MUST stay at 64px, matching the other sections.
+- **FR-034**: The Hero's empty space above and below its content MUST be within 1px of each other at
+  1440px and at 390px, which is the balance the other four sections already achieve.
+- **SC-020**: The clearance between the header's bottom edge and the name's top is between 32px and
+  64px at 320, 390, 768, 1024, 1280, 1440 and 1600.
+- **SC-021**: The name's top is below the header's bottom edge at every one of those widths, so the two
+  never overlap.
+- **SC-022**: The empty space above and below the tagline-and-buttons block differ by no more than 1px
+  at 1440px and 390px.
+- **SC-023**: The band still spans the viewport width and still starts at y:0.
+- **SC-024**: The full suite passes, including the tests written for Amendments 1 and 2.
+
+### Deliberately unchanged
+
+The name stays at 112px. It measures 629px inside a 1280px container, so it sits on one line with
+room to spare, and the report was about position rather than size. Reducing it would cost impact
+without fixing anything. The other four sections are already balanced and are not touched.
+
 ---
 
 ## Assumptions

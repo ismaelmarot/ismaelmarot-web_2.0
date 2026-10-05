@@ -68,7 +68,8 @@ export const StyledInner = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 52px;
+  /* From the token, so the Hero band can reserve the same height and the two cannot drift apart. */
+  height: var(--header-height);
   padding-inline: var(--space-6);
   max-width: var(--container-xl);
   margin-inline: auto;

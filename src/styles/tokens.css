@@ -170,6 +170,11 @@
   --bp-tablet: 1024px;
   --bp-desktop: 1280px;
 
+  /* Header height. The header is fixed and floats over the Hero's black band, so the band has to
+     reserve its height plus a spacing step or the name ends up underneath it. Expressed as a token so
+     the two cannot drift apart: it was hardcoded in StyledInner and the band needed the same number. */
+  --header-height: 52px;
+
   /* Z-Index Scale */
   --z-base: 0;
   --z-dropdown: 100;

@@ -120,13 +120,35 @@ describe('Hero identity band', () => {
     );
   });
 
-  // Fluid rather than stepped: 64px from 1000px up, down to a 40px floor. A fixed 48px below
-  // 768px pushed the Hero 22px past a 320x640 viewport, because the name wraps to two lines there.
-  it('gives the band fluid vertical padding, capped at the specified 64px', () => {
+  // Rewritten by Amendment 3. The single fluid padding-block this asserted no longer exists: the top
+  // is now derived from the header height and the bottom stays on its own scale, because the band
+  // has to clear a fixed header above it. The bottom keeps the fluid floor that stopped a fixed 48px
+  // pushing the Hero 22px past a 320x640 viewport, where the name wraps to two lines.
+  it('derives the top padding from the header height, not from a fixed number', () => {
     renderHero();
     const css = cssOf(screen.getByTestId('hero-band'));
-    expect(css).toContain('padding-block: clamp(var(--space-10), 6.4vw, var(--space-16))');
-    expect(css).not.toContain('@media (max-width: 767px)');
+    expect(css).toContain('padding-top: calc(var(--header-height) + var(--space-12))');
+    expect(css).toContain('@media (max-width: 767px)');
+    expect(css).toContain('padding-top: calc(var(--header-height) + var(--space-8))');
+    // Hardcoding 100 would break silently if the header ever changed height.
+    expect(css).not.toContain('padding-top: 100px');
+  });
+
+  it('keeps the bottom padding on the scale, matching the summary sections', () => {
+    renderHero();
+    expect(cssOf(screen.getByTestId('hero-band'))).toContain(
+      'padding-bottom: clamp(var(--space-10), 6.4vw, var(--space-16))'
+    );
+  });
+
+  // Amendment 2 put margin-block: auto on StyledHero, which is a grandchild of the section. Auto
+  // margins only distribute free space on a flex item, so it did nothing and the content sat under
+  // the band with 322px of empty space beneath it.
+  it('puts the centring margins on the section direct child, not a descendant', () => {
+    renderHero();
+    const body = screen.getByTestId('hero-body');
+    expect(getCssForElement(body)).toContain('margin-block: auto');
+    expect(getCssForElement(screen.getByTestId('hero-band'))).not.toContain('margin-block: auto');
   });
 
   it('leaves a gap under the band so the tagline does not touch the black', () => {

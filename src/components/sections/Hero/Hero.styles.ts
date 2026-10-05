@@ -1,6 +1,7 @@
 import styled, { css } from 'styled-components';
 import { tokens } from '@/styles/tokens';
 import { Section } from '@/components/common/Section';
+import { Container } from '@/components/common/Container';
 
 /* The Hero section with its top padding removed, so the band can start at y:0 and the fixed header
    rests on black instead of over white.
@@ -14,6 +15,15 @@ import { Section } from '@/components/common/Section';
    `padding-top` are both single properties, and which one wins comes down to stylesheet order.
    Stating it removes the ambiguity. The values mirror what `size="xl"` provided: 80px from 1024 up,
    48px between 768 and 1023, 40px below 768. */
+/* The auto margins belong HERE, on the Container, which is the section's direct flex child.
+   Amendment 2 put them on StyledHero, which is a grandchild, and auto margins only distribute free
+   space on a flex item: the declaration did nothing at all. The result was the content sitting
+   immediately below the band with 322px of empty space underneath it, the only section on the page
+   that was not vertically balanced. The other four centre theirs and sit at 319/318. */
+export const StyledHeroBody = styled(Container)`
+  margin-block: auto;
+`;
+
 export const StyledHeroSection = styled(Section)`
   padding-top: 0;
   padding-bottom: ${tokens.space[20]};
@@ -38,13 +48,22 @@ export const StyledHeroSection = styled(Section)`
 export const StyledHeroBand = styled.div`
   width: 100%;
   background: #000000;
-  /* 64px, as specified, and reached from 1000px up. Below that it scales down to a 40px floor
-     rather than stepping at a breakpoint, because a fixed 48px under 768px pushed the Hero
-     22px past the viewport at 320x640: the name wraps to two lines there, because "Ismael
-     Marot" at the 56px minimum of --text-display-hero measures 318px inside a 288px gutter, and
-     the extra band padding spent the slack the section used to have. One fluid value fixes the
-     narrow case without a second breakpoint to keep in sync. */
-  padding-block: clamp(${tokens.space[10]}, 6.4vw, ${tokens.space[16]});
+
+  /* Top: the header is fixed and floats over this band, so the band reserves its height plus one
+     spacing step. Derived rather than written, so a change to --header-height carries the band
+     with it instead of silently overlapping. That leaves 48px of clearance at 768px and up, 32px
+     below, both on the spacing scale. Before this the name sat 12px under the header at 1440 and
+     at 390 it began above the header's own bottom edge.
+
+     Bottom: 64px, the same padding-block the four summary sections use. 100 above and 64 below is
+     asymmetric on purpose: the name and title sit slightly above the band's optical centre to
+     compensate for the fixed header above them. */
+  padding-top: calc(var(--header-height) + ${tokens.space[12]});
+  padding-bottom: clamp(${tokens.space[10]}, 6.4vw, ${tokens.space[16]});
+
+  @media (max-width: 767px) {
+    padding-top: calc(var(--header-height) + ${tokens.space[8]});
+  }
   /* 40px of white between the black surface and the tagline, matching the gap the CTA group
      already uses below the tagline. With the band's own 64px of padding the title sits further
      from the tagline than the tagline sits from the buttons, which is the asymmetry a banded hero
