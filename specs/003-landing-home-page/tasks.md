@@ -457,3 +457,50 @@ the auto margins distribute. Once excluded, every width balances to the pixel.
   been one character shorter and would have broken silently the day the header changed height.
 - **A037 rewrites a test rather than deleting it.** The Amendment 1 test asserted a single fluid
   `padding-block`, which is correct for that design and wrong for this one.
+
+---
+
+## Amendment 4: The Band Is a Proportion of the Screen
+
+Added 2026-10-04, after the report that the band still occupied too little space. See "Amendment 4" in
+`spec.md` for FR-035 through FR-038 and SC-025 through SC-028.
+
+- [X] A042 [P] Measure the band's share of the viewport and confirm it was content-driven: 43% at 1440x900 and 30% at 390x844
+- [X] A043 [P] Confirm the remaining 45% still has to hold the tagline, buttons and gaps, which is 183px plus 80px of section padding at 1440
+- [X] A044 Add `min-height: 55dvh` with the content centred to `StyledHeroBand`, so the black is a proportion of the screen rather than a by-product of the type inside it
+- [X] A045 [P] Add a `max-height: 720px` fallback that drops the minimum, because at 320x640 the 55% plus the content below overshot the screen by 34px
+- [X] A046 [P] Add three Hero tests for the proportional height, the short-viewport fallback and the centring
+- [X] A047 Run `npm run lint`, `npm run typecheck`, `npm run test`, `npm run test:component` and `npm run build`
+- [X] A048 Verify the band's share and the content's balance at 320, 390, 768, 1024, 1280, 1440 and 1600
+- [X] A049 Capture 1440, 768 and 390 and inspect the composition, since a proportional band moves the name and the clearance had to be judged by eye
+
+### Verification Results
+
+| Criterion | Result |
+|-----------|--------|
+| SC-025 band share | Pass: 55% at 768 and above, 49% at 320, which is the short-viewport fallback |
+| SC-026 balance within 1px | Pass: 51/51, 32/32, 36/36, 114/114, 63/63 and 3/3, all exact |
+| SC-027 no overflow at 320x640 | Pass: section 640 of 640, down from 674 |
+| SC-028 suite | Pass: 91 unit and 329 component |
+
+### The trade this amendment makes, stated plainly
+
+Centring the content inside a taller band moves the name down: from y:100 to y:152 at 1440px, and to
+y:238 at 768px where the band is tallest relative to its content. The clearance from the fixed header
+grows from 48px to 100px, and to 186px at 768px.
+
+That was inspected at 1440, 768 and 390 before shipping and reads as deliberate poster spacing. It is
+the direct consequence of making the black a proportion of the screen rather than a wrapper around two
+lines of type, and the two goals cannot both be had: a band that is 55% of the screen and a name
+hugging the header are incompatible.
+
+### Notes
+
+- **A042 is why this was a second amendment rather than a tweak.** Amendment 3 fixed the balance, and
+  the report that followed was about presence, not balance. Measuring separated the two: the layout was
+  correct and the proportion was wrong.
+- **A045 is scoped to one size on purpose.** Only 320x640 breaks, because that is where the name wraps
+  to two lines and the description takes three. A `min-height` fallback below 720px of height costs
+  nothing at any other tested size, since none of them are that short.
+- **A049 is why clearance was judged visually.** 186px reads as generous at 768 and as a defect at
+  390. The number alone could not decide it, so the captures were inspected before shipping.

@@ -395,6 +395,59 @@ without fixing anything. The other four sections are already balanced and are no
 
 ---
 
+## Amendment 4 - The Band Is a Proportion of the Screen
+
+**Applied**: 2026-10-04.
+
+**Request**: "sigue ocupando poco espacio"
+
+Amendment 3 balanced the Hero correctly, and the report that followed was not about balance but
+about presence. Measuring confirmed it: the band was sized entirely by its content, so it covered 43%
+of a 900px viewport and only 30% of an 844px phone. A dark region that occupies under a third of a
+phone screen reads as a text block with padding, not as the black surface the rest of the design
+implies.
+
+### The measure
+
+The band now carries `min-height: 55dvh` and centres its content, so the black is a deliberate
+proportion of the screen rather than a by-product of the type inside it. `min-height` rather than
+`height`, so a viewport too short to hold 55% grows to fit its content instead of clipping the name.
+
+55% rather than a larger share for two reasons: the remaining 45% still has to hold the tagline, the
+buttons and their gaps, which is 183px plus 80px of section padding at 1440px; and the dark region has
+nothing below the title, so past roughly half the screen the black stops framing the name and starts
+reading as emptiness.
+
+Centring the content inside the taller band moves the name down, from y:100 to y:152 at 1440px. The
+clearance from the fixed header therefore grows from 48px to about 100px, and to 186px at 768px where
+the band is tallest relative to its content. That was checked visually at 1440, 768 and 390 and reads
+as deliberate poster spacing rather than as a defect.
+
+### Short viewports fall back to content height
+
+At 320x640 the arithmetic breaks in one place only: the 55% is 352px, the content below needs a
+further 250px, and there the name wraps to two lines and the description takes three. The section
+overshot the screen by 34px. Below a viewport height of 720px the band reverts to content-driven
+height, which measures 312px of black, 49% of the viewport, and puts the section back at exactly
+640 of 640.
+
+### Requirements added by this amendment
+
+- **FR-035**: The band MUST occupy a proportion of the viewport rather than only its content height.
+- **FR-036**: The band's height MUST be a minimum rather than a fixed height, so a short viewport grows
+  to fit its content instead of clipping the name.
+- **FR-037**: The name and title MUST be centred within the band.
+- **FR-038**: Below a viewport height of 720px the band MUST fall back to content-driven height, so the
+  Hero never exceeds one screen.
+- **SC-025**: The band measures between 49% and 55% of the viewport height at 320, 390, 768, 1024,
+  1280, 1440 and 1600.
+- **SC-026**: The Hero's empty space above and below its content still matches to within 1px at every
+  one of those widths.
+- **SC-027**: The Hero never exceeds the viewport height at 320x640, the tightest case.
+- **SC-028**: The suite passes, including the tests written for Amendments 1, 2 and 3.
+
+---
+
 ## Assumptions
 
 - The existing design tokens, typography scale, and color palette will be reused without modification

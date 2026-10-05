@@ -49,20 +49,37 @@ export const StyledHeroBand = styled.div`
   width: 100%;
   background: #000000;
 
+  /* The band is a statement, so it is sized as a proportion of the screen rather than by its
+     content. Content-driven height left it at 43% of a 900px viewport and only 30% of an 844px
+     phone, which read as a text block with padding rather than as the dark region the rest of the
+     design implies. 55dvh gives the black real presence at every size and still leaves 45% for the
+     tagline and buttons, which is enough for their 183px plus the gaps.
+
+     min-height rather than height, so a viewport too short to hold 55% still grows to fit its
+     content instead of clipping the name. At 320x640 the band is 352 of 640. */
+  min-height: 55dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
   /* Top: the header is fixed and floats over this band, so the band reserves its height plus one
      spacing step. Derived rather than written, so a change to --header-height carries the band
-     with it instead of silently overlapping. That leaves 48px of clearance at 768px and up, 32px
-     below, both on the spacing scale. Before this the name sat 12px under the header at 1440 and
-     at 390 it began above the header's own bottom edge.
-
-     Bottom: 64px, the same padding-block the four summary sections use. 100 above and 64 below is
-     asymmetric on purpose: the name and title sit slightly above the band's optical centre to
-     compensate for the fixed header above them. */
+     with it instead of silently overlapping. With the content centred inside the band this is what
+     guarantees the name clears the header even when the band is at its minimum. */
   padding-top: calc(var(--header-height) + ${tokens.space[12]});
   padding-bottom: clamp(${tokens.space[10]}, 6.4vw, ${tokens.space[16]});
 
   @media (max-width: 767px) {
     padding-top: calc(var(--header-height) + ${tokens.space[8]});
+  }
+
+  /* Short viewports fall back to content-driven height. At 320x640 the 55% is 352px and the
+     content below needs a further 250px, so the section overshot the screen by 34px; there the
+     name wraps to two lines and the description takes three, which is why the arithmetic only
+     breaks at that size. Letting the band size to its own content keeps the section at one
+     screen and still gives it 312px of black, 49% of the viewport. */
+  @media (max-height: 720px) {
+    min-height: 0;
   }
   /* 40px of white between the black surface and the tagline, matching the gap the CTA group
      already uses below the tagline. With the band's own 64px of padding the title sits further

@@ -134,6 +134,25 @@ describe('Hero identity band', () => {
     expect(css).not.toContain('padding-top: 100px');
   });
 
+  // Amendment 4. The band was sized by its content, which left it at 43% of a 900px viewport and
+  // 30% of an 844px phone: a text block with padding rather than the dark region the design implies.
+  it('gives the band a proportion of the viewport, not just its content height', () => {
+    renderHero();
+    const css = cssOf(screen.getByTestId('hero-band'));
+    expect(css).toContain('min-height: 55dvh');
+    // min-height rather than height, so a short viewport grows to fit instead of clipping.
+    expect(css).not.toMatch(/^\s*height:/m);
+    expect(css).toContain('justify-content: center');
+  });
+
+  it('falls back to content height on a short viewport', () => {
+    renderHero();
+    const css = cssOf(screen.getByTestId('hero-band'));
+    // At 320x640 the 55% plus the content below overshot the screen by 34px.
+    expect(css).toContain('@media (max-height: 720px)');
+    expect(css).toContain('min-height: 0');
+  });
+
   it('keeps the bottom padding on the scale, matching the summary sections', () => {
     renderHero();
     expect(cssOf(screen.getByTestId('hero-band'))).toContain(
