@@ -1,4 +1,6 @@
 import {
+  StyledHeroBand,
+  StyledHeroIdentity,
   StyledHero,
   StyledHeroContent,
   StyledHeroHeadline,
@@ -51,13 +53,23 @@ export const Hero = ({
       composition="hero"
       verticalAlign="center"
     >
-      <Container size="xl" padding="lg">
-        <StyledHero>
-          <StyledHeroContent>
+      {/* The band is a sibling of the container, not a child, so that it can span the full
+          viewport width. Nesting a Container inside it keeps the gutters identical to the rest
+          of the page instead of repeating the numbers here and letting them drift. */}
+      <StyledHeroBand data-testid="hero-band">
+        <Container size="xl" padding="lg">
+          <StyledHeroIdentity>
             <StyledHeroHeadline as="h1">
               <span>{name}</span>
             </StyledHeroHeadline>
             <StyledHeroTagline as="p" $variant="title">{title}</StyledHeroTagline>
+          </StyledHeroIdentity>
+        </Container>
+      </StyledHeroBand>
+
+      <Container size="xl" padding="lg">
+        <StyledHero>
+          <StyledHeroContent>
             <StyledHeroTagline as="p" $variant="description">{tagline}</StyledHeroTagline>
 
             {(cta || secondaryCta) && (

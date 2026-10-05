@@ -287,3 +287,64 @@ With multiple developers:
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
+
+---
+
+## Amendment 1: The Name and Title on a Black Band
+
+Added 2026-10-04, after implementation and deployment. See "Amendment 1" in `spec.md` for FR-016
+through FR-022 and SC-011 through SC-014.
+
+- [X] A001 [P] Measure the Hero's current geometry: 100dvh at every viewport, name 112px and 680px wide at 1440, title 56px, tagline 28px and 700px wide, content block 434px tall, gaps of 24/24/40
+- [X] A002 [P] Confirm in the browser that `section#hero` measures x:0 with a width equal to `clientWidth` at 1600, 1440 and 390, with zero horizontal overflow, so a band child can reach full width with `width: 100%` and no `100vw`
+- [X] A003 Confirm the five existing Hero tests assert no colours or backgrounds, so the restructure cannot break them
+- [X] A004 [P] Add `StyledHeroBand` and `StyledHeroIdentity` in `src/components/sections/Hero/Hero.styles.ts`, with `width: 100%` explicit because the hero composition sets `align-items: center`
+- [X] A005 Write the name and the title in `var(--color-white)`, and keep the tagline on the dark foreground by variant, since the title and the tagline share one styled component
+- [X] A006 [P] Restructure `src/components/sections/Hero/Hero.tsx` so the band is a sibling of the container, and nest the shared `Container` inside the band rather than repeating its widths and padding
+- [X] A007 [P] Add seven Hero tests: pure black without `100vw`, the name and title inside the band, the tagline and buttons outside it, both in white, the tagline still dark, fluid padding, and the gap below
+- [X] A008 Run `npm run lint`, `npm run typecheck`, `npm run test`, `npm run test:component` and `npm run build`
+- [X] A009 Verify the band spans the viewport at 320, 390, 768, 1024, 1280, 1440 and 1600, including 1600 where the container is inset 160px per side
+- [X] A010 Verify `scrollWidth - clientWidth` is 0 at every one of those widths, which is the real test that avoiding `100vw` worked
+- [X] A011 Verify the Hero still fills the viewport without overflowing at 320x640, the tightest case
+- [X] A012 Run axe at 1440 and 390 and confirm zero violations, and capture the Hero at both sizes
+
+### Verification Results
+
+| Criterion | Result |
+|-----------|--------|
+| SC-011 band spans the viewport | Pass: band width equals viewport width at all seven widths, starting at x:0, including 1600 where the container sits at x:160 |
+| SC-012 no horizontal overflow | Pass: `scrollWidth - clientWidth` is 0 at all seven widths |
+| SC-013 white on black | Pass: name and title both `rgb(255, 255, 255)` on `rgb(0, 0, 0)`, 21:1 |
+| SC-014 tagline on white, Hero fills | Pass: tagline `rgb(110, 110, 115)`, and the section matches the viewport height at all seven sizes |
+| SC-006 axe | Pass: 0 violations at 1440 and 390 |
+
+Measured band padding: 40px at 320 and 390, 49.15px at 768, 64px from 1024 up. Measured gap below
+the band: 24px at 320 and 390, 26.88px at 768, 40px from 1280 up.
+
+### One defect the browser check found
+
+The Hero overflowed its viewport by 22px at 320x640 and the cause was not the band's padding in
+isolation. "Ismael Marot" at the 56px floor of `--text-display-hero` measures 318px inside a 288px
+gutter at that width, so the name wraps to two lines and stands 112px tall. That was already true
+before this amendment; the section fitted because it had 102px of slack above its `min-height`. The
+band spent that slack.
+
+Fixed by making both of the band's vertical values fluid rather than stepped, so they scale together:
+`padding-block: clamp(40px, 6.4vw, 64px)` and `margin-bottom: clamp(24px, 3.5vw, 40px)`. A stepped
+48px below 768px left the section 6px over at 320 and would have needed a third breakpoint to close.
+The section now measures exactly 640 of 640 at 320x640.
+
+### Notes on this amendment
+
+- **A002 is the task that avoided the wrong implementation.** The obvious way to make a band span the
+  screen is `width: 100vw`, and it is wrong: `100vw` includes the scrollbar, so on a platform with
+  classic scrollbars it adds roughly 15px of horizontal scroll. Measuring the section first showed it
+  already equals `clientWidth`, which makes `width: 100%` both correct and cheaper.
+- **A005 exists because the title and the tagline are one styled component.** Recolouring by
+  surroundings rather than by variant would have put dark text on the black band. A test asserts the
+  tagline stays dark for exactly that reason.
+- **A007 uses `within` rather than `closest`.** `closest` is what the lint rule objects to, and scoping
+  the band is also the stronger assertion: it states the whole containment rather than one hop up.
+- **The section's own `size="xl"` padding is 40px at 320**, which was part of what made the narrow case
+  tight. It was left alone rather than reduced, because it belongs to the shared Section component and
+  changing it would move every page.

@@ -169,6 +169,56 @@ A visitor experiences a minimalist, elegant, and modern visual design inspired b
 - **SC-009**: The visual design system (colors, typography, spacing) is consistent across all pages
 - **SC-010**: Animations run at 60fps (no jank) on mid-range devices from the last 3 years
 
+## Amendment 1 - The Name and Title Sit on a Black Band
+
+**Applied**: 2026-10-04, after implementation and deployment.
+
+**Request**: "Ahora la vista Home tiene el siguiente diseno: Ismael Marot / Web Developer / Building
+accesible... / botones. quiero que lo que dice Ismael Marot y Web Developer este con fondo negro", after
+an earlier and larger request for a split screen had been reformulated as "just those two on black".
+
+FR-002 is unaffected: the Hero still displays the name, the professional title, the tagline and the
+primary CTAs, and all four remain on the page. This amendment changes only their presentation.
+
+### What moved and what did not
+
+The name and the title move out of the content container and into a black band above it. The tagline
+and the buttons stay exactly where they were, on white. Nothing is added, removed or reworded.
+
+### Requirements added by this amendment
+
+- **FR-016**: The name and the title MUST sit on a `#000000` band that spans the full viewport width,
+  edge to edge.
+- **FR-017**: The text on that band MUST be `#FFFFFF`, at no less than 4.5:1 against the band. White on
+  black measures 21:1.
+- **FR-018**: The tagline and the CTAs MUST remain on the white background, outside the band.
+- **FR-019**: The band MUST be a direct child of the Hero section rather than of the content container,
+  and MUST reach full width with `width: 100%` rather than `100vw`. The section already measures exactly
+  the viewport's client width, so `100vw` is unnecessary and would add a scrollbar's width of horizontal
+  overflow on platforms with classic scrollbars.
+- **FR-020**: The band MUST NOT introduce horizontal scrolling at any viewport width.
+- **FR-021**: The band's inner content MUST reuse the shared container, so its gutters cannot drift away
+  from the rest of the page if the container's widths or padding change.
+- **FR-022**: The band MUST carry 64px of vertical padding at 768px and above, and 48px below it.
+- **SC-011**: The band measures the same width as the viewport at 320, 390, 768, 1024, 1280, 1440 and
+  1600, including at 1600 where the container is inset by 160px on each side.
+- **SC-012**: `documentElement.scrollWidth - clientWidth` is 0 at every one of those widths.
+- **SC-013**: The name and the title compute `#FFFFFF` on a `#000000` background.
+- **SC-014**: The tagline still computes on white, and the Hero still fills the viewport height without
+  overflowing at 320x640, the tightest case.
+
+### Accepted consequences
+
+- **The name is no longer vertically centred in the Hero.** The four elements used to form one centred
+  block of 434px. With the band, the black surface sits above the tagline and the pair reads as two
+  layers rather than one stack. This is what was asked for, and it is not reversible without removing
+  the band.
+- **The site now carries two blacks.** The project cards use `#1D1D1F` and this band uses `#000000`.
+  Pure black was chosen deliberately because a full-width band is what Apple uses for full-bleed dark
+  sections, and the two are one step apart rather than a visible clash.
+- **SC-009, "consistent across all pages", is strained by this amendment.** A second surface colour is
+  introduced on the Home page only. It is recorded here rather than left for a reviewer to find.
+
 ---
 
 ## Assumptions
