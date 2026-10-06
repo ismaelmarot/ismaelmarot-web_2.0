@@ -1,5 +1,7 @@
 import { render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Contributions } from './Contributions';
+import { localToday } from './useContributions';
 import { getCssForElement } from '@/test-utils/css';
 import type { ContributionsData, ContributionWeek } from '@/types/contributions';
 
@@ -117,7 +119,12 @@ describe('Contributions', () => {
 // cell was off-screen on any viewport narrower than the year. None of the seven tests above could
 // see it, because none of them looked at the scroll position.
 describe('Contributions most recent day', () => {
-  const todayIso = new Date().toISOString().slice(0, 10);
+  // Local rather than UTC, because that is what the component now compares against. Left on
+  // toISOString() these fixtures would end on the UTC day while the component looked for the
+  // local one, so the whole block would pass on a CI runner in UTC and fail on any developer
+  // machine west of Greenwich in the evening. That is the same defect in the test rather than
+  // the component, and it would have hidden the fix.
+  const todayIso = localToday();
 
   /** A week whose LAST day is today, because today is the final cell of the whole calendar. */
   const weekEndingToday = (counts: number[]) => {
@@ -249,5 +256,83 @@ describe('Contributions most recent day', () => {
       'width: max-content'
     );
     expect(screen.getByTestId('contributions-today')).toHaveStyle({ textAlign: 'right' });
+  });
+});
+
+// Amendment 2. The label read "Hoy · sin contribuciones" on an evening that held real work,
+// because "today" was resolved in UTC while the reader's day was not. The timezone is pinned
+// explicitly below rather than inherited from the runner, because CI runs in UTC where an
+// assertion written for this defect would pass without testing anything at all.
+describe("Contributions today is the visitor's day, not the runner's", () => {
+  const originalTz = process.env.TZ;
+
+  afterEach(() => {
+    if (originalTz === undefined) {
+      delete process.env.TZ;
+    } else {
+      process.env.TZ = originalTz;
+    }
+    vi.useRealTimers();
+  });
+
+  /** Fakes Date only, so React's own scheduling is left untouched. */
+  const atInstant = (iso: string) => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(iso));
+  };
+
+  const markedCells = () =>
+    screen
+      .getAllByRole('img')
+      .filter((cell) => (cell.getAttribute('aria-label') ?? '').includes('(hoy)')).length;
+
+  it('builds the date from the local getters rather than from toISOString', () => {
+    process.env.TZ = 'America/Argentina/Buenos_Aires';
+    // 00:14 UTC on the 6th is still 21:14 on the 5th in Buenos Aires. That difference is the
+    // entire bug: toISOString() would answer the 6th here.
+    expect(localToday(new Date('2026-10-06T00:14:00Z'))).toBe('2026-10-05');
+    // Same zone, a few hours earlier in the calendar, so the date is the 4th and not the 5th.
+    expect(localToday(new Date('2026-10-05T02:00:00Z'))).toBe('2026-10-04');
+  });
+
+  it('reports the local day once UTC has already rolled over', () => {
+    process.env.TZ = 'America/Argentina/Buenos_Aires';
+    atInstant('2026-10-06T00:14:00Z');
+
+    // The deployed shape exactly. A runner fetching at 00:00 UTC on the 6th produces a calendar
+    // whose last day is the 6th, empty because it was minutes old, with the 5th's real count one
+    // cell back. Under the UTC comparison this rendered "sin contribuciones".
+    render(<Contributions data={fixture([week('2026-09-29', [1, 2, 3, 4, 5, 6, 7, 0])], 21)} />);
+
+    expect(screen.getByTestId('contributions-today')).toHaveTextContent('Hoy · 7 contribuciones');
+    // The 6th is the day the visitor has not lived through yet, so it stays unmarked.
+    const cells = screen.getAllByRole('img');
+    expect(cells.at(-2)).toHaveAccessibleName(expect.stringContaining('(hoy)'));
+    expect(cells.at(-1)?.getAttribute('aria-label')).not.toContain('(hoy)');
+  });
+
+  it('reports today normally where the two bases agree', () => {
+    process.env.TZ = 'America/Argentina/Buenos_Aires';
+    atInstant('2026-10-05T18:00:00Z');
+
+    // 15:00 on the 5th in Buenos Aires, so local and UTC name the same day. The change must not
+    // have cost anything in the ordinary afternoon case.
+    render(<Contributions data={fixture([week('2026-09-29', [1, 2, 3, 4, 5, 6, 7])], 28)} />);
+
+    expect(screen.getByTestId('contributions-today')).toHaveTextContent('Hoy · 7 contribuciones');
+    expect(markedCells()).toBe(1);
+  });
+
+  it('says nothing when a timezone ahead of UTC has outrun the data', () => {
+    process.env.TZ = 'Asia/Kolkata';
+    atInstant('2026-10-05T20:00:00Z');
+
+    // 01:30 on the 6th in Kolkata, but the calendar was fetched in UTC and stops on the 5th. The
+    // visitor's own day is not in the data, and FR-015 forbids promoting the 5th to stand in for
+    // it. Falling back to the nearest available day was proposed and rejected for that reason.
+    render(<Contributions data={fixture([week('2026-09-29', [1, 2, 3, 4, 5, 6, 7])], 28)} />);
+
+    expect(screen.queryByTestId('contributions-today')).not.toBeInTheDocument();
+    expect(markedCells()).toBe(0);
   });
 });

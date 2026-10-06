@@ -17,7 +17,7 @@ import {
   StyledContributionStatLabel,
   StyledContributionCell,
 } from './Contributions.styles';
-import { formatPeriod } from './useContributions';
+import { formatPeriod, localToday } from './useContributions';
 import contributionsData from '@/data/contributions.json';
 import {
   CONTRIBUTION_LEVELS,
@@ -68,10 +68,13 @@ export const Contributions = ({ data }: ContributionsProps) => {
     return null;
   }
 
-  /* Compared against the current date rather than assuming the last cell is today: when a build is
-     stale the two diverge and both the label and the cell's description would name yesterday. The
-     stored dates are UTC midnight, so this uses the same basis. */
-  const today = new Date().toISOString().slice(0, 10);
+  /* Compared against the visitor's own date rather than assuming the last cell is today: when a
+     build is stale the two diverge and both the label and the cell's description would name a day
+     that has already passed. The basis is local rather than UTC. The stored dates were produced in
+     the build runner's timezone, so matching them against the UTC date agrees with the data source
+     while describing someone else's day; at 21:14 in UTC-3 the UTC date is already tomorrow, and
+     the label then reported a day minutes old and empty as the whole truth for today. Amendment 2. */
+  const today = localToday();
 
   const { weeks, totalContributions } = contributions.calendar;
   const { summary } = contributions;

@@ -239,3 +239,49 @@ visible area at all five sizes, no page overflow at any of them.
   measurement artefact rather than a layout fault. The screenshot was equally misleading at that size.
 - **A032's "one distinct box-shadow value" is a stronger assertion than "no shadow".** It would fail if
   any cell were distinguished again, whatever colour or technique was used.
+
+---
+
+## Amendment 2: Today Is the Visitor's Day, Not the Runner's
+
+Added 2026-10-05, after the report "no diguran contribuciones hoy". See "Amendment 2" in `spec.md`
+for FR-016, FR-017 and SC-012 through SC-015.
+
+- [X] A038 [P] Rule the fetch out before changing anything: the deploy log for the build that shipped the bug reads "Contribution calendar: 1705 contributions, 294 active days" at 2026-10-06T00:00:56Z, so the data was fresh and the comparison was wrong
+- [X] A039 [P] Record the visitor's clock against UTC: 21:14 on 5 October in UTC-3, with UTC already inside 6 October, which is the moment the label reported an empty day
+- [X] A040 Add `localToday()` to `useContributions.ts`, built from the local date getters rather than from `toISOString()`, and hand-formatted because the value is compared against a plain ISO string
+- [X] A041 Use it for the single comparison in `Contributions.tsx`, so the marked cell and the label cannot disagree
+- [X] A042 Reject the fallback to the nearest available day, on FR-015 and scenario 2, which forbid passing the last fetched day off as today
+- [X] A043 Point the suite's `todayIso` fixture at `localToday()`, so the block is deterministic on a machine west of Greenwich instead of passing only because CI runs in UTC
+- [X] A044 Add four tests that pin the timezone explicitly, in one zone behind UTC and one ahead, with Date faked on its own so React's scheduling is untouched
+- [X] A045 Run `npm run lint`, `npm run typecheck`, `npm run test`, `npm run test:component` and `npm run build`
+- [X] A046 Add `schedule: '15 3 * * *'` to the deploy workflow in the pages repository
+- [X] A047 Verify in the browser at 1440, 390 and 320 that the label reads the visitor's own day
+
+### Verification Results
+
+| Criterion | Result |
+|-----------|--------|
+| SC-012 UTC rolled over | Pass: at 00:14 UTC on the 6th with the reader in UTC-3, the label reads "Hoy · 7 contribuciones" for the 5th, and the 6th is left unmarked |
+| SC-013 visitor's day absent | Pass: in Asia/Kolkata at 01:30 on the 6th against a calendar ending on the 5th, no label is rendered and no cell is marked |
+| SC-014 both directions | Pass: behind UTC and ahead of UTC are both covered, with the timezone set rather than inherited |
+| SC-015 full suite | Pass: 91 unit and 333 component |
+| Tests can fail | Pass: reverting the comparison to `toISOString()` fails 9 tests, of which 2 are the new ones that exist for this defect |
+
+### Notes on this amendment
+
+- **A038 is why no fetch logic was touched.** The instinct on a stale-looking label is to go and
+  refresh the data. The log showed the data was fourteen minutes old and correct, so the only thing
+  that could be wrong was which day was being asked about.
+- **A044 exists because a naive test for this defect would have passed for the wrong reason.** CI runs
+  in UTC, where the local date and the UTC date are the same, so asserting the fixed behaviour without
+  setting a timezone proves nothing. Node 20 re-reads `process.env.TZ` when it changes, which is what
+  makes the zone settable inside the test.
+- **A045 was checked by reintroducing the bug on purpose.** Nine failures, not zero. A test that cannot
+  fail is worse than no test, because it is read as coverage.
+- **A043 is a fix to the tests, not to the product.** They built fixtures on `toISOString()`, which
+  meant they would have failed on this machine in the evening and passed in CI. Same defect, in the
+  wrong place, and it would have hidden the fix that follows it.
+- **The 03:15 UTC schedule is derived rather than chosen.** A reader in UTC-3 enters a new local day at
+  03:00 UTC, so a fetch five minutes later leaves no window in which the reader's own day is missing
+  from the data.

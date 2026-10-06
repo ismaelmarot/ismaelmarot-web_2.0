@@ -155,6 +155,90 @@ FR-001, FR-002 and FR-005 through FR-010 stand unchanged.
 - **SC-010**: All 365 cells compute the same box shadow, which is `none`.
 - **SC-011**: Exactly one label is rendered, and it is absent when the calendar does not reach today.
 
+## Amendment 2 - Today Is the Visitor's Day, Not the Runner's
+
+**Applied**: 2026-10-05, after deployment.
+
+**Request**: "En la seccion Tecnologias > Contribuciones en Github, no diguran contribuciones hoy"
+
+The label read "Hoy \u00b7 sin contribuciones" on an evening with real contributions sitting in the
+calendar. The fetch was never at fault. The deploy log for the build that shipped this reads
+"Contribution calendar: 1705 contributions, 294 active days", at 2026-10-06T00:00:56Z.
+
+### What was wrong
+
+FR-005 compared each cell's stored date against the current **UTC** date. The calendar's dates were
+produced in the runner's timezone, which is UTC, so the comparison matched. But "today" for the
+person reading the page is their own calendar day, and the runner's day is not theirs.
+
+At the moment of the report the visitor was at 21:14 on 5 October in UTC-3, while UTC had already
+rolled into 6 October. The component asked about the 6th, a day that had begun fourteen minutes
+earlier and held no contributions, and reported that empty result as fact. The 5th, which held the
+day's actual work, sat in the calendar unmarked.
+
+GitHub's own profile graph resolves today in the viewer's timezone for exactly this reason. Every
+visitor behind UTC hit this for the whole evening, every day, and the symptom was
+indistinguishable from having done no work.
+
+### The correction
+
+The comparison moves from UTC to the visitor's own calendar date. Nothing else changes. The cell is
+still found by matching a stored date rather than by assuming the last cell is today, and FR-015
+still holds, so a calendar that does not reach the visitor's today marks nothing rather than passing
+an older day off as today.
+
+Those are the two halves of one behaviour: mark the visitor's day when the data has it, and say
+nothing at all when it does not.
+
+### Why there is no fallback to the closest available day
+
+Clamping today to the latest day in the calendar that is not after the visitor's date was proposed
+first and rejected on reading FR-015 and scenario 2, which forbid presenting the last available day
+as today. It would also have given the wrong signal: a visitor whose build is three days old would
+be told "Hoy \u00b7 N contribuciones" about a day three days gone.
+
+Leaving the label absent when the data does not reach today keeps the staleness visible, which is
+the right way for it to fail. The scheduled rebuild below is what stops that case arising.
+
+### Keeping the data current
+
+The calendar is a build artefact, so it only refreshed when something was pushed. Left alone, a
+correct comparison would still be describing a day that had already passed. The deploy workflow
+gains a daily schedule so the data reaches today on its own.
+
+One caveat worth recording: GitHub disables scheduled workflows in public repositories after 60 days
+without activity. Any push resets that counter and this repository is pushed to, so the schedule
+stays alive in practice.
+
+### Requirements superseded by this amendment
+
+- **FR-005** is superseded. Its real instruction, not assuming the last cell is today, is correct
+  and is retained verbatim in FR-016. The UTC basis is the defect.
+- The edge case "Clock skew around midnight" is superseded. It described the defect as intended
+  behaviour, which is how it survived review.
+- The assumption that "the stored dates are UTC midnight, so today's comparison uses the same
+  basis" is superseded. The stored dates match the *runner's* timezone. That is a fact about the
+  data source, not a statement about the reader.
+
+### Requirements added by this amendment
+
+- **FR-016**: Today's cell MUST be identified by comparing each cell's stored date against the
+  current date in the visitor's own timezone. The last cell in the data MUST NOT be assumed to be
+  today.
+- **FR-017**: When the calendar does not contain the visitor's current date, no cell MUST be marked
+  and no label MUST be rendered, so that a day which has passed is never presented as today.
+- **SC-012**: With the visitor at 21:14 on 5 October in UTC-3 and a calendar fetched at 00:00 UTC
+  on 6 October, the label states the count for 5 October and no cell is marked for the 6th.
+- **SC-013**: With the visitor's current date absent from the calendar, the component renders no
+  label and marks no cell.
+- **SC-014**: The comparison holds in a timezone behind UTC and in one ahead of it, proven by
+  setting the timezone rather than by inheriting the runner's.
+- **SC-015**: The full suite passes.
+
+FR-001 through FR-004 and FR-006 through FR-015 stand unchanged.
+
+---
+
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
