@@ -33,7 +33,12 @@ export const StyledHeroSection = styled(Section)`
   }
 
   @media (max-width: 767px) {
-    padding-bottom: ${tokens.space[10]};
+    /* Amendment 5. 32px rather than 40px, and those eight pixels are the entire cost of this
+       amendment. At 320x640 the band is 320px of 50% and the rest of the Hero wants 322: 24px of
+       margin under the band, 258px of tagline and buttons, and this padding. Two pixels over.
+       Taking them from here rather than from the margin or the type means the only thing given up
+       anywhere is eight pixels of air under the buttons. */
+    padding-bottom: ${tokens.space[8]};
   }
 `;
 
@@ -52,11 +57,10 @@ export const StyledHeroBand = styled.div`
   /* The band is a statement, so it is sized as a proportion of the screen rather than by its
      content. Content-driven height left it at 43% of a 900px viewport and only 30% of an 844px
      phone, which read as a text block with padding rather than as the dark region the rest of the
-     design implies. 55dvh gives the black real presence at every size and still leaves 45% for the
-     tagline and buttons, which is enough for their 183px plus the gaps.
+     design implies.
 
-     min-height rather than height, so a viewport too short to hold 55% still grows to fit its
-     content instead of clipping the name. At 320x640 the band is 352 of 640. */
+     min-height rather than height, so a viewport too short to hold the proportion still grows to fit
+     its content instead of clipping the name. */
   min-height: 55dvh;
   display: flex;
   flex-direction: column;
@@ -71,15 +75,22 @@ export const StyledHeroBand = styled.div`
 
   @media (max-width: 767px) {
     padding-top: calc(var(--header-height) + ${tokens.space[8]});
-  }
 
-  /* Short viewports fall back to content-driven height. At 320x640 the 55% is 352px and the
-     content below needs a further 250px, so the section overshot the screen by 34px; there the
-     name wraps to two lines and the description takes three, which is why the arithmetic only
-     breaks at that size. Letting the band size to its own content keeps the section at one
-     screen and still gives it 312px of black, 49% of the viewport. */
-  @media (max-height: 720px) {
-    min-height: 0;
+    /* Amendment 5. Half the screen on a phone, 55% from 768px up. Two statements rather than one
+       inverted rule, so that desktop is untouched by construction and not by a subtraction that
+       could be got wrong.
+
+       55% was more than a phone needs: at 390x844 it left 464px of black above 190px of tagline
+       and buttons, and the name sat 136px below a 52px header.
+
+       The band's own floor is its content, 312px at 320px wide because the name wraps to two lines
+       there and the band reserves the header's height plus a spacing step above itself. That is 49%
+       of a 640px screen, so 50% clears it at every viewport from about 625px tall upwards. Below
+       that min-height grows the band to fit rather than clipping, which is what the previous
+       max-height: 720px fallback was for, except that it did it by discarding the proportion
+       instead. That fallback is gone: it left a 375x667 iPhone SE showing 38% of the screen in
+       black, the smallest band on the site, on a phone of completely ordinary size. */
+    min-height: 50dvh;
   }
   /* 40px of white between the black surface and the tagline, matching the gap the CTA group
      already uses below the tagline. With the band's own 64px of padding the title sits further

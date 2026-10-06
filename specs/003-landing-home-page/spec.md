@@ -448,6 +448,97 @@ height, which measures 312px of black, 49% of the viewport, and puts the section
 
 ---
 
+## Amendment 5 - Half the Screen on a Phone
+
+**Applied**: 2026-10-05, after deployment.
+
+**Request**: "en la vista mobil, en el Home, Ismael Marot web developer debe ocupar 50% del alto"
+
+Amendment 4 gave the band a proportion of the screen. It gave it the same proportion at every size,
+which turned out to be the wrong instinct in two ways at once: 55% is more than a phone needs, and
+the fallback added for short viewports made the band collapse much further than intended.
+
+### What Amendment 4's fallback actually cost
+
+FR-038 dropped the minimum below a viewport height of 720px, because at 320x640 the 55% plus the
+content below overshot the screen by 34px. Measured, it produced three different answers on three
+common phones:
+
+| viewport | band | why |
+|----------|------|-----|
+| 320x640 | 312px, 49% | fallback, content-driven |
+| 375x667 | 256px, **38%** | fallback, and the name no longer wraps |
+| 390x844 | 464px, 55% | no fallback, 55% applied |
+
+The 38% is the interesting one. A phone of completely ordinary size was showing the smallest band
+on the site, and it did so because the fallback measured the *content* rather than doing anything
+about the *overflow*. The fallback was solving for one device by making the rule wrong for three.
+
+### The measure
+
+50% at 767px and below, 55% at 768px and above. Two separate statements rather than one inverted
+rule, because this stylesheet already uses `max-width: 767px` for the Hero's mobile padding and
+because leaving 55% as the base means desktop is untouched by construction rather than by a
+subtraction that could be got wrong.
+
+The band's own minimum content height is 312px at 320px wide, because the name wraps to two lines
+there and the band reserves the header's height plus a spacing step above itself. That is 49% of a
+640px screen and 55% of a 568px one, so 50% is above the floor at every viewport from about 625px
+tall upwards. Below that the band grows to fit its content instead of clipping, which is what
+`min-height` rather than `height` is for, and the fallback is no longer needed to cause that.
+
+### The two pixels
+
+At 320x640, 50% is 320px and the rest of the Hero wants 322: 24px of margin under the band, 258px
+of tagline and buttons, and 40px of section padding. Two pixels over.
+
+The eight came out of the Hero's own mobile bottom padding, from 40px to 32px. That is the only
+thing given up anywhere in this amendment, and it is eight pixels of air under the buttons. The
+alternatives were measured: taking four from the band's margin and four from the padding splits the
+same loss without being less visible, and shrinking the name or the tagline to buy height would have
+bought layout space out of the thing the band exists to present.
+
+### Requirements superseded by this amendment
+
+- **FR-038** is superseded, and deleted rather than amended. The short-viewport fallback was the
+  cause of the 38% and its only remaining function, growing to fit the content, is already provided
+  by `min-height`.
+- **SC-025** is superseded. It accepted anything between 49% and 55%, which is a range wide enough to
+  contain the 38% that was actually being shipped, so it could not have caught the thing it was
+  written to bound.
+- **FR-035** and **FR-036** stand unchanged. A proportion, and a minimum rather than a fixed height,
+  are still exactly right; only the proportion and its breakpoint are new.
+- The bottom padding fixed by FR-033 is not contradicted: that requirement is about staying on the
+  scale, and `space[8]` is on it.
+
+### Requirements added by this amendment
+
+- **FR-039**: At 768px and above the band MUST occupy 55% of the viewport height, unchanged.
+- **FR-040**: Below 768px the band MUST occupy 50% of the viewport height.
+- **FR-041**: No viewport-height media query may alter the band's height, because height is not the
+  variable the band responds to and the previous fallback turned a screen-height rule into a
+  content-height rule on three phones.
+- **FR-042**: Below 768px the Hero's bottom padding MUST be 32px, which is what makes 50% and one
+  screen both hold at 320x640.
+- **SC-029**: The band measures exactly 50% at 320x640, 360x640, 375x667, 390x844, 414x896, 430x932
+  and 767x1024, and exactly 55% at 768x1024, 1024x768 and 1440x900.
+- **SC-030**: The Hero never exceeds the viewport height at any of those sizes, at 320x640 included.
+- **SC-031**: The Hero's empty space above and below its content still matches to within 1px.
+- **SC-032**: A browser test measures the band's share of the viewport, since a test asserting that
+  `50dvh` appears in a stylesheet does not establish that the band is half the screen.
+- **SC-033**: The suite passes, including the tests rewritten by this amendment.
+
+FR-001 through FR-037 stand unchanged.
+
+### The limit this amendment does not remove
+
+At 320x568, which is an iPhone 5 and a first-generation SE, the Hero overflows and will continue to.
+The band needs 312px of content and the tagline-and-buttons block needs 282px; together they do not
+fit in 568px at any proportion. It overflows by 66px today and will overflow by 58px afterwards, so
+this amendment improves it slightly and does not pretend to fix it.
+
+---
+
 ## Assumptions
 
 - The existing design tokens, typography scale, and color palette will be reused without modification

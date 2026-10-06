@@ -1,0 +1,104 @@
+import { test, expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
+
+/**
+ * Amendment 5 of specs/003-landing-home-page.
+ *
+ * The component tests for this section assert CSS strings, which is enough to prove that `50dvh`
+ * appears in a stylesheet and not enough to prove that the band is half the screen. The previous
+ * fallback shipped for weeks while every test in this file was green, and it was the reason a
+ * 375x667 iPhone SE rendered the band at 38% of its viewport. So these tests measure.
+ *
+ * `page.evaluate` rather than `boundingBox`, for the same reason as the carousel tests: it reads the
+ * geometry the CSS engine resolved, which is the number the band's percentage depends on.
+ */
+const MOVIL = [
+  { width: 320, height: 640 },
+  { width: 360, height: 640 },
+  { width: 375, height: 667 },
+  { width: 390, height: 844 },
+  { width: 414, height: 896 },
+  { width: 430, height: 932 },
+  { width: 767, height: 1024 },
+];
+
+const ESCRITORIO = [
+  { width: 768, height: 1024 },
+  { width: 1024, height: 768 },
+  { width: 1440, height: 900 },
+];
+
+const medir = (page: Page) =>
+  page.evaluate(() => {
+    const hero = document.querySelector('#hero')!;
+    const banda = hero.querySelector('[data-testid="hero-band"]')!;
+    const nombre = banda.querySelector('h1') ?? banda.firstElementChild!;
+    const hr = hero.getBoundingClientRect();
+    const br = banda.getBoundingClientRect();
+    return {
+      vh: window.innerHeight,
+      banda: Math.round(br.height),
+      porcentaje: Math.round((br.height / window.innerHeight) * 100),
+      seccion: Math.round(hr.height),
+      desborde: Math.round(hr.height - window.innerHeight),
+      clearance: Math.round(nombre.getBoundingClientRect().top - 52),
+      cola: Math.round(br.bottom - window.innerHeight),
+    };
+  });
+
+test.describe('La banda del Hero es la mitad de la pantalla en movil', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+  });
+
+  for (const vp of MOVIL) {
+    test(`la banda mide 50% en ${vp.width}x${vp.height}`, async ({ page }) => {
+      await page.setViewportSize(vp);
+      await page.waitForTimeout(250);
+
+      const m = await medir(page);
+
+      expect(m.banda, `banda ${m.banda} de ${m.vh}`).toBe(Math.round(vp.height / 2));
+      // One pixel, because sub-pixel layout is real and is not a defect.
+      expect(Math.abs(m.seccion - vp.height)).toBeLessThanOrEqual(1);
+      expect(m.desborde).toBeLessThanOrEqual(1);
+      expect(m.cola).toBeLessThanOrEqual(1);
+    });
+  }
+
+  for (const vp of ESCRITORIO) {
+    test(`la banda sigue al 55% en ${vp.width}x${vp.height}`, async ({ page }) => {
+      await page.setViewportSize(vp);
+      await page.waitForTimeout(250);
+
+      const m = await medir(page);
+
+      expect(m.banda, `banda ${m.banda} de ${m.vh}`).toBe(Math.round(vp.height * 0.55));
+      expect(Math.abs(m.seccion - vp.height)).toBeLessThanOrEqual(1);
+    });
+  }
+
+  test('el nombre queda por debajo de la barra en todos los tamanos', async ({ page }) => {
+    for (const vp of [...MOVIL, ...ESCRITORIO]) {
+      await page.setViewportSize(vp);
+      await page.waitForTimeout(250);
+
+      const m = await medir(page);
+
+      // 52px is --header-height. The band's top padding reserves the header plus a spacing step,
+      // so a name above that line would be drawn under the fixed header.
+      expect(m.clearance, `clearance ${m.clearance} a ${vp.width}x${vp.height}`).toBeGreaterThan(0);
+    }
+  });
+
+  test('no hay overflow horizontal en movil', async ({ page }) => {
+    for (const vp of [...MOVIL, ...ESCRITORIO]) {
+      await page.setViewportSize(vp);
+      await page.waitForTimeout(250);
+
+      const desborda = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+
+      expect(desborda, `overflow horizontal a ${vp.width}x${vp.height}`).toBe(false);
+    }
+  });
+});

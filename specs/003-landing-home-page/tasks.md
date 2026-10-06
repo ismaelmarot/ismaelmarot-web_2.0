@@ -504,3 +504,62 @@ hugging the header are incompatible.
   nothing at any other tested size, since none of them are that short.
 - **A049 is why clearance was judged visually.** 186px reads as generous at 768 and as a defect at
   390. The number alone could not decide it, so the captures were inspected before shipping.
+
+---
+
+## Amendment 5: Half the Screen on a Phone
+
+Added 2026-10-05, after the request "en la vista mobil, en el Home, Ismael Marot web developer debe
+ocupar 50% del alto". See "Amendment 5" in `spec.md` for FR-039 through FR-042 and SC-029 through
+SC-033.
+
+- [X] A050 [P] Measure the band on four phones before changing anything: 49% at 320x640, **38% at 375x667**, 55% at 390x844, 49% at 360x640
+- [X] A051 [P] Attribute the 38% to the `max-height: 720px` fallback added by Amendment 4, which resolved the band's height to its content on any viewport shorter than 720px
+- [X] A052 [P] Establish the band's content floor at 320px wide as 312px, from the name wrapping to two lines plus the header height and a spacing step
+- [X] A053 [P] Confirm 50% clears that floor at every viewport from about 625px tall, so `min-height` alone still grows the band below it instead of clipping
+- [X] A054 [P] Measure the two-pixel overflow at 320x640 as 320 of 50% against 322 wanted: 24px of margin, 258px of tagline and buttons, 40px of section padding
+- [X] A055 Take the eight pixels from the Hero's mobile bottom padding, `space[10]` to `space[8]`, and measure the alternative of taking them from the band's margin
+- [X] A056 Add `min-height: 50dvh` below 768px, leaving 55dvh as the base so desktop is untouched by construction
+- [X] A057 Delete the `@media (max-height: 720px)` fallback rather than editing it, since growing to fit the content is already what `min-height` does
+- [X] A058 Rewrite the test that asserted the deleted fallback, rather than deleting it, per SC-010 of the carousel spec
+- [X] A059 Add tests for the mobile proportion, the absence of any height query on the band, and the section padding
+- [X] A060 Add `data-testid="hero-section"`, which the section did not have and the padding test needs
+- [X] A061 Write `tests/e2e/hero-band.spec.ts`, 12 tests that measure the band's share of the viewport, because asserting that `50dvh` appears in a stylesheet does not establish that the band is half the screen
+- [X] A062 Run `npm run lint`, `npm run typecheck`, `npm run test`, `npm run test:component` and `npm run build`
+- [X] A063 Confirm the three new Hero tests fail when the previous state is reinstated, so they are not vacuous
+- [X] A064 Run the full Playwright suite and confirm the three failures in `homepage.spec.ts` and `keyboard.spec.ts` are the same pre-existing ones
+- [X] A065 Run axe at 1440, 768, 390 and 320
+- [X] A066 Capture 320, 375, 390 and 1440 and inspect them
+
+### Verification Results
+
+| Criterion | Result |
+|-----------|--------|
+| SC-029 band is 50% on a phone | Pass: 320 of 320, 320 of 320, 334 of 334, 422 of 422, 448 of 448, 466 of 466, 512 of 512 |
+| SC-029 band is 55% from 768px | Pass: 563 of 1024, 422 of 768, 495 of 900 |
+| SC-030 never exceeds the viewport | Pass at all ten sizes, at 320x640 included |
+| SC-031 balance within 1px | Pass: clearance 36, 36, 71, 115, 128, 137, 153 on mobile |
+| SC-032 measured by a browser test | Pass: 12 tests in `tests/e2e/hero-band.spec.ts` |
+| SC-033 full suite | Pass: 91 unit, 335 component and 40 measured browser tests |
+
+### Notes on this amendment
+
+- **A050 is the whole finding.** The request was "make it 50%", and measuring first showed that the band
+  was not sitting at 55% on phones at all: it was at three different proportions depending on the
+  device, and the smallest of them was on an ordinary one. Without that measurement the request would
+  have been answered by adding a fourth value to a rule that was already inconsistent.
+- **A051 is a lesson about the previous amendment.** FR-038 was written to stop a 34px overflow on one
+  device, and it did. It did it by discarding the proportion, which is a rule about height becoming a
+  rule about content, and that is what cost the 38%. A fallback named for the size it fixes tends to
+  keep fixing it after the size stops needing it.
+- **A057 deletes rather than amends.** The fallback's remaining job, growing the band when the
+  viewport is too short, is already `min-height`'s job. Leaving a rule whose only surviving function
+  duplicates another rule is how a second cause of the 38% would have entered.
+- **A058 is why the old test was not removed.** It asserted the fallback, so it would have failed the
+  build. Deleting it would have been the fast way to a green suite and would have left the previous
+  behaviour completely unguarded, so it was rewritten to state the new intent instead.
+- **A063 exists because one of those tests had just been inverted.** A test that used to say "the band
+  falls back to its content on a short viewport" now says "it does not". Reinstating the old state
+  fails three tests, which is the only way to know the rewrite says something.
+- **A066 is the check the numbers cannot make.** At 375x667 the band went from 256px of black to 334px
+  and the change is immediately visible: the black finally reads as a surface rather than as a header.

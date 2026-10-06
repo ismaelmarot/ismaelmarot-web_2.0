@@ -47,6 +47,7 @@ export const Hero = ({
   return (
     <StyledHeroSection
       id="hero"
+      data-testid="hero-section"
       ariaLabel="Hero"
       size="xl"
       background="default"

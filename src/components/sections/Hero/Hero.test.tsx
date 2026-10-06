@@ -145,12 +145,38 @@ describe('Hero identity band', () => {
     expect(css).toContain('justify-content: center');
   });
 
-  it('falls back to content height on a short viewport', () => {
+  // Amendment 5. This test used to assert the opposite of what it asserts now. It was written for
+  // the `@media (max-height: 720px)` fallback that Amendment 5 deleted, and that fallback was the
+  // cause of the band falling to 38% of the screen on a 375x667 iPhone SE: a phone of entirely
+  // ordinary size showing the smallest band on the site. Rewritten rather than deleted, per SC-010
+  // of the carousel spec: a test that contradicts the new design is replaced by one that states the
+  // new intent, because deleting it would leave the old behaviour unguarded.
+  it('keeps the proportion on a short viewport, with no height query left on the band', () => {
     renderHero();
     const css = cssOf(screen.getByTestId('hero-band'));
-    // At 320x640 the 55% plus the content below overshot the screen by 34px.
-    expect(css).toContain('@media (max-height: 720px)');
-    expect(css).toContain('min-height: 0');
+    // Height is not the variable the band responds to. A viewport-height query here turned a
+    // screen-height rule into a content-height rule on three of the four common phone sizes.
+    expect(css).not.toContain('@media (max-height');
+    expect(css).not.toContain('min-height: 0');
+  });
+
+  it('halves the band on a phone and keeps 55% from 768px up', () => {
+    renderHero();
+    const css = cssOf(screen.getByTestId('hero-band'));
+    // Two statements rather than one inverted rule, so desktop is untouched by construction.
+    // 55% left 464px of black above 190px of tagline at 390x844, and put the name 136px below a
+    // 52px header.
+    expect(css).toContain('@media (max-width: 767px)');
+    expect(css).toContain('min-height: 50dvh');
+  });
+
+  it('takes the two pixels at 320x640 from the section padding, not from the type', () => {
+    renderHero();
+    // At 320x640 the band is 320px of 50% and the rest of the Hero wants 322. The band's margin and
+    // the name's size are both untouched; this is the only thing given up.
+    expect(getCssForElement(screen.getByTestId('hero-section'))).toContain(
+      'padding-bottom: var(--space-8)'
+    );
   });
 
   it('keeps the bottom padding on the scale, matching the summary sections', () => {
