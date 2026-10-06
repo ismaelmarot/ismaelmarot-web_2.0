@@ -47,14 +47,24 @@ const medir = (page: Page) =>
   });
 
 test.describe('La banda del Hero y el bloque de texto, medidos en el navegador', () => {
-  test.beforeEach(async ({ page }) => {
+  /* Deliberately no `goto` in a beforeEach. Setting the viewport and then navigating means the
+     page is first laid out at the exact size being measured, so dvh resolves once. Doing it the
+     other way round, which is what this file did before, renders at the default 1280x720 and then
+     resizes, and the occasional run measured the band before the viewport-dependent styles had
+     settled: intermittent failures at 320x640, 360x640 and 375x667, which are the sizes whose
+     60% and 55% are closest together and therefore the least forgiving of a stale layout.
+     Each test calls `irA(page, vp)` instead. */
+  const irA = async (page: Page, vp: { width: number; height: number }) => {
+    await page.setViewportSize(vp);
     await page.goto('/');
-  });
+    // Waits for the Hero to exist rather than for a fixed delay, so the measurement never races
+    // the first paint. The band is the first thing on the page, so it is the right signal.
+    await page.waitForSelector('[data-testid="hero-band"]');
+  };
 
   for (const vp of MOVIL) {
     test(`la banda mide 60% en ${vp.width}x${vp.height}`, async ({ page }) => {
-      await page.setViewportSize(vp);
-      await page.waitForTimeout(250);
+      await irA(page, vp);
 
       const m = await medir(page);
 
@@ -68,8 +78,7 @@ test.describe('La banda del Hero y el bloque de texto, medidos en el navegador',
 
   for (const vp of ESCRITORIO) {
     test(`la banda sigue al 55% en ${vp.width}x${vp.height}`, async ({ page }) => {
-      await page.setViewportSize(vp);
-      await page.waitForTimeout(250);
+      await irA(page, vp);
 
       const m = await medir(page);
 
@@ -87,8 +96,7 @@ test.describe('La banda del Hero y el bloque de texto, medidos en el navegador',
     { width: 360, height: 640 },
   ]) {
     test(`los CTA comparten una fila a ${vp.width}x${vp.height}`, async ({ page }) => {
-      await page.setViewportSize(vp);
-      await page.waitForTimeout(250);
+      await irA(page, vp);
 
       const cta = await page.evaluate(() => {
         const botones = [...document.querySelectorAll('[data-testid="hero-body"] a')];
@@ -115,8 +123,7 @@ test.describe('La banda del Hero y el bloque de texto, medidos en el navegador',
   // thing that can hold this to 24px everywhere.
   for (const vp of MOVIL) {
     test(`el texto queda pegado a la banda en ${vp.width}x${vp.height}`, async ({ page }) => {
-      await page.setViewportSize(vp);
-      await page.waitForTimeout(250);
+      await irA(page, vp);
 
       const { hueco, esperado } = await page.evaluate(() => {
         const banda = document.querySelector('[data-testid="hero-band"]')!;
@@ -136,30 +143,60 @@ test.describe('La banda del Hero y el bloque de texto, medidos en el navegador',
     });
   }
 
+  // FR-046 and SC-022: desktop keeps the centred block. This asserts the auto margin is still in
+  // force there, by checking that the space above the block grows with the leftover rather than
+  // staying pinned to the band's margin. An earlier version compared two gaps directly and allowed
+  // a 45px difference, which was a number invented to pass; the real relationship is that the gap
+  // is a share of the leftover.
   for (const vp of ESCRITORIO) {
     test(`el bloque sigue centrado en escritorio a ${vp.width}x${vp.height}`, async ({ page }) => {
-      await page.setViewportSize(vp);
-      await page.waitForTimeout(250);
+      await irA(page, vp);
 
-      const { arriba, abajo } = await page.evaluate(() => {
-        const banda = document.querySelector('[data-testid="hero-band"]')!;
-        const botones = document.querySelector('[data-testid="hero-body"] a')!;
+      const { hueco, sobrante, centrado, margenBanda } = await page.evaluate(() => {
         const hero = document.querySelector('#hero')!;
+        const body = document.querySelector('[data-testid="hero-body"]')!;
+        const banda = document.querySelector('[data-testid="hero-band"]')!;
+        const tagline = document.querySelector('[data-testid="hero-body"] p')!;
+        const hr = hero.getBoundingClientRect();
+        const tr = tagline.getBoundingClientRect();
         return {
-          arriba: Math.round(botones.getBoundingClientRect().top - banda.getBoundingClientRect().bottom),
-          abajo: Math.round(hero.getBoundingClientRect().bottom - botones.getBoundingClientRect().bottom),
+          hueco: Math.round(tr.top - banda.getBoundingClientRect().bottom),
+          // What is left in the section's content box after the band, its margin and the block.
+          // The auto margins split this evenly, so the gap is the band's margin plus half of it.
+          // Verified at three sizes: 768x1024 leaves 229 and shows 26.88 + 114.5 = 141;
+          // 1024x768 leaves 71 and shows 35.8 + 35.6 = 71; 1440x900 leaves 102 and shows
+          // 40 + 51 = 91. The section's own block padding is excluded because the auto margin
+          // only ever distributed the content box, which is what made my first formula wrong.
+          sobrante: Math.round(
+            hr.height -
+              parseFloat(getComputedStyle(hero).paddingTop) -
+              parseFloat(getComputedStyle(hero).paddingBottom) -
+              banda.getBoundingClientRect().height -
+              parseFloat(getComputedStyle(banda).marginBottom) -
+              body.getBoundingClientRect().height
+          ),
+          // Computed margins come back as strings, so this has to be parsed: Math.abs on a string
+          // is NaN and NaN > 1 is false, which made the check report the margin as inactive.
+          centrado: Math.abs(parseFloat(getComputedStyle(body).marginTop)) > 1,
+          margenBanda: parseFloat(getComputedStyle(banda).marginBottom),
         };
       });
 
-      // FR-046 and SC-022: desktop keeps the centred block, so the two gaps stay close.
-      expect(Math.abs(arriba - abajo)).toBeLessThanOrEqual(45);
+      // Centred means a real share of the leftover, not a fixed gap: at 768x1024 it is 141px and
+      // at 1440x900 it is 91px, and both are half of what is left rather than the band's margin.
+      const esperado = Math.round(parseFloat(String(margenBanda)) + sobrante / 2);
+
+      expect(centrado, 'el margen auto sigue activo en escritorio').toBe(true);
+      expect(hueco, `hueco ${hueco}px a ${vp.width}x${vp.height}`).toBe(esperado);
+      // And it is genuinely a share of the leftover rather than a fixed number: at 768x1024 the
+      // gap is 141px and at 1024x768 it is 71px, and neither is the band's margin.
+      expect(hueco).toBeGreaterThan(30);
     });
   }
 
   test('el nombre queda por debajo de la barra en todos los tamanos', async ({ page }) => {
     for (const vp of [...MOVIL, ...ESCRITORIO]) {
-      await page.setViewportSize(vp);
-      await page.waitForTimeout(250);
+      await irA(page, vp);
 
       const m = await medir(page);
 
@@ -171,8 +208,7 @@ test.describe('La banda del Hero y el bloque de texto, medidos en el navegador',
 
   test('no hay overflow horizontal en movil', async ({ page }) => {
     for (const vp of [...MOVIL, ...ESCRITORIO]) {
-      await page.setViewportSize(vp);
-      await page.waitForTimeout(250);
+      await irA(page, vp);
 
       const desborda = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
 

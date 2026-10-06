@@ -672,3 +672,45 @@ See "Amendment 7" in `spec.md` for FR-045, FR-046 and SC-039 through SC-043.
   and asserting on the container found the wrong element's rules. Reaching for `parentElement` to check
   the relationship was rejected by lint for node access, and the placement is already covered by the
   band assertion, so the relationship check was dropped rather than worked around.
+
+### Follow-up to Amendment 7: three defects the verification found
+
+Recorded separately because they are about the verification being trustworthy, not about the design.
+
+- [X] A100 [P] Find that Amendment 7's first version was on the wrong element: `margin-block: 0` went on StyledHero, a block wrapper, while the space is distributed by StyledHeroBody, the section's direct flex child
+- [X] A101 Move the margin to StyledHeroBody and remove it from the wrapper, so the two cannot disagree silently
+- [X] A102 Rewrite the component test a second time, to assert on StyledHeroBody and additionally that the wrapper carries no margin at all, which is the assertion whose absence let the first version pass while changing nothing
+- [X] A103 [P] Correct SC-039 and its test: the band's margin is `clamp(space-6, 3.5vw, space-10)`, so the gap is 24px to 430px wide and 26.85px at 767px; asserting a literal 24 was asserting a number the design never promised
+- [X] A104 [P] Find the browser tests were measuring before the layout had settled, because `beforeEach` navigated before each test set the viewport, so the page was laid out at 1280x720 and then resized
+- [X] A105 Replace the `beforeEach` navigation with an `irA(page, vp)` helper that sets the viewport and then navigates, waiting on the band rather than on a fixed delay
+- [X] A106 Replace the invented 45px desktop tolerance with the actual relationship, the band's margin plus half the leftover, verified at 768x1024, 1024x768 and 1440x900
+- [X] A107 Run the browser suite six times to confirm the intermittency is gone rather than assumed gone: six consecutive clean runs after a failure rate of roughly three in four
+
+### Verification Results
+
+| Criterion | Result |
+|-----------|--------|
+| Production gap | Pass: 24px at 320, 360, 375, 390, 414 and 430, and 26.85px at 767x1024, equal to the band's own margin |
+| Desktop centred | Pass: 141px at 768x1024, 71px at 1024x768, 91px at 1440x900, each the band's margin plus half the leftover |
+| Never exceeds the viewport | Pass at all nine sizes |
+| Stable under repetition | Pass: 6 of 6 clean browser runs after A105, against roughly 3 in 4 failing before it |
+| Full suite | Pass: 91 unit, 336 component, 51 browser of which the same 3 pre-existing failures remain |
+| axe | Pass: 0 violations at 1440, 768, 390 and 320 |
+
+### Notes on this follow-up
+
+- **A100 is the reason Amendment 7 needed two commits.** The first one was green, deployed and
+  changed nothing, because a `margin-block: auto` had been left on both the parent and the child when
+  the centring was first written and the override landed on the child. Only reading the injected
+  stylesheet found it: the rule was deployed, the CSS hash matched the local build, and the computed
+  margin said auto.
+- **A104 is a lesson about the tests this project writes.** They exist to measure because CSS-string
+  assertions could not catch 271px of overflow, and then they measured before the page had laid out.
+  The failure rate was roughly three in four, at the three sizes whose 60% and 55% are closest together.
+  A test that fails three times out of four is worse than no test, because it trains the reader to
+  re-run it.
+- **A106 removed a number I had invented.** The 45px desktop tolerance was chosen to make a comparison
+  pass, and the comparison itself was between two gaps that are not symmetric. The real relationship is
+  that the auto margin takes half of what is left, which is checkable and needed the measurement to
+  establish: 768x1024 leaves 229px and shows 26.88 + 114.5, 1024x768 leaves 71 and shows 35.8 + 35.6,
+  1440x900 leaves 102 and shows 40 + 51.
