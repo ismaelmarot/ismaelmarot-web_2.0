@@ -205,30 +205,31 @@ describe('Hero identity band', () => {
     );
   });
 
-  // Amendment 2 put margin-block: auto on StyledHero, which is a grandchild of the section. Auto
-  // margins only distribute free space on a flex item, so it did nothing and the content sat under
-  // the band with 322px of empty space beneath it.
+  // Amendment 2 put the centring margin on StyledHeroBody, the section's direct flex child,
+  // because auto margins distribute free space on a flex item and on a descendant they did nothing.
   //
-  // Amendment 7 keeps the placement on the section's direct child, because that part was right, and
-  // removes the centring below 768px only. The margin was never the thing making the gap: the band
-  // is a fixed 60% and the block a fixed 190px, so centring split a leftover that grows with the
-  // screen and the gap grew with it, from 29px at 320x640 to 124px at 767x1024. Rewritten rather
-  // than deleted, per SC-010 of the carousel spec, so the placement requirement stays guarded.
-  it('keeps the block as the section direct child, centred on desktop and flush on mobile', () => {
+  // Amendment 7 removes it below 768px. This test was rewritten twice for that, and the second
+  // rewrite is the interesting one: it had been asserting the margin on StyledHero, a plain block
+  // wrapper inside StyledHeroBody, where it does nothing because the parent is already being
+  // centred. That version passed and shipped, and the gap in production stayed at 70px with a
+  // computed margin-top of 46px. A green test asserting the wrong element is worse than no test, so
+  // the assertion is now on StyledHeroBody, which is where the space is actually distributed, and
+  // the wrapper is asserted to carry no margin at all.
+  it('centres the block on desktop and flushes it on mobile, on the body not a wrapper', () => {
     renderHero();
+    const body = screen.getByTestId('hero-body');
     const bloque = screen.getByTestId('hero-block');
 
-    // Auto margins distribute free space on a flex item, and on a descendant they did nothing at
-    // all, so the block has to stay the section's direct child. That is asserted here by the band
-    // test below rather than by walking the tree: reaching for parentElement is node access, and the
-    // placement is already covered by the assertion that the band carries no auto margin.
-    expect(getCssForElement(bloque)).toContain('margin-block: auto');
-    expect(getCssForElement(screen.getByTestId('hero-band'))).not.toContain('margin-block: auto');
+    expect(getCssForElement(body)).toContain('margin-block: auto');
+    expect(getCssForElement(body)).toContain('@media (max-width: 767px)');
+    expect(getCssForElement(body)).toContain('margin-block: 0');
 
-    // Below 768px it sits under the band instead of being centred in what is left. The gap was 29px
-    // at 320x640 and 124px at 767x1024, all from this one declaration.
-    expect(getCssForElement(bloque)).toContain('@media (max-width: 767px)');
-    expect(getCssForElement(bloque)).toContain('margin-block: 0');
+    // The wrapper must not carry a competing margin. This is the assertion whose absence let the
+    // first version of Amendment 7 pass while changing nothing at all.
+    expect(getCssForElement(bloque)).not.toContain('margin-block');
+
+    // The band still carries none, so nothing above it can be pulled around.
+    expect(getCssForElement(screen.getByTestId('hero-band'))).not.toContain('margin-block: auto');
   });
 
   it('leaves a gap under the band so the tagline does not touch the black', () => {

@@ -20,8 +20,23 @@ import { Container } from '@/components/common/Container';
    space on a flex item: the declaration did nothing at all. The result was the content sitting
    immediately below the band with 322px of empty space underneath it, the only section on the page
    that was not vertically balanced. The other four centre theirs and sit at 319/318. */
+/* Amendment 2 put the centring margin here, on the section's direct flex child, because auto
+   margins distribute free space on a flex item and on a descendant they did nothing at all.
+
+   Amendment 7: this is the declaration that was making the gap, and this is the element that has
+   to stop. The `margin-block: auto` below was also left on `StyledHero` by mistake when the
+   centring was first written, so both the parent and its child were asking to be centred and the
+   mobile override was landing on the child, which is not the one distributing space. Measured in
+   production before this was found: the rule was deployed, and the gap was still 70px at 390x844
+   with a computed margin-top of 46px. The parent is what has to change. */
 export const StyledHeroBody = styled(Container)`
   margin-block: auto;
+
+  /* Below 768px the block sits under the band rather than centred in the leftover space, so the
+     gap is the band's own 24px margin at every mobile size instead of growing with the screen. */
+  @media (max-width: 767px) {
+    margin-block: 0;
+  }
 `;
 
 export const StyledHeroSection = styled(Section)`
@@ -118,27 +133,11 @@ export const StyledHero = styled.div`
   width: 100%;
   display: flex;
   justify-content: center;
-  /* Centres this block in whatever space is left below the band. The section now aligns to the
-     top so the band can reach y:0, which means the centring that used to come from the section has
-     to come from here instead. */
-  margin-block: auto;
-
-  /* Amendment 7. The auto margin is the right answer for a block that is floating in leftover space
-     and the wrong one for a block that is visually part of the band.
-
-     Measured: the band's own margin-bottom has been 24px at every mobile size, and the gap was not
-     that. Centring splits the leftover evenly, and since the band is a fixed 60% while this block is
-     a fixed 190px, the leftover grows with the screen and so did the gap: 29px at 320x640, 70px at
-     390x844, 104px at 430x932 and 124px at 767x1024. One declaration produced all four.
-
-     Below 768px the block now sits under the band, so the gap is that 24px margin at every mobile
-     size. The space moves below the block, which is where it is least noticeable: between 21% and
-     30% of a phone screen is empty there. That was the alternative to lowering the band back to 50%,
-     which Amendment 6 had just raised. Desktop keeps the centred block unchanged: at 55% it is part
-     of a composition that was built around it. */
-  @media (max-width: 767px) {
-    margin-block: 0;
-  }
+  /* Centring lives on StyledHeroBody, which is the section's direct flex child and therefore the
+     element that can distribute free space. This one is a plain block wrapper: the auto margin
+     that used to sit here did nothing on mobile, because its parent was already being centred,
+     and Amendment 7's mobile override was measured landing on this child while the gap stayed at
+     70px. Kept without a margin so the two cannot disagree again. */
 `;
 
 export const StyledHeroContent = styled.div`
