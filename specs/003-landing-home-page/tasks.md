@@ -640,12 +640,15 @@ See "Amendment 7" in `spec.md` for FR-045, FR-046 and SC-039 through SC-043.
 - [X] A094 Run the full Playwright suite and confirm the three failures are the same pre-existing ones
 - [X] A095 Run axe at 1440, 768, 390, 360 and 320
 - [X] A096 Capture 320, 390, 430 and 1440 and inspect them
+- [X] A097 [P] Verify in production, which the first version of this amendment was not: it was deployed, measured a 70px gap at 390x844 and had changed nothing
+- [X] A098 Find that the mobile override was on StyledHero, a block wrapper, while the space is distributed by StyledHeroBody, the section's direct flex child; move the margin and assert the wrapper carries none
+- [X] A099 [P] Correct SC-039 and its test after production measured 27px at 767x1024: the band's margin is a clamp, not a literal 24, so the requirement is that the two are equal
 
 ### Verification Results
 
 | Criterion | Result |
 |-----------|--------|
-| SC-039 gap is 24px | Pass at all seven mobile sizes: 320, 320, 400, 506, 538, 559, 614 measured band with 24px below |
+| SC-039 gap equals the band's margin | Pass at all seven mobile sizes: 24px from 320 to 430 and 26.85px at 767px, which is the margin itself |
 | SC-039 desktop unchanged | Pass: 141px at 768x1024 and 91px at 1440x900, both as before |
 | SC-040 never exceeds the viewport | Pass at all eleven sizes |
 | SC-041 empty space recorded | Pass: 135px/21% at 320x640, 216px/26% at 390x844, 284px/30% at 430x932 |

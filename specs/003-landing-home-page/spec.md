@@ -698,9 +698,12 @@ with honest space under it.
 - **FR-045**: Below 768px the tagline-and-buttons block MUST sit directly under the band, with no
   auto margin distributing space above it.
 - **FR-046**: At 768px and above the block MUST keep its current vertical distribution, unchanged.
-- **SC-039**: The gap from the band's bottom edge to the tagline's top edge is 24px at 320x640,
-  360x640, 375x667, 390x844, 414x896, 430x932 and 767x1024, and stays within 1px of its current
-  value at 768x1024 and 1440x900.
+- **SC-039**: The gap from the band's bottom edge to the tagline's top edge equals the band's own
+  `margin-bottom` at 320x640, 360x640, 375x667, 390x844, 414x896, 430x932 and 767x1024, and stays
+  within 1px of its previous value at 768x1024 and 1440x900. The margin is
+  `clamp(space-6, 3.5vw, space-10)`, so the gap is 24px up to 686px of width and 26.85px at 767px;
+  the requirement is that the two are equal rather than that the gap is a literal 24px, which is what
+  the first draft of this criterion asserted and which production measured as 27 at 767x1024.
 - **SC-040**: The Hero still never exceeds the viewport height at any of those sizes.
 - **SC-041**: The space below the buttons is recorded rather than concealed: it is between 20% and
   31% of the viewport at 320x640, 390x844 and 430x932.
