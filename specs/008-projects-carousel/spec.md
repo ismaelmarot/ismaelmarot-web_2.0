@@ -161,6 +161,116 @@ A visitor narrows the section by category and the strip lands on a real project,
 - **SC-010**: The full test suite passes, and any existing test that contradicts the new design is rewritten to assert the new intent rather than deleted.
 - **SC-011**: On a 900px-tall desktop viewport the card lands within 560px to 580px tall, confirming the height is derived from the viewport rather than from a hardcoded value.
 
+## Amendment 1 - The Section Is One Screen on a Phone
+
+**Applied**: 2026-10-05, after deployment.
+
+**Request**: "arreglar el desbordamiento del carrusel en movil"
+
+The section measured 855px on a 390x844 phone and 911px on a 320x640 one, so it no longer landed on
+one screen. The edge case at the top of this spec already said what should happen at 640px tall. It
+had simply not happened, and had not been noticed because no test could have noticed.
+
+### Why the card would not shrink
+
+FR-001 makes the full viewport height a floor, and the section carries `min-height: 100dvh` rather
+than `height`. That reads as a careful choice and has a consequence nobody priced: the section's
+height is `max(100dvh, natural content)`, and working out the natural content needs the card's
+natural height, which is circular. The browser breaks the circle the only way it can, by taking the
+card at its natural 455px and letting the section grow past the screen.
+
+Everything else in the chain was already built for this to work. The container and the inner column
+carry `flex: 1; min-height: 0`, and so does the strip. With an indefinite parent, `flex: 1` has no
+free space to distribute, so none of it engaged. The card's `height: 100%` fell back to `auto`,
+because a percentage height against an indefinite container resolves to auto, which is 455px.
+
+### The structural fix, and what it does not fix
+
+Below 1024px the section gets a definite height of one viewport. That alone takes 390x844 from 855
+to 844 and 320x640 from 911 to 640, because the flex chain becomes definite: the strip's `flex: 1`
+finally has leftover space, the card's `height: 100%` finally resolves, and the card takes what is
+left after the heading, the filter and the controls. FR-002 is untouched, since the card's height is
+still derived by flex and no viewport arithmetic is introduced for it.
+
+It is not enough, and measuring said so rather than assuming it. With the height pinned, the card
+shrank to 288px at 320x640 and its body to 72px, holding one line and a half of description. A card
+that fits while its content is squeezed is not the same as one that fits, and shipping the height
+change alone would have swapped a visible overflow for an invisible one.
+
+### Where the space came from instead
+
+- **The filter became one horizontally scrollable row below 520px.** Seven options totalling roughly
+  549px could never fit 288px, so it wrapped to three rows and 148px. Scrolling horizontally is the
+  interaction the strip above it already uses, and it matches the nav-like appearance these same
+  categories were given elsewhere. Worth 104px at 320px and 52px at 390px.
+- **The icon row stopped growing.** `StyledProjectRowMain` carries `flex: 1` below 520px, so it
+  absorbed every pixel of leftover space and the description received none. This was the largest
+  single cause and it was invisible in the CSS: shrinking the icon from 120px to 64px changed the
+  measured layout by exactly zero, because the row grew into whatever was left over. With
+  `flex: 0 0 auto` the leftover goes to the description, which is where it is worth anything.
+- **Padding and gaps were reduced below 520px**: section padding 40px to 28px, column gap 24px to
+  14px, card padding 32px to 20px, card gap 16px to 12px, action 48px to 44px. Every one of these is
+  space nobody sees.
+- **The icon frame drops from 120px to 80px below 520px**, with its radius scaled to stay 22% of the
+  frame. This qualifies FR-017 of the dark-card spec, which fixed 120px without naming a viewport.
+  At 120px on a 320px screen the card is 256px wide inside the gutters, and that spec's own edge case
+  already conceded the icon, the name and the action cannot share one line there.
+
+### What was tried and rejected
+
+Forcing the carousel controls onto one row below 520px, by removing `flex-wrap`, was measured before
+being written and produced a horizontal overflow at 320px: the play toggle, two arrows and six dots
+are 360px of intrinsic width against 288px available. The two rows of controls cost 42px of height and
+are kept, because a control scrolled out of reach is worse than a shorter card.
+
+The two-line description clamp below 520px was not a choice so much as a consequence. The body box
+was already smaller than three lines at 320px, so the text was being cut through the middle by the
+container rather than by the clamp, which reads as a fault rather than as truncation.
+
+### The honest limit
+
+At 320x640 the description is two lines. That is the most that fits once the icon, the name, the
+action and the chips are placed, and it is one line short of the three used everywhere else. The
+alternative was a taller section, which is the defect being fixed.
+
+### Requirements superseded by this amendment
+
+- **FR-001** is superseded. "At least the full viewport height" is precisely what allowed the section
+  to exceed the screen, and it already contradicted this spec's own short-viewport edge case, which
+  expects the card to shrink. It becomes exactly one screen.
+- The "Short viewport" edge case is superseded on its arithmetic: it budgeted 160px of section
+  padding, which has been 80px on a phone since that padding was reduced.
+
+### Requirements added by this amendment
+
+- **FR-017**: Below 1024px the section MUST have a definite height of one viewport, so the flex chain
+  resolves and the card takes the space remaining after the heading, the filter and the controls.
+- **FR-018**: The card's height MUST continue to be derived by flex. No viewport arithmetic may be
+  introduced for it.
+- **FR-019**: Below 520px the category filter MUST occupy a single row that scrolls horizontally and
+  MUST NOT wrap.
+- **FR-020**: Below 520px the icon row MUST NOT grow to absorb leftover space, since that would leave
+  the description with none.
+- **FR-021**: Below 520px the card MUST use 20px of padding, a 12px gap, an 80px icon frame with a
+  proportionally scaled radius, a 44px action and a description clamped to two lines.
+- **FR-022**: The carousel controls MUST keep wrapping rather than being forced onto a single row,
+  because their intrinsic width does not fit a phone.
+- **SC-012**: The section measures exactly the viewport height at 320x640, 360x800, 390x844, 414x896,
+  768x1024 and 1440x900, with no card extending past the bottom.
+- **SC-013**: No horizontal overflow at 320px, with the controls wrapping.
+- **SC-014**: At 320x640 the card body shows two whole lines of description, with no line cut through
+  the middle.
+- **SC-015**: The icon frame measures 120px and the name 48px at 1440px, unchanged.
+- **SC-016**: axe reports zero violations at 1440px, 768px, 390px and 320px.
+- **SC-017**: A browser test asserts the section's measured height against the viewport, since every
+  existing Projects test asserts a CSS string and not one of them could have caught 271px of
+  overflow.
+- **SC-018**: The full test suite passes.
+
+FR-002 through FR-016 stand unchanged.
+
+---
+
 ## Assumptions
 
 - The visitor arrived from a link, so the section starting at the first project is correct; restoring a previous position is out of scope.

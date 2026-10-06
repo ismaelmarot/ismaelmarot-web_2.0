@@ -232,3 +232,32 @@ T029 (ProjectRow.test.tsx) || T025 (ProjectDots.styles.ts)
 - **T024 changes the previous feature's behaviour deliberately.** `step` clamped at the last project on purpose; auto-advance needs it to wrap instead. The clamp is kept for the arrow controls, where stopping at the end is correct.
 - **T007 is not a smaller version of the requirement.** Disabling only the scroll animation under reduced motion would leave the card still changing every 7 seconds, which is the same motion more slowly. The toggle must report stopped, not show a stop glyph that does nothing.
 - **The dots are kept.** The request did not ask to remove them, so they join the toggle and the arrows rather than being replaced.
+---
+
+## Amendment 2: The Icon Frame Is Sized for the Phone It Is On
+
+Added 2026-10-05. See "Amendment 2" in `spec.md`. The measurements and the reasoning live in
+Amendment 1 of `specs/008-projects-carousel`, which is where the section height contract is owned;
+this file records the one requirement of this spec that it qualifies.
+
+- [X] T044 Drop the icon frame from 120px to 80px below 520px, with the radius scaled to stay 22% of the frame
+- [X] T045 Keep the failed-icon fallback at the same 80px, so a broken icon cannot change the geometry
+- [X] T046 Set the name to 22px and the description clamp to two lines below 520px, so every card is the same height on every phone
+- [X] T047 Reduce the action from 48px to 44px below 520px, which still satisfies FR-004's 44px minimum
+- [X] T048 Assert both sizes in `tests/e2e/projects-viewport.spec.ts`: 120px at 1440 and 80px at 320
+
+### Verification Results
+
+| Criterion | Result |
+|-----------|--------|
+| SC-013 icon frame | Pass: 120px at 1440px, 80px at 320px, radius 22% at both |
+| SC-012 of Amendment 1 | Pass: 91 unit, 333 component and 21 measured browser tests |
+
+### Notes on this amendment
+
+- **T044 is a qualification, not a reversal.** 120px stays where there is room for it. What changes is
+  that FR-017 no longer states a size without naming a viewport, which is what let a 120px frame reach
+  a 320px screen where it cannot work.
+- **T046 is about uniformity, not just truncation.** At 320x640 two lines is what fits. Leaving it to
+  the container meant the text was cut through the middle by the box rather than by the clamp, which
+  reads as a fault rather than as truncation.

@@ -254,3 +254,59 @@ Two defects found by verification and fixed before shipping, both recorded in th
 - **T014 changes content, not only style.** `object-fit: cover` crops about 4% off QEntry, which is 379×366 rather than square. This is accepted deliberately and recorded in the spec.
 - **T025 may change nothing.** The relaxed snap is only worth writing if the browser reproduces a misaligned landing, so the task is verification rather than an assumption.
 - **`useIntersectionObserver` in `src/hooks/useIntersectionObserver.ts` is left untouched.** It is unused and single-element, so it cannot track six cards without calling a hook in a loop. Adopting it would be more code than reading `scrollLeft`, and removing it is out of scope for this feature.
+---
+
+## Amendment 1: The Section Is One Screen on a Phone
+
+Added 2026-10-05, after the report "arreglar el desbordamiento del carrusel en movil". See "Amendment 1"
+in `spec.md` for FR-017 through FR-022 and SC-012 through SC-018.
+
+- [X] T049 [P] Measure the section before changing anything: 855px on a 390x844 phone and 911px on a 320x640 one, with the card at 451px and 455px
+- [X] T050 [P] Confirm the section's height is `max(100dvh, natural content)` and that resolving the natural content needs the card's natural height, which is circular and resolves to the card at its natural size
+- [X] T051 [P] Confirm every link in the flex chain already carries `flex: 1; min-height: 0` and none of it engaged, because an indefinite parent leaves `flex: 1` no free space to distribute
+- [X] T052 Give the section a definite height below 1024px, and confirm by measurement that this alone takes 390x844 to 844 and 320x640 to 640
+- [X] T053 [P] Reject the height change on its own, on the measurement rather than on taste: it left the card at 288px with a 72px body holding one and a half lines of description
+- [X] T054 Move the category filter to a single horizontally scrollable row below 520px, worth 104px at 320px and 52px at 390px
+- [X] T055 [P] Find the largest cause, which was invisible: `StyledProjectRowMain` carried `flex: 1` below 520px and absorbed all leftover space, proven by shrinking the icon from 120px to 64px and measuring a change of exactly zero
+- [X] T056 Change that row to `flex: 0 0 auto` below 520px, so the leftover reaches the description
+- [X] T057 Reclaim space from section padding, column gap, card padding, card gap and the action's leading padding below 520px, using tokens rather than literals
+- [X] T058 [P] Measure forcing the carousel controls onto one row and reject it: 360px of intrinsic width against 288px at 320px produces a horizontal overflow
+- [X] T059 Qualify the dark-card spec's 120px icon frame to 80px below 520px, recorded as Amendment 2 of that spec
+- [X] T060 Add `flex-shrink: 0` to the description and the badges, because the browser test caught one card compressed to 1.65 lines at 320px
+- [X] T061 Write `tests/e2e/projects-viewport.spec.ts`, 21 tests that measure the section against the viewport at six sizes, because every existing Projects test asserts a CSS string
+- [X] T062 Run `npm run lint`, `npm run typecheck`, `npm run test`, `npm run test:component` and `npm run build`
+- [X] T063 Run the full Playwright suite and confirm the three failures in `homepage.spec.ts` and `keyboard.spec.ts` are pre-existing, by building HEAD in a separate worktree and reproducing them there
+- [X] T064 Capture 320, 390 and 1440 and inspect them, because a card can measure correctly and still look wrong
+- [X] T065 Run axe at 1440, 768, 390 and 320
+
+### Verification Results
+
+| Criterion | Result |
+|-----------|--------|
+| SC-012 section is the viewport | Pass: 640 of 640, 800 of 800, 844 of 844, 896 of 896, 1024 of 1024, 900 of 900 |
+| SC-013 no horizontal overflow | Pass at all six sizes, with the controls wrapping as intended |
+| SC-014 no description cut mid-line | Pass at all six sizes, after T060 |
+| SC-015 desktop untouched | Pass: 120px icon and 48px name at 1440px |
+| SC-016 axe | Pass: 0 violations at 1440, 768, 390 and 320 |
+| SC-017 measured by a browser test | Pass: 21 tests in `tests/e2e/projects-viewport.spec.ts` |
+| SC-018 full suite | Pass: 91 unit and 333 component |
+
+### Notes on this amendment
+
+- **T049 is why this was not a padding tweak.** The 11px at 390px looked like a rounding issue and the
+  271px at 320px looked like a broken breakpoint. Both were the same defect, and both came from the
+  section having no definite height, which is not where the symptom pointed.
+- **T055 is the part that would not have been found by reading.** The icon row growing to absorb
+  leftover space was the largest single cause and there is nothing in the CSS that looks wrong. What
+  exposed it was measuring an icon change from 120px to 64px and getting zero difference back.
+- **T060 is what a measured test is for.** The hand measurement in the browser looked at the last card
+  in the DOM and reported a clean 2 lines. The test loops over every card and found one at 1.65,
+  because the body is a flex column whose children default to `flex-shrink: 1` and were being
+  compressed a few pixels rather than truncated by the clamp.
+- **T063 matters for the report as much as for the code.** Three e2e tests fail, and saying so
+  without knowing whether they were mine would have been worse than the bug. They fail identically at
+  HEAD: `homepage.spec.ts` looks for `#about`, `#projects`, `#technologies` and `#contact`, and the home
+  page has carried `-summary` suffixed ids since before this work.
+- **T064 is a check the numbers cannot make.** At 390px the card is 332px tall holding about 180px of
+  content, so there is a visible void between the badges and the action. That is the same composition
+  1440px has always had, and matching it is the reason it was kept rather than treated as a defect.

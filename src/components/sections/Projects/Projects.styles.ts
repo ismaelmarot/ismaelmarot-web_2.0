@@ -10,6 +10,13 @@ export const StyledProjects = styled.div`
   min-height: 0;
   flex-direction: column;
   gap: ${tokens.space[6]};
+
+  /* Amendment 1. 24px between four blocks is 72px, and on a 640px-tall phone that is the
+     difference between a two-line description and one cut through the middle. Tightened to 16px
+     below 520px only, where it is the second-largest source of space after the filter. */
+  @media (max-width: 519px) {
+    gap: ${tokens.space[4]};
+  }
 `;
 
 /* The shared Container is a plain block, and the card height depends on a flex
@@ -24,10 +31,35 @@ export const StyledProjectsContainer = styled(Container)`
 
 /* size="xl" puts 80px of block padding above and below, which is 160px of a
    640px-tall phone before any content. On narrow screens it is halved so the
-   card keeps a usable height and the section lands close to one screen. */
+   card keeps a usable height and the section lands close to one screen.
+
+   Amendment 1. The remaining part of the problem is that `min-height: 100dvh` is a floor, not a
+   size: the section's height is max(100dvh, natural content), and the natural content cannot be
+   worked out without the card's natural height. The browser breaks that circle by using the
+   card's natural 455px, which is how a 640px-tall phone ended up with an 911px section.
+
+   Giving the section a definite height below 1024px closes the circle from the other end. Every
+   link in the chain already carries `flex: 1; min-height: 0` and was waiting for a definite parent:
+   the strip's flex finally has leftover space to distribute, the card's `height: 100%` finally
+   resolves to something other than auto, and the card takes what is left after the heading, the
+   filter and the controls. The card's height stays derived by flex, so FR-002 is untouched.
+
+   1024px rather than 520px because this is about the section having a definite height, which is
+   true for any viewport where the natural content would otherwise win. Above 1024px the natural
+   content is smaller than the viewport and the floor was never binding, so desktop is left alone. */
 export const StyledProjectsSection = styled(Section)`
   @media (max-width: 767px) {
     padding-block: ${tokens.space[10]};
+  }
+
+  @media (max-width: 1023px) {
+    height: 100dvh;
+  }
+
+  /* Reclaimed from the section rather than from the card, and only where the section was over
+     budget. Stacked after the 767px block so it wins at equal specificity. */
+  @media (max-width: 519px) {
+    padding-block: ${tokens.space[8]};
   }
 `;
 

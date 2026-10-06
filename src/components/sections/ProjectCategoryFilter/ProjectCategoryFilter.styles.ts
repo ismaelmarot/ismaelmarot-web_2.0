@@ -5,6 +5,29 @@ export const StyledProjectCategoryFilter = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: ${tokens.space[2]};
+
+  /* Amendment 1 of the carousel spec. Seven options total roughly 549px, which can never fit the
+     288px available inside a 320px screen, so they wrapped to three rows and cost 148px — more than
+     the card itself needed. One row that scrolls horizontally is worth 104px there and 52px at 390px,
+     and it is the interaction the carousel strip directly above already uses, so it reads as part of
+     the same control rather than as a new pattern.
+
+     The scrollbar is hidden rather than left visible because a 44px-tall row carrying its own
+     scrollbar would give the filter back the height this recovers. The row is still reachable by
+     touch, by trackpad, and by keyboard: it is a scroll container, so tabbing to an option scrolls
+     it into view on its own.
+
+     -webkit-overflow-scrolling is left out. It has been a no-op since iOS 13 and adds a line of
+     archaeology for nothing. */
+  @media (max-width: 519px) {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
 `;
 
 /**

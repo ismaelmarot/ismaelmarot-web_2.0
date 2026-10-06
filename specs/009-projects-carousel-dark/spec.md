@@ -175,6 +175,45 @@ visual decision this feature already owns, and nothing else about it changes.
 Measured after the change: gradient present at 135deg on every viewport, no horizontal
 overflow, axe clean at 1440, 390 and 320, section still 900 of 900 on desktop.
 
+## Amendment 2 - The Icon Frame Is Sized for the Phone It Is On
+
+**Applied**: 2026-10-05, after deployment.
+
+This is a qualification of one requirement by the carousel spec's Amendment 1, which is where the
+reasoning and the measurements live. It is recorded here because FR-017 below is the requirement
+being qualified, and a spec should not be silently overridden from another file.
+
+### The qualification
+
+FR-017 fixed the icon frame at 120px without naming a viewport, and it is correct to keep 120px
+where there is room for it. It is not correct on a phone. At 320px the card is 256px wide inside the
+gutters, and this spec's own edge case already conceded that a 120px icon, the project name and a
+48px action cannot share one line there.
+
+Below 520px the frame becomes 80px, with its radius scaled to stay 22% of the frame so the
+silhouette is unchanged. Measured at 320x640 with everything else in that amendment in place, the
+description then shows two whole lines instead of one and a half cut through the middle.
+
+The name drops to 22px and the description is clamped to two lines at the same breakpoint, for the
+same reason: the card has to be the same shape on every phone, which is what the three-line clamp was
+doing on larger screens and what its own code comment says it is for.
+
+The 48px action becomes 44px below 520px, which still satisfies FR-004's 44px minimum.
+
+### Requirements superseded by this amendment
+
+- **FR-017** is superseded on mobile only. It now reads: the icon frame MUST measure 120px at 520px
+  and above, and 80px below it, with a radius of 22% of the frame at both sizes.
+
+### Requirements added by this amendment
+
+- **FR-021**: Below 520px the project name MUST compute at 22px and the description MUST be clamped to
+  two lines, so that every card has the same height on every phone.
+- **SC-013**: The icon frame measures 120px at 1440px and 80px at 320px, and its radius is 22% of the
+  frame at both sizes.
+
+---
+
 ## Assumptions
 
 - The site stays light-only, so `#1D1D1F` cards are a designed dark surface rather than a dark theme. No `prefers-color-scheme` work is included.

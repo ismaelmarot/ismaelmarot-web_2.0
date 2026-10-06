@@ -49,3 +49,8 @@ coverage/
 # tested against. Only package manager specific caches stay ignored.
 yarn.lock
 pnpm-lock.yaml
+# Artefactos de Playwright: se regeneran en cada corrida y no son fuente.
+test-results/
+playwright-report/
+blob-report/
+.playwright/

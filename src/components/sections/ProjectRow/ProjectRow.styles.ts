@@ -28,12 +28,29 @@ export const StyledProjectRow = styled.article`
   );
   color: ${tokens.colors.cardFg};
   box-shadow: var(--shadow-card);
+
+  /* Amendment 1 of the carousel spec. 32px of padding is 64px of a 640px-tall phone, and the
+     section only reaches one screen by taking every pixel it can from padding and gaps, which are
+     the two things nobody sees. Measured with everything else in that amendment in place: at
+     320x640 this is the difference between the description fitting in two whole lines and being cut
+     through the middle of the second. */
+  @media (max-width: 519px) {
+    padding: ${tokens.space[5]};
+    gap: ${tokens.space[3]};
+  }
 `;
 
 /* The icon, the name and the round action share this row on wide screens. Below
    about 520px a 120px icon plus a 48px action leaves the name almost no room, so
    the action is moved to its own line instead of being squeezed: it is pinned to
-   the end of its own row and the icon and name stay together above it. */
+   the end of its own row and the icon and name stay together above it.
+
+   Amendment 1 of the carousel spec changed `flex: 1` to `flex: 0 0 auto` here, and that is the
+   single largest cause of the mobile overflow. With `flex: 1` this row absorbed every pixel of
+   leftover space in the card and the description received none: at 320x640 the card body held 72px
+   and cut the description mid-line. It was invisible in the CSS because shrinking the icon from
+   120px to 64px changed the measured layout by exactly zero, the row simply grew into whatever
+   was left over. Now the leftover goes to the description, where it is worth something. */
 export const StyledProjectRowMain = styled.div`
   display: flex;
   align-items: center;
@@ -41,7 +58,7 @@ export const StyledProjectRowMain = styled.div`
   gap: ${tokens.space[4]};
 
   @media (max-width: 519px) {
-    flex: 1;
+    flex: 0 0 auto;
     align-content: center;
     min-height: 0;
   }
@@ -70,6 +87,18 @@ export const StyledProjectIconFrame = styled.span`
      corners are transparent resolve against a visible tile and not into the card. */
   border: 1px solid ${tokens.colors.cardBorder};
   background: ${tokens.colors.cardFrame};
+
+  /* Amendment 2 of the dark-card spec. 120px is right where there is room for it and wrong on a
+     phone: at 320px the card is 256px wide inside the gutters, and 120px of icon, the name and a
+     48px action cannot share one line there, which that spec's own edge case already conceded. 80px
+     below 520px, with the radius scaled to stay 22% of the frame so the silhouette is unchanged.
+     Measured at 320x640 this is what buys the description its second line. */
+  @media (max-width: 519px) {
+    width: 80px;
+    height: 80px;
+    flex: 0 0 80px;
+    border-radius: 18px;
+  }
 `;
 
 export const StyledProjectIcon = styled.img`
@@ -88,6 +117,13 @@ export const StyledProjectIconFallback = styled.span`
   height: 120px;
   flex: 0 0 120px;
   color: ${tokens.colors.cardFgMuted};
+
+  /* Kept at the same 80px as the frame above, so a failed icon cannot change the geometry. */
+  @media (max-width: 519px) {
+    width: 80px;
+    height: 80px;
+    flex: 0 0 80px;
+  }
 `;
 
 export const StyledProjectName = styled.h3`
@@ -99,6 +135,13 @@ export const StyledProjectName = styled.h3`
   letter-spacing: -0.02em;
   color: ${tokens.colors.cardFg};
   overflow-wrap: break-word;
+
+  /* Amendment 2 of the dark-card spec. 28px of name next to an 80px icon leaves the name a narrow
+     column that wraps "NauticAcademy" onto two lines and costs the card a row it does not have at
+     320x640. */
+  @media (max-width: 519px) {
+    font-size: 22px;
+  }
 `;
 
 /* A round plus, replacing the labelled "Ver" pill. The visible label went because
@@ -119,6 +162,13 @@ export const StyledProjectAction = styled.a`
   color: var(--color-white);
   text-decoration: none;
 
+  /* Amendment 2 of the dark-card spec. 44px rather than 48px below 520px, which still satisfies
+     FR-004's 44px minimum, so nothing here trades away reachability for height. */
+  @media (max-width: 519px) {
+    width: 44px;
+    height: 44px;
+  }
+
   &:focus-visible {
     outline: none;
     box-shadow: ${tokens.shadows.focus};
@@ -138,6 +188,23 @@ export const StyledProjectDescription = styled.p`
   -webkit-box-orient: vertical;
   overflow: hidden;
   overflow-wrap: break-word;
+
+  /* Amendment 1 of the carousel spec. The body is a flex column, so its children default to
+     flex-shrink: 1 and were being compressed when the content ran a few pixels over, which cut the
+     description through the middle of a line instead of letting the clamp truncate it cleanly. At
+     320x640 one card measured 1.65 lines. Held at its content height here, the body's own
+     overflow-y then takes over, which is what this spec's short-viewport edge case always intended. */
+  flex-shrink: 0;
+
+  /* Amendment 2 of the dark-card spec. Two lines below 520px, because that is what fits at 320x640
+     once the icon, the name, the action and the chips are placed. This is not only a cap: the body
+     box at that size was already smaller than three lines, so the text was being cut through the
+     middle by the container rather than by the clamp, which reads as a fault rather than as
+     truncation. Stating it here makes every phone the same shape, which is the job the three-line
+     clamp was doing on larger screens. */
+  @media (max-width: 519px) {
+    -webkit-line-clamp: 2;
+  }
 `;
 
 /* Pushes the categories to the bottom so the action stays anchored and cards
@@ -160,6 +227,12 @@ export const StyledProjectFooter = styled.div`
   gap: ${tokens.space[4]};
   padding-top: ${tokens.space[4]};
   flex-shrink: 0;
+
+  /* Amendment 1 of the carousel spec. 8px of padding above the action, out of the same budget as
+     the card's own padding. */
+  @media (max-width: 519px) {
+    padding-top: ${tokens.space[3]};
+  }
 `;
 
 export const StyledProjectCategories = styled.ul`
@@ -169,6 +242,10 @@ export const StyledProjectCategories = styled.ul`
   margin: 0;
   padding: 0;
   list-style: none;
+
+  /* Held at its content height for the same reason as the description: compressed, the badges
+     squashed and the row no longer matched the category count it stands for. */
+  flex-shrink: 0;
 `;
 
 export const StyledProjectCategory = styled.li`
