@@ -539,6 +539,92 @@ this amendment improves it slightly and does not pretend to fix it.
 
 ---
 
+## Amendment 6 - Sixty Percent on a Phone
+
+**Applied**: 2026-10-05, after deployment.
+
+**Request**: "que la seccion que tiene el Ismael Marot Web Developer ocupe el 60% de la vista en mobil"
+
+Amendment 5 set the band at 50% on a phone. The request is for 60%, and it is granted, but it does not
+turn out to be a one-number change, and the reason is the CTA row rather than anything about height.
+
+### Why sixty percent needs more than sixty percent
+
+At 320x640, 60% of the viewport is 384px and the rest of the Hero wants 314px: 24px of margin under
+the band, 258px of tagline and buttons, and 32px of section padding. That is 698px against a 640px
+screen, an overflow of 58px.
+
+The 258px is the interesting number. At 375x667 the same body measures 190px, and nothing about the
+text differs. The 68px difference is the CTA row: the two buttons measure 182px and 143px with a
+16px gap, which is 341px together, against 288px of available width at 320px and 343px at 375px. They
+therefore wrap at 320 and 360 and sit side by side from 375 up. Each wrap costs a whole 52px row.
+
+So the 60% is reachable, but not by changing the band's proportion. The proportion is a single
+declaration; the overflow is a layout consequence of the narrowest phones having two buttons that
+do not fit across.
+
+### The alternatives, measured before choosing
+
+- **Clamping the description to two lines** saves 32.5px and leaves 25px still over. It costs a line
+  of text and does not work.
+- **Trimming the band's margin and the section padding** together save 16px and leave 9px over.
+  Two adjustments that do not reach.
+- **Capping the band** with `min(60dvh, calc(100dvh - 314px))` produces no overflow at all, and
+  yields 51% at 320x640 and 53% at 375x667. It fails the request on exactly the phones where the
+  request was hardest, and it reintroduces the content-coupled height rule that Amendment 5 deleted:
+  the 314 is the measured body height of one device, and it would silently stop being right if the
+  tagline changed.
+- **Accepting the 58px** means the Hero stops fitting on one screen at 320x640 and 360x640, undoing
+  what Amendment 5 was for.
+
+The only option that reaches 60% everywhere without overflow is to make the CTAs fit on one row at the
+widths where they do not fit.
+
+### The cost, stated plainly
+
+Below 360px the CTA text computes at 17px rather than 20px, with 16px of horizontal padding rather
+than 24px. The height stays at 52px, which is what FR-004's 44px minimum is about, so no reachability
+is traded away: both buttons remain well above the minimum touch target in both dimensions.
+
+That is a visible change to the call to action on the two narrowest phone widths and to nothing else.
+375px and above keep their 20px buttons, because they already fit.
+
+### Requirements superseded by this amendment
+
+- **FR-040** is superseded. It read "Below 768px the band MUST occupy 50% of the viewport height", and
+  it now reads 60%.
+- **SC-029** is superseded. The measured list changes from 50% to 60% on the same seven sizes.
+- `FR-039`, `FR-041` and `FR-042` stand unchanged. 55% from 768px is untouched, no viewport-height
+  query may alter the band, and the 32px mobile padding stays: at 60% it is no longer strictly needed,
+  since 40px still fits, but it leaves 10px of slack at 320x640 instead of 2px, and reverting a
+  working value to buy nothing would be change for its own sake.
+
+### Requirements added by this amendment
+
+- **FR-043**: Below 360px the two call-to-action buttons MUST occupy a single row, because a wrapped
+  CTA row costs 68px and is what prevents the band from reaching 60% at those widths.
+- **FR-044**: Below 360px the call-to-action text MUST compute at 17px with 16px of horizontal
+  padding, and MUST keep its 52px height, so that no reachability is traded for the fit.
+- **SC-034**: The band measures exactly 60% at 320x640, 360x640, 375x667, 390x844, 414x896, 430x932
+  and 767x1024, and exactly 55% at 768x1024 and 1440x900.
+- **SC-035**: The Hero never exceeds the viewport height at any of those sizes.
+- **SC-036**: Below 360px the two CTAs render on one row, with no horizontal overflow, each at least
+  44px tall.
+- **SC-037**: A browser test measures the band's share and the CTA row's height, since a test
+  asserting that `60dvh` appears in a stylesheet establishes neither.
+- **SC-038**: The suite passes, including the tests written for Amendment 5 that had to be rewritten.
+
+FR-001 through FR-042 stand unchanged, with FR-040 replaced as above.
+
+### What this amendment improves without fixing
+
+At 320x568, an iPhone 5 and a first-generation SE, the Hero overflows 58px today and will overflow
+18px afterwards. At 320x480 it is 78px. Both are the pre-existing limit recorded by Amendment 5: the
+band needs 312px of content and the body a further 190px once the CTAs share a row, and those do not
+fit in 568 at any proportion. Improved, recorded, not resolved.
+
+---
+
 ## Assumptions
 
 - The existing design tokens, typography scale, and color palette will be reused without modification

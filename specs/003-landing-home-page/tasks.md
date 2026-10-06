@@ -563,3 +563,59 @@ SC-033.
   fails three tests, which is the only way to know the rewrite says something.
 - **A066 is the check the numbers cannot make.** At 375x667 the band went from 256px of black to 334px
   and the change is immediately visible: the black finally reads as a surface rather than as a header.
+
+---
+
+## Amendment 6: Sixty Percent on a Phone
+
+Added 2026-10-05, after the request "que la seccion que tiene el Ismael Marot Web Developer ocupe el
+60% de la vista en mobil". See "Amendment 6" in `spec.md` for FR-043, FR-044 and SC-034 through
+SC-038.
+
+- [X] A067 [P] Measure 60% before writing it: the band is 384px at 320x640 and the rest of the Hero wants 314px, an overflow of 58px
+- [X] A068 [P] Attribute the 58px to the CTA row rather than to the band: the two buttons are 182px and 143px with a 16px gap, 341px together against 288px at 320px and 343px at 375px, so they wrap below 375px and a wrapped row costs a whole 52px
+- [X] A069 [P] Measure and reject clamping the description to two lines: saves 32.5px, leaves 25px over, and costs a line of text
+- [X] A070 [P] Measure and reject trimming the band's margin and the section padding: saves 16px and leaves 9px over
+- [X] A071 [P] Measure and reject capping with `min(60dvh, calc(100dvh - 314px))`: no overflow, but 51% at 320x640, which fails the request where it was hardest, and it reintroduces the content-coupled rule Amendment 5 deleted
+- [X] A072 [P] Measure and reject accepting the 58px, which would undo what Amendment 5 was for
+- [X] A073 Raise the band's mobile minimum to 60dvh
+- [X] A074 Add a `max-width: 360px` block to `StyledHeroCta` at 17px and `space-3 space-4` padding, restating the 52px height inside it so it cannot be dropped with the padding
+- [X] A075 Rewrite the component test that asserted 50% rather than deleting it, per SC-010 of the carousel spec
+- [X] A076 Add `data-testid="cta-primary"`, which the CTA did not have
+- [X] A077 Keep the mobile section padding at `space-8`, since at 60% the 40px it replaced would also fit but leaves 2px of slack where this leaves 10
+- [X] A078 Update `tests/e2e/hero-band.spec.ts` to 60% and add two cases that measure the CTA row's actual height, since asserting that a media query exists proves nothing about wrapping
+- [X] A079 Run `npm run lint`, `npm run typecheck`, `npm run test`, `npm run test:component` and `npm run build`
+- [X] A080 Confirm the two rewritten Hero tests fail when the previous state is reinstated
+- [X] A081 Run the full Playwright suite and confirm the three failures are the same pre-existing ones
+- [X] A082 Run axe at 1440, 768, 390, 360 and 320
+- [X] A083 Capture 320, 360, 375, 390, 767 and 1440 and inspect them, because a 17px button is a visible change and cannot be judged from a measurement
+
+### Verification Results
+
+| Criterion | Result |
+|-----------|--------|
+| SC-034 band is 60% | Pass: 384, 384, 400, 506, 538, 559, 614 at the seven mobile sizes |
+| SC-034 band is 55% from 768px | Pass: 563 of 1024 and 495 of 900 |
+| SC-035 never exceeds the viewport | Pass at all eleven sizes measured, at 320x640 included |
+| SC-036 CTAs on one row | Pass at 320 and 360: one row, 52px each, no horizontal overflow |
+| SC-037 measured in a browser | Pass: 14 tests in `tests/e2e/hero-band.spec.ts` |
+| SC-038 full suite | Pass: 91 unit, 336 component and 42 measured browser tests |
+
+### Notes on this amendment
+
+- **A068 is the finding, and it is not about height.** The request was a percentage and the percentage
+  was never the obstacle. The obstacle was two buttons that do not fit across at 320px, and the 68px
+  that cost. Everything else measured was a way of hiding that rather than fixing it.
+- **A071 was the tempting answer.** A `calc()` against the measured body height gives a section that
+  fits perfectly and a band that is not 60% at 320x640. It is the same shape as the fallback Amendment
+  5 deleted: a screen-height rule quietly reading the content. Rejecting it was easier because the
+  numbers were already written down.
+- **A074 restates the height inside the media query** even though it is already on the base. A
+  52px-tall button whose height is only declared outside the block that shrinks it is one small edit
+  away from dropping below the 44px minimum, and FR-004's requirement is about reachability, not
+  about matching another declaration.
+- **A077 is deliberately no change.** At 60% the 40px would fit too. Reverting a working value to buy
+  nothing is change for its own sake, and the 8px it currently saves is now slack rather than necessity.
+- **A083 is why the screenshots are in the record.** A 17px call to action is the kind of change that
+  passes every number and still looks wrong at 320px. It does not: the two buttons read as a pair,
+  which the stacked version at that width did not.

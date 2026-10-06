@@ -79,7 +79,13 @@ export const Hero = ({
             {(cta || secondaryCta) && (
               <StyledHeroCtaGroup>
                 {cta && (
-                  <StyledHeroCta as={Link} to={cta.href} $variant="primary" ref={ctaRef}>
+                  <StyledHeroCta
+                    as={Link}
+                    to={cta.href}
+                    $variant="primary"
+                    ref={ctaRef}
+                    data-testid="cta-primary"
+                  >
                     {cta.label}
                   </StyledHeroCta>
                 )}

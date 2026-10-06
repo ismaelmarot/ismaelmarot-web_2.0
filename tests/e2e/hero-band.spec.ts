@@ -2,11 +2,11 @@ import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
 /**
- * Amendment 5 of specs/003-landing-home-page.
+ * Amendments 5 and 6 of specs/003-landing-home-page.
  *
- * The component tests for this section assert CSS strings, which is enough to prove that `50dvh`
- * appears in a stylesheet and not enough to prove that the band is half the screen. The previous
- * fallback shipped for weeks while every test in this file was green, and it was the reason a
+ * The component tests for this section assert CSS strings, which is enough to prove that `60dvh`
+ * appears in a stylesheet and not enough to prove that the band is 60% of the screen. The short
+ * viewport fallback shipped for weeks while every component test was green, and it was the reason a
  * 375x667 iPhone SE rendered the band at 38% of its viewport. So these tests measure.
  *
  * `page.evaluate` rather than `boundingBox`, for the same reason as the carousel tests: it reads the
@@ -46,19 +46,19 @@ const medir = (page: Page) =>
     };
   });
 
-test.describe('La banda del Hero es la mitad de la pantalla en movil', () => {
+test.describe('La banda del Hero es el 60% de la pantalla en movil', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
   });
 
   for (const vp of MOVIL) {
-    test(`la banda mide 50% en ${vp.width}x${vp.height}`, async ({ page }) => {
+    test(`la banda mide 60% en ${vp.width}x${vp.height}`, async ({ page }) => {
       await page.setViewportSize(vp);
       await page.waitForTimeout(250);
 
       const m = await medir(page);
 
-      expect(m.banda, `banda ${m.banda} de ${m.vh}`).toBe(Math.round(vp.height / 2));
+      expect(m.banda, `banda ${m.banda} de ${m.vh}`).toBe(Math.round(vp.height * 0.6));
       // One pixel, because sub-pixel layout is real and is not a defect.
       expect(Math.abs(m.seccion - vp.height)).toBeLessThanOrEqual(1);
       expect(m.desborde).toBeLessThanOrEqual(1);
@@ -75,6 +75,37 @@ test.describe('La banda del Hero es la mitad de la pantalla en movil', () => {
 
       expect(m.banda, `banda ${m.banda} de ${m.vh}`).toBe(Math.round(vp.height * 0.55));
       expect(Math.abs(m.seccion - vp.height)).toBeLessThanOrEqual(1);
+    });
+  }
+
+  // Amendment 6, FR-043. Los dos CTA miden 182px y 143px con 16px de hueco, 341px juntos, contra
+  // 288px disponibles a 320px. Envuelven, y una fila envuelta cuesta 52px enteros: los 58px por los
+  // que la banda no llegaba al 60% ahi. Este test mide la altura real de la fila de CTA en vez de
+  // fiarse de que la regla existe.
+  for (const vp of [
+    { width: 320, height: 640 },
+    { width: 360, height: 640 },
+  ]) {
+    test(`los CTA comparten una fila a ${vp.width}x${vp.height}`, async ({ page }) => {
+      await page.setViewportSize(vp);
+      await page.waitForTimeout(250);
+
+      const cta = await page.evaluate(() => {
+        const botones = [...document.querySelectorAll('[data-testid="hero-body"] a')];
+        const filas = new Set(botones.map((b) => Math.round(b.getBoundingClientRect().top)));
+        return {
+          filas: filas.size,
+          alturas: botones.map((b) => Math.round(b.getBoundingClientRect().height)),
+          suma: botones.reduce((a, b) => a + b.getBoundingClientRect().width, 0),
+          desbordeHorizontal: document.documentElement.scrollWidth > window.innerWidth,
+        };
+      });
+
+      expect(cta.filas, `los CTA ocupan ${cta.filas} fila(s)`).toBe(1);
+      // FR-004: 44px es el minimo, y 52px es lo que tienen por encima. Encojer la fuente no puede
+      // costar alto, que es el punto de la amendment.
+      for (const alto of cta.alturas) expect(alto).toBeGreaterThanOrEqual(44);
+      expect(cta.desbordeHorizontal).toBe(false);
     });
   }
 

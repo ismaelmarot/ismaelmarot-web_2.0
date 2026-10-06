@@ -160,23 +160,42 @@ describe('Hero identity band', () => {
     expect(css).not.toContain('min-height: 0');
   });
 
-  it('halves the band on a phone and keeps 55% from 768px up', () => {
+  // Amendment 6. This test asserted 50% when Amendment 5 introduced it and asserts 60% now.
+  // Rewritten rather than deleted, per SC-010 of the carousel spec: a test that contradicts the new
+  // design is replaced by one that states the new intent, because deleting it would leave 50%
+  // unguarded.
+  it('gives the band 60% on a phone and keeps 55% from 768px up', () => {
     renderHero();
     const css = cssOf(screen.getByTestId('hero-band'));
     // Two statements rather than one inverted rule, so desktop is untouched by construction.
-    // 55% left 464px of black above 190px of tagline at 390x844, and put the name 136px below a
-    // 52px header.
     expect(css).toContain('@media (max-width: 767px)');
-    expect(css).toContain('min-height: 50dvh');
+    expect(css).toContain('min-height: 60dvh');
+    // The desktop base is unchanged by both amendments, and is asserted here rather than only in
+    // the test above so that neither percentage can be changed without the other being noticed.
+    expect(css).toContain('min-height: 55dvh');
   });
 
-  it('takes the two pixels at 320x640 from the section padding, not from the type', () => {
+  it('keeps the mobile bottom padding at 32px, which still leaves slack at 60%', () => {
     renderHero();
-    // At 320x640 the band is 320px of 50% and the rest of the Hero wants 322. The band's margin and
-    // the name's size are both untouched; this is the only thing given up.
+    // Amendment 5 took these 8px so that 50% and one screen could both hold at 320x640. At 60%
+    // the 40px it replaced would fit too, but that leaves 2px of slack where this leaves 10, and
+    // reverting a working value to buy nothing would be change for its own sake.
     expect(getCssForElement(screen.getByTestId('hero-section'))).toContain(
       'padding-bottom: var(--space-8)'
     );
+  });
+
+  // Amendment 6, FR-043 and FR-044. The CTA row is what made 60% unreachable at 320px and 360px:
+  // the two buttons are 341px together against 288px of width, so they wrapped and cost 68px.
+  it('shrinks the CTAs below 360px so they share one row, keeping their height', () => {
+    renderHero();
+    const css = getCssForElement(screen.getByTestId('cta-primary'));
+    expect(css).toContain('@media (max-width: 360px)');
+    expect(css).toContain('font-size: 17px');
+    expect(css).toContain('padding: var(--space-3) var(--space-4)');
+    // FR-004's 44px minimum is about reachability, and a smaller font must not cost height. The
+    // 52px is restated inside the media query so that it cannot be dropped along with the padding.
+    expect(css).toContain('height: 52px');
   });
 
   it('keeps the bottom padding on the scale, matching the summary sections', () => {

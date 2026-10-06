@@ -85,12 +85,15 @@ export const StyledHeroBand = styled.div`
 
        The band's own floor is its content, 312px at 320px wide because the name wraps to two lines
        there and the band reserves the header's height plus a spacing step above itself. That is 49%
-       of a 640px screen, so 50% clears it at every viewport from about 625px tall upwards. Below
-       that min-height grows the band to fit rather than clipping, which is what the previous
-       max-height: 720px fallback was for, except that it did it by discarding the proportion
-       instead. That fallback is gone: it left a 375x667 iPhone SE showing 38% of the screen in
-       black, the smallest band on the site, on a phone of completely ordinary size. */
-    min-height: 50dvh;
+       of a 640px screen. Below that floor min-height grows the band to fit rather than clipping,
+       which is what the previous max-height: 720px fallback was for, except that it did it by
+       discarding the proportion instead. That fallback is gone: it left a 375x667 iPhone SE showing
+       38% of the screen in black, the smallest band on the site, on a phone of ordinary size.
+
+       Amendment 6 raises this to 60%. The proportion is a single declaration; the work was in the
+       CTA row, which wraps below 375px and cost the band 58px of overflow at 320x640. See
+       FR-043 for the fix and the reasons the alternatives were rejected. */
+    min-height: 60dvh;
   }
   /* 40px of white between the black surface and the tagline, matching the gap the CTA group
      already uses below the tagline. With the band's own 64px of padding the title sits further
@@ -206,6 +209,26 @@ export const StyledHeroCta = styled.a<{ $variant?: 'primary' | 'ghost' }>`
             color: ${tokens.colors.white};
           }
         `}
+
+  /* Amendment 6, FR-043. The two buttons measure 182px and 143px with a 16px gap, which is 341px
+     together, against 288px of width available at 320px and 343px at 375px. They therefore wrap
+     below 375px, and a wrapped row costs a whole 52px line, which is the 58px by which the band
+     could not reach 60% at 320x640.
+
+     17px with 16px of horizontal padding brings them to 277px. The height stays at 52px, which is
+     what FR-004's 44px minimum is about: no reachability is traded for the fit, in either
+     dimension. 375px and above keep their 20px buttons, because they already fit.
+
+     Measured against the alternatives, none of which reached: clamping the description to two lines
+     left 25px over and cost a line of text; trimming the band's margin and the section padding left
+     9px over; and capping the band with a calc() against its measured content height gave no
+     overflow but only 51% at 320x640, and reintroduced the content-coupled rule Amendment 5
+     deleted. */
+  @media (max-width: 360px) {
+    height: 52px;
+    padding: ${tokens.space[3]} ${tokens.space[4]};
+    font-size: 17px;
+  }
 
   &:focus-visible {
     outline: 2px solid ${tokens.colors.focus};
