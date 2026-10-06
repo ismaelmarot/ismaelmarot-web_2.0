@@ -122,6 +122,23 @@ export const StyledHero = styled.div`
      top so the band can reach y:0, which means the centring that used to come from the section has
      to come from here instead. */
   margin-block: auto;
+
+  /* Amendment 7. The auto margin is the right answer for a block that is floating in leftover space
+     and the wrong one for a block that is visually part of the band.
+
+     Measured: the band's own margin-bottom has been 24px at every mobile size, and the gap was not
+     that. Centring splits the leftover evenly, and since the band is a fixed 60% while this block is
+     a fixed 190px, the leftover grows with the screen and so did the gap: 29px at 320x640, 70px at
+     390x844, 104px at 430x932 and 124px at 767x1024. One declaration produced all four.
+
+     Below 768px the block now sits under the band, so the gap is that 24px margin at every mobile
+     size. The space moves below the block, which is where it is least noticeable: between 21% and
+     30% of a phone screen is empty there. That was the alternative to lowering the band back to 50%,
+     which Amendment 6 had just raised. Desktop keeps the centred block unchanged: at 55% it is part
+     of a composition that was built around it. */
+  @media (max-width: 767px) {
+    margin-block: 0;
+  }
 `;
 
 export const StyledHeroContent = styled.div`

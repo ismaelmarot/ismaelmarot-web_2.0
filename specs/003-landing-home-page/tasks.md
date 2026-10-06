@@ -619,3 +619,53 @@ SC-038.
 - **A083 is why the screenshots are in the record.** A 17px call to action is the kind of change that
   passes every number and still looks wrong at 320px. It does not: the two buttons read as a pair,
   which the stacked version at that width did not.
+
+---
+
+## Amendment 7: The Text Belongs to the Band, So It Sits Next to It
+
+Added 2026-10-05, after the request that the tagline and the buttons sit closer to the band on mobile.
+See "Amendment 7" in `spec.md` for FR-045, FR-046 and SC-039 through SC-043.
+
+- [X] A084 [P] Measure before touching anything, and find the gap is not the band's margin: `margin-bottom` has been 24px at every mobile size and never anything else
+- [X] A085 [P] Attribute the real cause to `margin-block: auto` on the block below the band, which splits the leftover evenly and therefore grows with the screen: 29px at 320x640, 70px at 390x844, 104px at 430x932, 124px at 767x1024
+- [X] A086 [P] Read FR-030 and SC-022 before changing anything, and record that the request contradicts SC-022 at 390px, so this is an amendment rather than a tweak
+- [X] A087 [P] Record the cost of the change: between 21% and 30% of a mobile screen is empty below the buttons, and confirm it is chosen over lowering the band to 50% or raising it further
+- [X] A088 Add `margin-block: 0` below 768px to the block, leaving desktop centred
+- [X] A089 Add `data-testid="hero-block"`, which the block did not have, so the test targets the element the margin is on rather than its container
+- [X] A090 Rewrite the test Amendment 2 wrote, keeping the placement requirement and adding the mobile scope, rather than deleting it per SC-010 of the carousel spec
+- [X] A091 Add ten browser tests that measure the gap at 24px on the seven mobile sizes and the centred block at the three desktop ones
+- [X] A092 Run `npm run lint`, `npm run typecheck`, `npm run test`, `npm run test:component` and `npm run build`
+- [X] A093 Confirm the rewritten Hero test fails when the amendment is removed, so it is not vacuous
+- [X] A094 Run the full Playwright suite and confirm the three failures are the same pre-existing ones
+- [X] A095 Run axe at 1440, 768, 390, 360 and 320
+- [X] A096 Capture 320, 390, 430 and 1440 and inspect them
+
+### Verification Results
+
+| Criterion | Result |
+|-----------|--------|
+| SC-039 gap is 24px | Pass at all seven mobile sizes: 320, 320, 400, 506, 538, 559, 614 measured band with 24px below |
+| SC-039 desktop unchanged | Pass: 141px at 768x1024 and 91px at 1440x900, both as before |
+| SC-040 never exceeds the viewport | Pass at all eleven sizes |
+| SC-041 empty space recorded | Pass: 135px/21% at 320x640, 216px/26% at 390x844, 284px/30% at 430x932 |
+| SC-042 measured in a browser | Pass: 14 tests in `tests/e2e/hero-band.spec.ts` |
+| SC-043 full suite | Pass: 91 unit, 336 component and 41 measured browser tests |
+
+### Notes on this amendment
+
+- **A084 is why this amendment was one declaration.** The request described a gap and the obvious
+  suspect was the band's margin. Measuring showed that margin has been 24px all along, and the gap
+  was 124px at 767x1024. Had the change been made by eye, the margin would have been shrunk and the
+  gap would have stayed.
+- **A086 is the SDD discipline earning its place.** SC-022 required the space above and below the block
+  to match within 1px at 390px, which is the direct opposite of what was asked. Writing the amendment
+  first is what surfaced that contradiction; changing the CSS first would have produced a green suite
+  that quietly violated a standing criterion.
+- **A087 is the honest part of this record.** The space did not disappear, it moved below the buttons,
+  and at 430x932 that is 30% of the screen. It is documented as SC-041 rather than quietly accepted,
+  because the next person to look at this section will wonder whether 284px of white is intentional.
+- **A089 came from the test failing for a good reason.** The margin is on the block, not the container,
+  and asserting on the container found the wrong element's rules. Reaching for `parentElement` to check
+  the relationship was rejected by lint for node access, and the placement is already covered by the
+  band assertion, so the relationship check was dropped rather than worked around.

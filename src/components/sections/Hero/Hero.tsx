@@ -72,7 +72,7 @@ export const Hero = ({
       </StyledHeroBand>
 
       <StyledHeroBody size="xl" padding="lg" data-testid="hero-body">
-        <StyledHero>
+        <StyledHero data-testid="hero-block">
           <StyledHeroContent>
             <StyledHeroTagline as="p" $variant="description">{tagline}</StyledHeroTagline>
 

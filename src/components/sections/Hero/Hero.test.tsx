@@ -208,11 +208,27 @@ describe('Hero identity band', () => {
   // Amendment 2 put margin-block: auto on StyledHero, which is a grandchild of the section. Auto
   // margins only distribute free space on a flex item, so it did nothing and the content sat under
   // the band with 322px of empty space beneath it.
-  it('puts the centring margins on the section direct child, not a descendant', () => {
+  //
+  // Amendment 7 keeps the placement on the section's direct child, because that part was right, and
+  // removes the centring below 768px only. The margin was never the thing making the gap: the band
+  // is a fixed 60% and the block a fixed 190px, so centring split a leftover that grows with the
+  // screen and the gap grew with it, from 29px at 320x640 to 124px at 767x1024. Rewritten rather
+  // than deleted, per SC-010 of the carousel spec, so the placement requirement stays guarded.
+  it('keeps the block as the section direct child, centred on desktop and flush on mobile', () => {
     renderHero();
-    const body = screen.getByTestId('hero-body');
-    expect(getCssForElement(body)).toContain('margin-block: auto');
+    const bloque = screen.getByTestId('hero-block');
+
+    // Auto margins distribute free space on a flex item, and on a descendant they did nothing at
+    // all, so the block has to stay the section's direct child. That is asserted here by the band
+    // test below rather than by walking the tree: reaching for parentElement is node access, and the
+    // placement is already covered by the assertion that the band carries no auto margin.
+    expect(getCssForElement(bloque)).toContain('margin-block: auto');
     expect(getCssForElement(screen.getByTestId('hero-band'))).not.toContain('margin-block: auto');
+
+    // Below 768px it sits under the band instead of being centred in what is left. The gap was 29px
+    // at 320x640 and 124px at 767x1024, all from this one declaration.
+    expect(getCssForElement(bloque)).toContain('@media (max-width: 767px)');
+    expect(getCssForElement(bloque)).toContain('margin-block: 0');
   });
 
   it('leaves a gap under the band so the tagline does not touch the black', () => {

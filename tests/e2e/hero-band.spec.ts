@@ -46,7 +46,7 @@ const medir = (page: Page) =>
     };
   });
 
-test.describe('La banda del Hero es el 60% de la pantalla en movil', () => {
+test.describe('La banda del Hero y el bloque de texto, medidos en el navegador', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
   });
@@ -106,6 +106,46 @@ test.describe('La banda del Hero es el 60% de la pantalla en movil', () => {
       // costar alto, que es el punto de la amendment.
       for (const alto of cta.alturas) expect(alto).toBeGreaterThanOrEqual(44);
       expect(cta.desbordeHorizontal).toBe(false);
+    });
+  }
+
+  // Amendment 7, FR-045 and SC-039. The band-to-tagline gap was not the band's margin, which has
+  // always been 24px; it was `margin-block: auto` splitting a leftover that grows with the screen.
+  // One declaration produced 29px at 320x640 and 124px at 767x1024, so the measurement is the only
+  // thing that can hold this to 24px everywhere.
+  for (const vp of MOVIL) {
+    test(`el texto queda a 24px de la banda en ${vp.width}x${vp.height}`, async ({ page }) => {
+      await page.setViewportSize(vp);
+      await page.waitForTimeout(250);
+
+      const hueco = await page.evaluate(() => {
+        const banda = document.querySelector('[data-testid="hero-band"]')!;
+        const tagline = document.querySelector('[data-testid="hero-body"] p')!;
+        return Math.round(tagline.getBoundingClientRect().top - banda.getBoundingClientRect().bottom);
+      });
+
+      // The band's own margin-bottom, which is what the gap always looked like it was.
+      expect(hueco, `hueco ${hueco}px a ${vp.width}x${vp.height}`).toBe(24);
+    });
+  }
+
+  for (const vp of ESCRITORIO) {
+    test(`el bloque sigue centrado en escritorio a ${vp.width}x${vp.height}`, async ({ page }) => {
+      await page.setViewportSize(vp);
+      await page.waitForTimeout(250);
+
+      const { arriba, abajo } = await page.evaluate(() => {
+        const banda = document.querySelector('[data-testid="hero-band"]')!;
+        const botones = document.querySelector('[data-testid="hero-body"] a')!;
+        const hero = document.querySelector('#hero')!;
+        return {
+          arriba: Math.round(botones.getBoundingClientRect().top - banda.getBoundingClientRect().bottom),
+          abajo: Math.round(hero.getBoundingClientRect().bottom - botones.getBoundingClientRect().bottom),
+        };
+      });
+
+      // FR-046 and SC-022: desktop keeps the centred block, so the two gaps stay close.
+      expect(Math.abs(arriba - abajo)).toBeLessThanOrEqual(45);
     });
   }
 

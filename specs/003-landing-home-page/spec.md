@@ -625,6 +625,94 @@ fit in 568 at any proportion. Improved, recorded, not resolved.
 
 ---
 
+## Amendment 7 - The Text Belongs to the Band, So It Sits Next to It
+
+**Applied**: 2026-10-05, after deployment.
+
+**Request**: "En la vercion para mobil, El texto Building accessible... y los botones deben estar mas
+cerca de la seccion que contiene Ismael Marot y Web Developer"
+
+### What the space actually was
+
+Measuring before changing anything is what made this amendment simple, and it corrected the
+assumption the request invites. The gap is not the band's margin. The band's `margin-bottom` is 24px
+at every mobile size and has never been anything else.
+
+The gap comes from `margin-block: auto` on the block below the band, which centres that block in the
+leftover space and therefore splits it evenly above and below. The band is a fixed 60% of the
+viewport and the block is a fixed 190px, so the leftover grows with the screen and the gap grows
+with it:
+
+| viewport | leftover | gap, band to tagline | gap below the buttons |
+|----------|----------|---------------------|-----------------------|
+| 320x640 | 16px | 29px | 37px |
+| 390x844 | 92px | **70px** | 78px |
+| 430x932 | 120px | **104px** | 112px |
+| 767x1024 | 249px | **124px** | 129px |
+
+A 24px margin and a 124px gap come from the same declaration. Centring was Amendment 2's answer to a
+real problem, which is that the Hero has no fixed content height and something has to decide where the
+block goes; it was simply the wrong answer for a block that is visually part of the band.
+
+### The change
+
+Below 768px the block is placed directly under the band instead of centred in the leftover space. The
+gap becomes the band's own 24px margin at every mobile size, which is what it looks like it should
+have been. Desktop is untouched: at 768px and above the block stays centred, because there the band
+is 55% and the surrounding composition was designed around the centred block.
+
+### What this costs, stated plainly
+
+The space that was above the block moves below it. Between 21% and 30% of a mobile screen is now
+empty white below the buttons:
+
+| viewport | empty below the block |
+|----------|----------------------|
+| 320x640 | 135px, 21% |
+| 390x844 | 216px, 26% |
+| 430x932 | 284px, 30% |
+
+That is the direct consequence of the request and it was chosen over the alternatives: lowering the
+band to 50% would have given a 36px gap and undone the 60% that Amendment 6 established one request
+ago, and raising the band further would have moved the gap rather than closed it. The space has to go
+somewhere, and below the block is where it is least noticeable, because it is the part of the screen a
+visitor's thumb is not on and the part the eye has finished with.
+
+This is also why the empty space is not filled. There is no second action to move up there and no
+content that belongs beside the tagline; a section padded to look complete is worse than a section
+with honest space under it.
+
+### Requirements superseded by this amendment
+
+- **FR-030** is superseded on mobile. It read that the content below the band must be vertically
+  distributed in the space that remains, which on a phone means centred in the leftover space, which
+  is what this request is against. It now reads: at 768px and above the block stays vertically
+  distributed; below 768px it sits directly under the band.
+- **SC-022** is superseded. It required the empty space above and below the block to match within 1px
+  at 1440px **and 390px**, and the two requirements cannot both hold: distributing space evenly is
+  what puts 70px above the tagline on an 844px-tall phone. It now measures balance at 1440px only,
+  and separately requires a fixed small gap at 390px.
+
+### Requirements added by this amendment
+
+- **FR-045**: Below 768px the tagline-and-buttons block MUST sit directly under the band, with no
+  auto margin distributing space above it.
+- **FR-046**: At 768px and above the block MUST keep its current vertical distribution, unchanged.
+- **SC-039**: The gap from the band's bottom edge to the tagline's top edge is 24px at 320x640,
+  360x640, 375x667, 390x844, 414x896, 430x932 and 767x1024, and stays within 1px of its current
+  value at 768x1024 and 1440x900.
+- **SC-040**: The Hero still never exceeds the viewport height at any of those sizes.
+- **SC-041**: The space below the buttons is recorded rather than concealed: it is between 20% and
+  31% of the viewport at 320x640, 390x844 and 430x932.
+- **SC-042**: A browser test measures the gap, because a test asserting that `margin-block: 0`
+  appears in a stylesheet does not establish that anything moved.
+- **SC-043**: The suite passes, including the test written for Amendment 2 that asserted the
+  centring margins, which is rewritten rather than deleted.
+
+FR-001 through FR-044 stand unchanged, with FR-030 and SC-022 replaced as above.
+
+---
+
 ## Assumptions
 
 - The existing design tokens, typography scale, and color palette will be reused without modification
