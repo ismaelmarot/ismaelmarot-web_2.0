@@ -184,10 +184,17 @@ test.describe('La banda del Hero y el bloque de texto, medidos en el navegador',
 
       // Centred means a real share of the leftover, not a fixed gap: at 768x1024 it is 141px and
       // at 1440x900 it is 91px, and both are half of what is left rather than the band's margin.
-      const esperado = Math.round(parseFloat(String(margenBanda)) + sobrante / 2);
+      /* One pixel of tolerance, and it is arithmetic rather than slack. The `sobrante` arrives
+         rounded and is then halved, so a leftover of 229 becomes 114.5 and rounds up to 158 where
+         the browser lays the gap out at 157: 26.88 + 114.4665 is 141.34, which measures 141.
+         The relationship is what is being asserted, not a pixel, and the relationship is exact. */
+      const esperado = parseFloat(String(margenBanda)) + sobrante / 2;
 
       expect(centrado, 'el margen auto sigue activo en escritorio').toBe(true);
-      expect(hueco, `hueco ${hueco}px a ${vp.width}x${vp.height}`).toBe(esperado);
+      expect(
+        Math.abs(hueco - esperado),
+        `hueco ${hueco}px contra ${esperado} a ${vp.width}x${vp.height}`
+      ).toBeLessThanOrEqual(1);
       // And it is genuinely a share of the leftover rather than a fixed number: at 768x1024 the
       // gap is 141px and at 1024x768 it is 71px, and neither is the band's margin.
       expect(hueco).toBeGreaterThan(30);

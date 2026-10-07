@@ -1,6 +1,7 @@
 import { Hero } from '@/components/sections/Hero';
 import { SectionSummary } from '@/components/sections/SectionSummary';
 import { TechnologyMarquee } from '@/components/sections/TechnologyMarquee';
+import { ProjectIconStrip } from '@/components/sections/ProjectIconStrip';
 import { siteConfig } from '@/data/site-config';
 import { StyledIndexPage } from './Index.styles';
 
@@ -27,6 +28,10 @@ export const IndexPage = () => {
         ctaLabel="Ver proyectos"
         ctaHref="/projects"
         background="muted"
+        /* The section says a selection of projects exists and then showed nothing. The six apps
+            are the evidence for its own claim, and they go through the featured slot the
+            technology marquee already uses, so this shared section is not changed to make room. */
+        featuredItems={<ProjectIconStrip />}
       />
       <SectionSummary
         id="technologies-summary"
