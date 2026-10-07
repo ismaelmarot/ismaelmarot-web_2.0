@@ -137,9 +137,20 @@ export const StyledProjectName = styled.h3`
 
   /* Amendment 2 of the dark-card spec. 28px of name next to an 80px icon leaves the name a narrow
      column that wraps "NauticAcademy" onto two lines and costs the card a row it does not have at
-     320x640. */
+     320x640.
+
+     Amendment 4 reserves two lines on desktop, and this is the second of the two causes of unequal
+     card heights: car-expense-tracker has a one-line description and was still 10px taller than the
+     cards beside it, because its heading wrapped. Describing it was not enough. Expressed as a
+     multiple of line-height rather than as a pixel figure so it follows the type if the token moves. */
   @media (max-width: 519px) {
     font-size: 22px;
+  }
+
+  /* Above 520px, where the card's height is fixed at 381px and a two-line heading would otherwise
+     make that one card taller than the five beside it. */
+  @media (min-width: 520px) {
+    min-height: calc(2 * 1.1em);
   }
 `;
 

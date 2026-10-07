@@ -339,6 +339,91 @@ autoplay, the controls and the accessibility contract are untouched by a change 
 
 ---
 
+## Amendment 4 - Every Card Is the Same Height
+
+**Applied**: 2026-10-06, after implementation and deployment.
+
+**Request**: "todas las cards de pryectos deben tener el mismo tamano de ancho y alto entre ellas"
+
+This is not a new requirement. It is one this feature already carried and Amendment 3 broke, and
+the carousel spec states it in as many words at its own line 116: a long description "stays clamped
+to three lines **so cards stay the same height**".
+
+### What was measured
+
+At 900px and above the six cards came out at four different heights, at every viewport:
+
+| card | size | name lines | description lines |
+|------|------|-----------|-------------------|
+| trash2treasure | 620x326 | 1 | 1 |
+| car-expense-tracker | 620x**336** | **2** | 1 |
+| LinkIO | 620x326 | 1 | 1 |
+| QEntry | 620x**353** | 1 | **2** |
+| NauticAcademy | 620x**381** | 1 | **3** |
+| cash-counter | 620x326 | 1 | 1 |
+
+Two separate causes, and only one of them is the description the request named.
+
+**The description** varies because the clamp permits three lines, and a line is 27px. One line gives a
+70px body, two give 97, three give 125. `NauticAcademy` at 168 characters falls into the third.
+
+**The name is a second cause, and fixing only the description would have left the defect in place.**
+`car-expense-tracker` has a one-line description and is still 10px taller than `trash2treasure`,
+because its heading wraps to two lines and the icon row grows with it. Every other heading is one line.
+
+Below 900px the cards were already equal, because they stretch to the height of the strip there.
+
+### The cause is in Amendment 3
+
+Amendment 3 replaced the card's height with `height: auto` alongside `align-self: flex-start`, in
+order to stop 184px of section background from showing under a smaller card at 1440x900. Those two
+declarations are what let each card measure its own content. Before it, `height: 100%` equalised
+every card in the strip as a side effect of the flex chain.
+
+The equal height is restored as a stated requirement rather than as that side effect, because a side
+effect is not something to rely on: it held below 900px by accident and broke above it by accident.
+
+### The measure
+
+381px, which is the tallest card measured. Nothing is truncated to reach it: the longest description
+still shows all three lines and the longest name still shows both of its lines.
+
+The name reserves two lines rather than one. Truncating it would be cheaper, and it was considered,
+but two names in the data wrap and cutting them removes the thing that identifies the project. The
+cost of reserving is white space under the shorter names, which is invisible in a carousel because
+only one card is centred at a time.
+
+**The clamp is what makes the fixed height safe.** A description of four lines is cut to three by the
+existing clamp, so the height cannot grow when the data changes. That is why this amendment fixes the
+height without capping the content.
+
+### Requirements superseded by this amendment
+
+- **FR-023** is superseded. It read that cards carry an explicit maximum height so the height is set
+  by the flex chain rather than by the width. A maximum height is not a fixed height: it lets a short
+  card stop short. Cards are now exactly 381px from 900px up.
+
+### Requirements added by this amendment
+
+- **FR-027**: At 900px and above, every card MUST measure exactly 381px tall and 620px wide,
+  independent of its name or description length, since the two vary by up to 55px between the data
+  in `projects.json`.
+- **FR-028**: The project name MUST reserve the height of two lines at 900px and above, expressed as a
+  multiple of its own line height, so that a one-line name does not shorten its card.
+- **FR-029**: No project's name or description may be truncated to meet FR-027. The three-line clamp
+  remains the only truncation in force, and it applies identically to every card.
+- **SC-021**: All six cards measure the same width and the same height at 900x900, 1024x768,
+  1280x800 and 1440x900, which is the range where they differed before this amendment.
+- **SC-022**: No card's description is cut mid-line at any of those sizes, and the three-line clamp is
+  what bounds it rather than the container.
+- **SC-023**: Below 900px the cards remain equal, which they already were and which no rule in this
+  amendment may disturb.
+- **SC-024**: A browser test measures every card at every tested viewport and compares them against
+  each other, because this feature passed every one of its own criteria while four of its six cards
+  were different heights.
+
+---
+
 ## Assumptions
 
 - The site stays light-only, so `#1D1D1F` cards are a designed dark surface rather than a dark theme. No `prefers-color-scheme` work is included.

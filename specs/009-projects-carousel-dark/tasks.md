@@ -329,3 +329,56 @@ FR-022 through FR-026 and SC-014 through SC-020.
 - **T065 earned its place.** The band of grey under the card at 1440 was invisible to every test
   written for this amendment: the section was the right height, the card was the right size, and the
   contrast was correct. It only showed up in a screenshot.
+
+---
+
+## Amendment 4: Every Card Is the Same Height
+
+Added 2026-10-06, after the request "todas las cards de pryectos deben tener el mismo tamano de ancho
+y alto entre ellas". See "Amendment 4" in `spec.md` for FR-027 through FR-029 and SC-021 through
+SC-024.
+
+- [X] T066 [P] Measure all six cards at nine viewports before changing anything: four distinct heights from 326 to 381 at every viewport from 900px up, and equal below it
+- [X] T067 [P] Separate the two causes, one of which the request did not name: the description varies by 27px per line inside the three-line clamp, and `car-expense-tracker` is 10px taller with a one-line description because its heading wraps
+- [X] T068 [P] Confirm the cause is Amendment 3's own `align-self: flex-start` with `height: auto`, which let each card measure its content, where `height: 100%` had equalised them as a side effect below 900px
+- [X] T069 Read the carousel spec at its line 116 and record that this was already a requirement, so this is a broken requirement and not a new one
+- [X] T070 Replace the 380px maximum with a fixed 381px, the tallest card measured, so that nothing is truncated to reach it
+- [X] T071 Reserve two lines on the project name above 520px, as a multiple of its own line height rather than as a pixel figure
+- [X] T072 [P] Confirm the three-line clamp is what keeps a fixed height safe when the data changes, rather than the container bounding the content
+- [X] T073 Add a browser test that compares every card against every other card at four desktop viewports, naming each card and its height when they disagree
+- [X] T074 Assert in the same test that no description is cut through the middle, so reaching a uniform height cannot mean truncating the text
+- [X] T075 Update the size test from "no taller than 380" to exactly 381, since a maximum is what allowed short cards to stop short
+- [X] T076 Run `npm run lint`, `npm run typecheck`, `npm run test`, `npm run test:component` and `npm run build`
+- [X] T077 Reinstate the maximum height and remove the reserved name lines, and confirm the new test fails at all four viewports naming each card
+- [X] T078 Run the full Playwright suite twice
+- [X] T079 Run axe at 1440, 768, 390 and 320
+- [X] T080 Capture 1440 and 1024 and inspect them
+
+### Verification Results
+
+| Criterion | Result |
+|-----------|--------|
+| SC-021 all cards equal | Pass: 620x381 at 900x900, 1024x768, 1280x800 and 1440x900; equal at the five sizes below 900 too |
+| SC-022 nothing truncated | Pass: no description cut mid-line, and NauticAcademy still shows all three lines |
+| SC-023 below 900 unchanged | Pass: 835x569, 704x698, 366x662, 326x532 and 256x328, one height each |
+| SC-024 compared to each other | Pass: 5 tests that fail with per-card heights when the fix is removed |
+| SC-019 axe | Pass: 0 violations at 1440, 768, 390 and 320 |
+| SC-020 full suite | Pass: 99 unit, 336 component and 61 browser |
+
+### Notes on this amendment
+
+- **T067 is the part that would have been missed.** The request named the description, and fixing only
+  the description leaves `car-expense-tracker` 10px taller than the cards beside it. Four heights came
+  from two causes, and the second was only visible once each card's name and description were
+  measured separately rather than as one total.
+- **T068 records a defect this project caused and then looked for elsewhere.** Amendment 3 needed
+  `align-self: flex-start` to stop 184px of section background showing under a smaller card, and the
+  equal heights had been an accident of `height: 100%`. The amendment restores the height as a stated
+  requirement, because an accident that held below 900px and broke above it is not a mechanism.
+- **T073 is the test whose absence mattered most.** Every criterion in this feature measured the
+  section or one card, so nothing compared a card to another. Six cards at four different heights
+  passed everything. The new test names each card and its height on failure, so the next occurrence
+  says which card and by how much instead of just failing.
+- **T070 is 381 and not 380.** 380 was the maximum from Amendment 3, which no card reached: the
+  tallest measured 381. Using the measured value rather than the round one is what makes the claim
+  "nothing is truncated to reach it" true.

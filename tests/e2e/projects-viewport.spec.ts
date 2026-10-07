@@ -26,6 +26,13 @@ const VIEWPORTS = [
    900px-tall viewport, which is how a real overflow went unnoticed: measured on production, the
    section was 795 of 720 at 1280x720, 782 of 700 at 1024x700 and 782 of 768 at 1024x768. Every
    measurement in this file before now would have passed while all three were broken. */
+const ESCRITORIO_ALTO = [
+  { width: 900, height: 900 },
+  { width: 1024, height: 768 },
+  { width: 1280, height: 800 },
+  { width: 1440, height: 900 },
+];
+
 const ALTOS = [
   { width: 1024, height: 700 },
   { width: 1024, height: 768 },
@@ -110,10 +117,11 @@ test.describe('Projects section is one screen', () => {
       return { w: Math.round(r.width), h: Math.round(r.height) };
     });
 
-    // 800x476 before Amendment 3. 620 wide, and no taller than 380, which is where the 96px icon
-    // row, the description clamp, the badges and the 52px action all still fit.
+    // 800x476 before Amendment 3, then a 380px maximum, now an exact 381px: the maximum let short
+    // cards stop short of it, which is what Amendment 4 fixed. All six agree, and this one agrees
+    // with them because it is the same fixed value the other test asserts across every card.
     expect(card.w).toBe(620);
-    expect(card.h).toBeLessThanOrEqual(380);
+    expect(card.h).toBe(381);
   });
 
   test('the card is white on a light section, separated by shadow and not by a border', async ({ page }) => {
@@ -159,6 +167,49 @@ test.describe('Projects section is one screen', () => {
     expect(card.chip).toBe('rgb(242, 242, 247)');
     expect(card.chipTexto).toBe('rgb(72, 72, 74)');
   });
+
+  // Amendment 4. This is the test whose absence let four different card heights ship behind a green
+  // suite. Every criterion in this file measured the section or a single card, so nothing ever
+  // compared one card against another: the six were 326, 336, 353 and 381 tall and all of them
+  // passed. Cards are compared to each other, not to a number the same code writes for all of them.
+  for (const vp of ESCRITORIO_ALTO) {
+    test(`every card is the same size at ${vp.width}x${vp.height}`, async ({ page }) => {
+      await irA(page, vp);
+
+      const tarjetas = await page.evaluate(() =>
+        [...document.querySelectorAll('#projects article')].map((a) => {
+          const r = a.getBoundingClientRect();
+          const desc = a.querySelector('p')!;
+          return {
+            nombre: a.querySelector('h3')!.textContent!.trim(),
+            w: Math.round(r.width),
+            h: Math.round(r.height),
+            // Whether the description is cut through the middle rather than by its clamp.
+            descCorta: desc.scrollHeight > desc.clientHeight + 1,
+          };
+        })
+      );
+
+      expect(tarjetas.length).toBeGreaterThan(1);
+      const anchos = new Set(tarjetas.map((t) => t.w));
+      const altos = new Set(tarjetas.map((t) => t.h));
+
+      expect(
+        [...anchos],
+        `anchos distintos a ${vp.width}x${vp.height}`
+      ).toHaveLength(1);
+      expect(
+        [...altos],
+        `alturas distintas a ${vp.width}x${vp.height}: ${tarjetas
+          .map((t) => `${t.nombre} ${t.h}`)
+          .join(', ')}`
+      ).toHaveLength(1);
+
+      // SC-022: reaching a uniform height must not mean cutting the text to get there.
+      const cortadas = tarjetas.filter((t) => t.descCorta).map((t) => t.nombre);
+      expect(cortadas, `descripciones cortadas: ${cortadas.join(', ')}`).toEqual([]);
+    });
+  }
 
   test('the description is never cut through the middle of a line', async ({ page }) => {
     for (const vp of VIEWPORTS) {

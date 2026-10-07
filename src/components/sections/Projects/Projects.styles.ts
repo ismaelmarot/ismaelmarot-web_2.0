@@ -181,8 +181,15 @@ export const StyledProjectCard = styled.li`
        grey. Aligning to the start moves that space below the shadow, where it is the gap the
        controls occupy. */
     align-self: flex-start;
-    height: auto;
-    max-height: 380px;
+
+    /* Amendment 4. Fixed, not a maximum. The maximum let each card measure its own content, and
+       the six came out at four heights between 326 and 381: the description varies by 27px per line
+       within the three-line clamp, and the name adds 10px on the two projects whose heading wraps.
+       381 is the tallest card measured, so nothing is truncated to reach it.
+
+       The clamp is what keeps this safe when the data changes: a description of four lines is cut to
+       three by the existing line-clamp, so the height cannot grow. */
+    height: 381px;
   }
 `;
 
