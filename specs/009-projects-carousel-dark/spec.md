@@ -214,6 +214,131 @@ The 48px action becomes 44px below 520px, which still satisfies FR-004's 44px mi
 
 ---
 
+## Amendment 3 - Light Cards, Smaller Cards
+
+**Applied**: 2026-10-06, after implementation and deployment.
+
+**Request**: "en la seccion de proyctos, el carrousel de proyectos, las cards deben ser mas pequenas y de
+color gris claro estilo apple"
+
+Amendment 1 replaced the flat near-black card with a dark grey gradient. This amendment inverts it,
+which is worth stating plainly rather than presenting as a fresh decision: the same surface is now
+light, and the reason is not a change of taste but that the section background is `#F5F5F7` and a
+darker card cannot compete with it for attention.
+
+### Why white and not a light grey
+
+Measured against the section, every candidate was evaluated on the same two questions: does it read
+as the focus of the page, and does the text on it pass.
+
+| candidate | vs section | separates alone | description `#6E6E73` | accent `#0071E3` |
+|-----------|-----------|------------------|---------------------|-----------------|
+| `#FFFFFF` | 1.09:1 | no, needs shadow | 5.07:1 | 4.70:1 |
+| `#FAFAFC` | 1.04:1 | no | 4.86:1 | 4.51:1 |
+| `#F2F2F7` | 1.02:1 | no | 4.54:1 passes | **4.21:1 fails** |
+| `#E8E8ED` | 1.12:1 | no | **4.15:1 fails** | **3.85:1 fails** |
+
+`#F2F2F7` is Apple's own system-grey background and it is the wrong choice here. At 1.02:1 against
+the section it is the least separable card of the four, and it drops the accent blue to 4.21:1, which
+fails AA for small text. That matters because the round action and the brand marks both use `#0071E3`.
+
+Anything darker than white is a hierarchy mistake as much as a contrast one. The card is the content
+of this section, the thing a visitor is meant to look at, and against a grey background only white
+makes it the brightest element on the page. `#E8E8ED` is nearly indistinguishable from the section and
+costs the description its AA compliance at 4.15:1.
+
+**Correction to the above, found by measuring it in a test**: the description on `#F2F2F7` measures
+4.54:1 and does pass AA, so it was not what decided the colour. What fails there is the action's blue
+at 4.21:1, and only at `#E8E8ED` does the description fail as well. The argument for white stands, but
+it rests on the accent and on hierarchy rather than on the description.
+
+### Shadow, not border
+
+A `#D2D2D7` border on a white card measures 1.51:1 against the card, and WCAG holds a non-text
+boundary to 3:1, so a subtle border does not qualify and is not added. The shadow does the work: the
+existing two layers take the `#F5F5F7` background down to `#D8D8DA`, and the second layer is deepened
+to `#D2D2D4` so a smaller card still separates from its surroundings.
+
+### Everything the inversion touches
+
+| element | dark card | light card | measured |
+|---------|-----------|------------|----------|
+| name | `#F5F5F7` | `#1D1D1F` | 16.83:1 |
+| description | `#BFBFC4` | `#6E6E73` | 5.07:1 |
+| icon frame | `rgba(255, 255, 255, 0.09)` | `#E8E8ED` | a translucent white on white is invisible |
+| category badges | translucent white | `#F2F2F7` fill, `#48484A` text | 8.38:1 |
+| action | `#0071E3` | `#0071E3` unchanged | 4.70:1, passes |
+
+The action keeps the accent blue rather than turning dark, because a black plus on a white card would
+lose the brand colour and measure no better.
+
+### Smaller
+
+The card goes from 800px wide to 620px, and the icon frame from 120px to 96px on desktop.
+
+Width alone does not shrink the height, and this was measured rather than assumed: at 800, 700, 620
+and 560px wide the card stayed at 476px tall, because its height is set by the flex chain and not by
+its content. The card is therefore given an explicit maximum height, and the section is re-checked at
+every viewport afterwards.
+
+### What this amendment also fixes
+
+The carousel overflowed on short desktop viewports before this change, and it was not caught because
+every measurement so far used a 900px-tall viewport:
+
+| viewport | section | overflow |
+|----------|---------|----------|
+| 1024x768 | 779 of 768 | 11px |
+| 1440x760 | 801 of 760 | 41px |
+| 1280x720 | 793 of 720 | 73px |
+| 1024x700 | 779 of 700 | 79px |
+
+The cause is that the card has a content floor of about 377px, which with the heading, the filter and
+the controls does not fit below roughly 790px of viewport height. The smaller card lowers that floor,
+and SC-017 makes short viewports part of what is measured so this cannot recur unseen.
+
+### Requirements superseded by this amendment
+
+- **FR-001** is superseded. It read that cards compute a `#1D1D1F` background. They now compute
+  `#FFFFFF`, with no border and a deepened shadow.
+- **FR-002** is superseded. Text is dark rather than light: the name `#1D1D1F` and the description
+  `#6E6E73`, each against `#FFFFFF`.
+- **FR-017** is superseded on the frame: it is 96px on desktop and stays 80px below 520px, with a
+  `#E8E8ED` background and no translucent light border, which would be invisible on a light card.
+- **FR-020** is superseded: badges sit on `#F2F2F7` with `#48484A` text, measured on white.
+- **SC-001** is superseded: the card computes `rgb(255, 255, 255)`.
+- **SC-002** is re-anchored: both text colours clear 4.5:1 against `#FFFFFF`.
+- **SC-008** is superseded: the icon frame measures 96px on desktop, 80px on a phone.
+- **SC-011** is superseded: it referenced the frame growing from 88px to 120px, and it now shrinks.
+
+### Requirements added by this amendment
+
+- **FR-022**: Cards MUST compute `#FFFFFF`, MUST have no border, and MUST keep a two-layer shadow that
+  takes the `#F5F5F7` section background to `#D2D2D4` or darker, since shadow alone is the separator.
+- **FR-023**: Cards MUST be 620px wide at 900px and above, with an explicit maximum height, since the
+  card's height is set by the flex chain and not by its width.
+- **FR-024**: The icon frame background MUST be `#E8E8ED` at every viewport, since a translucent white
+  frame is invisible on a white card.
+- **FR-025**: The category badges MUST compute `#F2F2F7` fill with `#48484A` text.
+- **FR-026**: The action MUST keep `#0071E3`, which measures 4.70:1 on white and carries the brand
+  colour, rather than darkening with the rest of the card.
+- **SC-014**: Every text colour on the card clears 4.5:1 against `#FFFFFF`, and the action against the
+  card, at every viewport.
+- **SC-015**: The card is 620px wide and no taller than 380px at 900px and above.
+- **SC-016**: The section fits the viewport at 1280x720, 1024x700, 1440x760 and 1024x768, which it did
+  not before this amendment.
+- **SC-017**: Short viewports of 760px and 720px of height are part of what is measured, because the
+  previous criteria only ever used 900px and missed a real overflow.
+- **SC-018**: A test asserts each contrast pair rather than asserting a colour string, so an inversion
+  cannot pass without being measured.
+- **SC-019**: Zero axe violations at 1440, 1024x768, 768, 390 and 320.
+- **SC-020**: The full suite passes.
+
+FR-003 through FR-016, FR-018, FR-019 and FR-021 stand unchanged. The carousel behaviour, the
+autoplay, the controls and the accessibility contract are untouched by a change of surface.
+
+---
+
 ## Assumptions
 
 - The site stays light-only, so `#1D1D1F` cards are a designed dark surface rather than a dark theme. No `prefers-color-scheme` work is included.

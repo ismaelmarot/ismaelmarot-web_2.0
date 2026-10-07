@@ -5,15 +5,13 @@ export const StyledProjectRowItem = styled.div`
   height: 100%;
 `;
 
-/* A grey gradient on a light section, drawn by shadow alone with no border: grey
-   against #F5F5F7 separates on its own, and the shadow softens the edge.
-   135deg puts the light stop at the top left, which is where the eye starts and
-   which reads as the surface facing the light rather than as a flat rectangle.
-   The lightest stop is #48484A at 8.38:1 against the name colour, which is the
-   figure the card's text colours are chosen for: every colour on this card has
-   to clear 4.5:1 on that stop, not on the average of the two.
-   There is deliberately no :hover rule. A dark card does not need to lift, and
-   the request asked for the hover effect gone rather than made subtler. */
+/* White on a #F5F5F7 section, with no border: the shadow is the separator, because a #D2D2D7
+   border measures 1.51:1 here and WCAG holds a non-text boundary to 3:1. White rather than a light
+   grey because the section is already grey: at #F2F2F7 the card would measure 1.02:1 against it and
+   drop the action's blue to 4.21:1, failing AA. Every colour on this card is chosen against
+   #FFFFFF, which is the lightest stop and therefore the one that matters.
+   There is deliberately no :hover rule. The request asked for the hover effect gone rather than
+   made subtler, and a light card with a soft shadow gains nothing from lifting. */
 export const StyledProjectRow = styled.article`
   display: flex;
   flex-direction: column;
@@ -21,11 +19,13 @@ export const StyledProjectRow = styled.article`
   height: 100%;
   padding: ${tokens.space[8]};
   border-radius: ${tokens.radii['2xl']};
-  background: linear-gradient(
-    135deg,
-    ${tokens.colors.cardFrom},
-    ${tokens.colors.cardTo}
-  );
+  /* Flat rather than a gradient now. Both stops are white, so the gradient resolved to a
+     linear-gradient of two whites and left background-color transparent, which is not what a card
+     is; with a single colour there is no direction to preserve. The value is set twice on purpose:
+     background-color is what a computed-style check reads, and it is also what paints if anything
+     ever drops the shorthand. */
+  background: ${tokens.colors.cardFrom};
+  background-color: ${tokens.colors.cardFrom};
   color: ${tokens.colors.cardFg};
   box-shadow: var(--shadow-card);
 
@@ -41,7 +41,7 @@ export const StyledProjectRow = styled.article`
 `;
 
 /* The icon, the name and the round action share this row on wide screens. Below
-   about 520px a 120px icon plus a 48px action leaves the name almost no room, so
+   about 520px a 96px icon plus a 48px action leaves the name little room, so
    the action is moved to its own line instead of being squeezed: it is pinned to
    the end of its own row and the icon and name stay together above it.
 
@@ -74,25 +74,24 @@ export const StyledProjectIconFrame = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 120px;
-  height: 120px;
-  flex: 0 0 120px;
+  width: 96px;
+  height: 96px;
+  flex: 0 0 96px;
   overflow: hidden;
   /* 22% of the width, the ratio a rounded app-icon tile uses. Scaling with the
-     frame rather than staying at a fixed 22px keeps the same silhouette at 120px
+     frame rather than staying at a fixed 22px keeps the same silhouette at 96px
      that it had at 88px. */
-  border-radius: 26px;
+  border-radius: 21px;
   /* Translucent white: a solid #D2D2D7 border would read as a bright line on a
      dark card. The background is a step lighter than the card so the icons whose
      corners are transparent resolve against a visible tile and not into the card. */
-  border: 1px solid ${tokens.colors.cardBorder};
+  border: 1px solid transparent;
   background: ${tokens.colors.cardFrame};
 
-  /* Amendment 2 of the dark-card spec. 120px is right where there is room for it and wrong on a
-     phone: at 320px the card is 256px wide inside the gutters, and 120px of icon, the name and a
-     48px action cannot share one line there, which that spec's own edge case already conceded. 80px
-     below 520px, with the radius scaled to stay 22% of the frame so the silhouette is unchanged.
-     Measured at 320x640 this is what buys the description its second line. */
+  /* Amendment 2 took this from 120px to 80px below 520px, and Amendment 3 took the desktop value to
+     96px to match the smaller card. At 320px the card is 256px wide inside the gutters, and a
+     120px icon, the name and a 48px action cannot share one line there, which this spec's own edge
+     case already conceded. The radius stays at 22% of the frame so the silhouette is unchanged. */
   @media (max-width: 519px) {
     width: 80px;
     height: 80px;
@@ -113,12 +112,12 @@ export const StyledProjectIconFallback = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 120px;
-  height: 120px;
-  flex: 0 0 120px;
+  width: 96px;
+  height: 96px;
+  flex: 0 0 96px;
   color: ${tokens.colors.cardFgMuted};
 
-  /* Kept at the same 80px as the frame above, so a failed icon cannot change the geometry. */
+  /* Kept identical to the frame above, so a failed icon cannot change the geometry. */
   @media (max-width: 519px) {
     width: 80px;
     height: 80px;
@@ -148,7 +147,7 @@ export const StyledProjectName = styled.h3`
    on a card this dark and this large the pill competed with the project name; the
    accessible name stayed "Ver <project>" on the element, so the symbol is never
    the only thing a screen reader has to go on.
-   48px rather than the 44px minimum, to match the scale of the 120px icon. */
+   48px rather than the 44px minimum, to match the scale of the icon. */
 export const StyledProjectAction = styled.a`
   display: inline-flex;
   align-items: center;
@@ -250,4 +249,20 @@ export const StyledProjectCategories = styled.ul`
 
 export const StyledProjectCategory = styled.li`
   list-style: none;
+
+  /* Amendment 3 of the dark-card spec. The Badge's subtle variant is #F5F5F7, which was chosen
+     to sit on a near-black card and measures 1.02:1 against this one, so the chips were invisible
+     rather than merely plain. #F2F2F7 with #48484A text measures 8.18:1 and reads as a chip.
+
+     The parent selector is repeated rather than the child being nested, so this rule carries two
+     classes against the Badge's one and wins regardless of the order the two stylesheets end up
+     injected in. A plain span selector did not win, which is why the values below were declared
+     correctly and did not apply.
+
+     Literal hexes on purpose: tokens.colors.bgMuted is #F5F5F7, which is the section background
+     and not what this chip needs. */
+  && > span {
+    background-color: #F2F2F7;
+    color: #48484A;
+  }
 `;

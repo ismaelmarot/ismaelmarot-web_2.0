@@ -52,30 +52,36 @@ describe('ProjectRow', () => {
     expect(icon).toHaveStyle({ objectFit: 'cover' });
 
     const frame = getCssForElement(screen.getByTestId('project-icon-frame'));
-    // 26px on a 120px frame, the same 22% ratio the 88px frame used at 22px.
-    expect(frame).toContain('border-radius: 26px');
+    // 21px on a 96px frame, the same 22% ratio the 120px frame used at 26px.
+    expect(frame).toContain('border-radius: 21px');
     expect(frame).toContain('overflow: hidden');
     expect(frame).toContain('border: 1px solid');
   });
 
-  it('holds the icon in a fixed 120px frame', () => {
+  it('holds the icon in a fixed 96px frame', () => {
     renderRow(mockProject);
     expect(screen.getByTestId('project-icon-frame')).toBeInTheDocument();
     const frame = getCssForElement(screen.getByTestId('project-icon-frame'));
-    expect(frame).toContain('width: 120px');
-    expect(frame).toContain('height: 120px');
+    expect(frame).toContain('width: 96px');
+    expect(frame).toContain('height: 96px');
   });
 
-  // The gradient's lightest stop, not its midpoint, is what every colour on the
-  // card has to clear 4.5:1 against, because the name sits over that end.
-  it('paints the card as a diagonal grey gradient with no border', () => {
+  // Amendment 3 inverted the dark gradient of Amendment 1: the card is now white, flat, and
+  // separated by shadow. Rewritten rather than deleted, per SC-010 of the carousel spec, so the
+  // old surface stays guarded. The contrast pairs this depended on are measured in
+  // tests/unit/card-contrast.test.ts, because a colour string does not establish a ratio.
+  it('paints the card flat white with no border and a shadow that separates it', () => {
     renderRow(mockProject);
     const css = getCssForElement(screen.getByRole('article'));
-    expect(css).toContain('linear-gradient(');
-    expect(css).toContain('135deg');
-    expect(css).toContain('var(--color-card-from)');
-    expect(css).toContain('var(--color-card-to)');
+
+    // Flat rather than a gradient: both gradient stops are white, and a linear-gradient of two
+    // identical whites left background-color transparent, which is not what a card is.
+    expect(css).not.toContain('linear-gradient(');
+    // jsdom collapses the shorthand, so only the longhand survives in the injected sheet.
+    expect(css).toContain('background-color: var(--color-card-from)');
     expect(css).not.toContain('border:');
+    // The shadow is the separator, because a #D2D2D7 border measures 1.51:1 on white and WCAG
+    // holds a non-text boundary to 3:1.
     expect(css).toContain('box-shadow: var(--shadow-card)');
     expect(css).toContain('border-radius: var(--radius-2xl)');
     expect(css).toContain('padding: var(--space-8)');
@@ -137,8 +143,8 @@ it('keeps the fallback inside the same frame so the card does not shift', () => 
     expect(screen.getByTestId('project-icon-fallback')).toBeInTheDocument();
     const frame = getCssForElement(screen.getByTestId('project-icon-frame'));
     expect(frame).toContain('overflow: hidden');
-    expect(frame).toContain('width: 120px');
-    expect(frame).toContain('height: 120px');
+    expect(frame).toContain('width: 96px');
+    expect(frame).toContain('height: 96px');
   });
 
   it('keeps the icon named for assistive technology', () => {

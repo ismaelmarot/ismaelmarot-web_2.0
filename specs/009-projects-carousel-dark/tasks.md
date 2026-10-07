@@ -261,3 +261,71 @@ this file records the one requirement of this spec that it qualifies.
 - **T046 is about uniformity, not just truncation.** At 320x640 two lines is what fits. Leaving it to
   the container meant the text was cut through the middle by the box rather than by the clamp, which
   reads as a fault rather than as truncation.
+
+---
+
+## Amendment 3: Light Cards, Smaller Cards
+
+Added 2026-10-06, after the request "en la seccion de proyctos, el carrousel de proyectos, las cards
+deben ser mas pequenas y de color gris claro estilo apple". See "Amendment 3" in `spec.md` for
+FR-022 through FR-026 and SC-014 through SC-020.
+
+- [X] T044 [P] Measure four light candidates against the `#F5F5F7` section on two questions: does it read as the focus of the page, and does the text on it pass AA
+- [X] T045 [P] Rule out `#F2F2F7` and `#E8E8ED` on measured grounds: `#F2F2F7` drops the action's blue to 4.21:1 and `#E8E8ED` drops the description to 4.15:1, both below AA
+- [X] T046 [P] Establish that a `#D2D2D7` border measures 1.51:1 against white and cannot be the separator, since WCAG holds a non-text boundary to 3:1
+- [X] T047 [P] Confirm the shadow does the separating, measuring that the previous pair reached `#D8D8DA` and deepening it to `#D2D2D4` for a smaller card
+- [X] T048 Invert the card tokens: surface white, name `#1D1D1F`, description `#6E6E73`, frame `#E8E8ED`, border transparent
+- [X] T049 Replace the card's gradient with a flat `background-color`, since two identical white stops resolved to a transparent `background-color` behind a no-op gradient
+- [X] T050 [P] Find that the width alone does not make the card smaller: measured at 800, 700, 620 and 560px it stayed 476px tall, so a maximum height is what the request needed
+- [X] T051 Take the card to 620px wide and 380px tall, and the icon frame from 120px to 96px
+- [X] T052 [P] Find that the carousel already overflowed on short desktop viewports, at 795 of 720, 782 of 700 and 782 of 768, which every previous measurement missed because they all used a 900px-tall viewport
+- [X] T053 Give the section a definite height at every viewport and drop its block padding to 48px under 1000px of height, which resolves all four
+- [X] T054 [P] Find the visible band of section background under the card at 1440x900: the strip is 564px and the card 380, so 184px of grey sat under it with the shadow across it. Align the card to the start
+- [X] T055 [P] Find that the category chips did not move: the Badge's own single-class rule outranked the descendant selector. Raise the parent selector so it carries two classes
+- [X] T056 Write `tests/unit/card-contrast.test.ts`, eight tests that measure each contrast pair rather than asserting a colour string
+- [X] T057 [P] Correct an assertion of my own while writing them: `#6E6E73` on `#F2F2F7` measures 4.54:1 and passes AA, so the description was never what ruled that colour out. The accent was, and the spec now says so
+- [X] T058 Rewrite the ProjectRow test that asserted the gradient rather than deleting it, per SC-010 of the carousel spec
+- [X] T059 Add browser tests for the size, the surface, the shadow, the chip and the four short viewports
+- [X] T060 Give `projects-viewport.spec.ts` the same `irA` helper the Hero tests needed, since it had the same defect of navigating before setting the viewport
+- [X] T061 Run `npm run lint`, `npm run typecheck`, `npm run test`, `npm run test:component` and `npm run build`
+- [X] T062 Confirm the new browser tests fail when the old surface is reinstated
+- [X] T063 Run the full Playwright suite twice and confirm the three pre-existing failures are the same ones
+- [X] T064 Run axe at 1440, 768, 390 and 320
+- [X] T065 Capture 1440, 1024, 390 and 320 and inspect them, because a band of grey under a card is invisible to every number above
+
+### Verification Results
+
+| Criterion | Result |
+|-----------|--------|
+| SC-014 contrast | Pass: name 16.83:1, description 5.07:1, action 4.70:1, chip 8.18:1, all on white |
+| SC-015 size | Pass: 620px wide, 380px tall at 1440 |
+| SC-016 short viewports | Pass: 720 of 720, 700 of 700, 768 of 768, 760 of 760, against four real overflows before |
+| SC-017 short viewports measured | Pass: four heights added to the browser tests that never ran before |
+| SC-018 contrast measured, not string-matched | Pass: 8 tests in `tests/unit/card-contrast.test.ts`, one of which fails on the old surface |
+| SC-019 axe | Pass: 0 violations at 1440, 768, 390 and 320 |
+| SC-020 full suite | Pass: 99 unit, 336 component and 57 browser |
+
+### Notes on this amendment
+
+- **T045 is the design decision, and it is a hierarchy argument before it is a contrast one.** Only
+  white makes the card the brightest element on a page whose section is already grey. `#E8E8ED` is
+  nearly invisible against `#F5F5F7` and costs the description its compliance besides.
+- **T050 is the measurement that changed the work.** "Smaller" read as a width change, and the width
+  changes nothing: at 560px the card was still 476px tall. The height is set by the flex chain, so
+  the request needed a maximum height to be honoured at all.
+- **T052 is the finding I did not expect and would not have found without being asked for smaller
+  cards.** The carousel had been overflowing on short desktop viewports since the dark-card feature
+  shipped, and every measurement in this feature used 900px of height because that is the laptop I
+  develop on. The cause was never the card: 160px of block padding plus the heading, filter and
+  controls does not fit in 720px whatever the card does.
+- **T055 cost four attempts.** The chip values were correct and did not apply, three times over: a
+  linear-gradient of two whites, then a descendant selector losing to the Badge, then token names
+  that resolved to the section background rather than to what the chip needs. The value in the
+  browser was the icon frame's colour, which is what made it obvious that the wrong element was
+  being read.
+- **T057 is a correction to my own reasoning, recorded rather than quietly fixed.** I had claimed the
+  description failed on `#F2F2F7` and it does not, at 4.54:1. The colour choice still holds, on the
+  accent and on hierarchy. The spec says which, and a test now measures it either way.
+- **T065 earned its place.** The band of grey under the card at 1440 was invisible to every test
+  written for this amendment: the section was the right height, the card was the right size, and the
+  contrast was correct. It only showed up in a screenshot.

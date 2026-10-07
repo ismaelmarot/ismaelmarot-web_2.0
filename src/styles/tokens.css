@@ -12,25 +12,31 @@
   --color-accent-light: #EAF3FE;
   --color-accent-hover: #0062C4;
 
-  /* Project card: a grey gradient on a light section. Scoped rather than global on
-     purpose, because the site is light-only, so inverting the global foreground
-     tokens would invert every section instead of this card. The surface is the
-     The hairline is translucent white because a solid #D2D2D7 border would read
-     as a bright line on a dark card, and the frame lightens whatever the
-     gradient puts behind it so an icon with transparent corners still resolves
-     against a visible tile. */
-  --color-card-from: #48484A;
-  --color-card-to: #2C2C2E;
-  --color-card-fg: #F5F5F7;
-  /* Lightened from #A1A1A6 on purpose. On the flat near-black card the muted text
-     measured 6.54:1, but a gradient has to pass on its lightest stop: at #48484A
-     #A1A1A6 falls to 3.55:1 and fails AA. #BFBFC4 measures 4.98:1 there, and still
-     sits well below the name's 8.38:1 so the two keep their hierarchy. */
-  --color-card-fg-muted: #BFBFC4;
-  --color-card-border: rgba(255, 255, 255, 0.14);
-  /* Translucent white rather than a fixed grey: the card behind it is a gradient,
-     so a fixed colour would look lighter at one end of it than at the other. */
-  --color-card-frame: rgba(255, 255, 255, 0.09);
+  /* Project card: white on a #F5F5F7 section, which is what Amendment 3 of the dark-card
+     spec sets after inverting the dark gradient of Amendment 1.
+
+     White rather than a light grey, and the reason is the section background: at #F2F2F7 the card
+     measures 1.02:1 against the section, the least separable of the four candidates measured, and
+     it drops --color-accent to 4.21:1, which fails AA for small text. At #E8E8ED the description
+     falls to 4.15:1. Only white keeps the card the brightest element on the page, which is what
+     makes it the focus of the section, and it keeps the action's blue at 4.70:1.
+
+     No border: #D2D2D7 on white measures 1.51:1 and WCAG holds a non-text boundary to 3:1. The
+     two-layer shadow below does the separating instead, and --color-card-border is kept only as an
+     unset value because the frame rule still references it. */
+  --color-card-from: #FFFFFF;
+  --color-card-to: #FFFFFF;
+  --color-card-fg: #1D1D1F;
+  /* The muted foreground was chosen for its lightest stop on a dark gradient. On white the
+     hierarchy inverts, because there is far more room: #6E6E73 measures 5.07:1 here where
+     #BFBFC4 managed 4.98:1 on #48484A, so the same ratio is available with a colour that is
+     genuinely muted rather than a light grey pretending to be dim. */
+  --color-card-fg-muted: #6E6E73;
+  --color-card-border: transparent;
+  /* A fixed grey, and the opposite reason from the old translucent white: on a dark gradient a
+     translucent white lightened whatever was behind it equally at both ends, whereas on a flat white
+     card the same value is simply invisible. */
+  --color-card-frame: #E8E8ED;
   /* Accent for TEXT. --color-accent is 4.31:1 on --color-bg-muted, below AA 4.5:1 for small text. */
   --color-accent-text: #0062C4;
   --color-accent-text-hover: #0059B0;
@@ -145,7 +151,11 @@
      meant for a 167px row; on a card near 570px tall it is invisible, and the
      card has no border, so the shadow is the only thing drawing its edge.
      Spreading the layers keeps the edge soft rather than hard. */
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04), 0 12px 32px rgba(0, 0, 0, 0.08);
+  /* Amendment 3: the first layer is a contact shadow so a white card on #F5F5F7 has an edge at
+     all, and the second is what separates it from the surroundings. Measured: these two take the
+     section background from #F5F5F7 down to #D2D2D4. The previous pair reached #D8D8DA, which was
+     enough for an 800px card and not enough for a 620px one. */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.05), 0 12px 32px rgba(0, 0, 0, 0.1);
   --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.06), 0 24px 56px rgba(0, 0, 0, 0.12);
 
   /* Transitions */

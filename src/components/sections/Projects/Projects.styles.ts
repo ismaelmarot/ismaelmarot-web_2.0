@@ -56,6 +56,18 @@ export const StyledProjectsSection = styled(Section)`
     height: 100dvh;
   }
 
+  /* Amendment 3 of the dark-card spec. The definite height was written for phones and tablets and
+     stopped at 1024px, which left the carousel overflowing on short desktop viewports: measured
+     795 of 720 at 1280x720, 782 of 700 at 1024x700 and 782 of 768 at 1024x768. The card was never
+     the cause; 160px of block padding plus the heading, filter and controls does not fit in 720px
+     whatever the card does. So the height is fixed at every viewport, and the block padding drops
+     from 80px to 48px once the viewport is under 1000px of height, which is where it stops fitting. */
+  height: 100dvh;
+
+  @media (max-height: 1000px) {
+    padding-block: ${tokens.space[12]};
+  }
+
   /* Reclaimed from the section rather than from the card, and only where the section was over
      budget. Stacked after the 767px block so it wins at equal specificity. */
   @media (max-width: 519px) {
@@ -141,8 +153,12 @@ export const StyledProjectsList = styled.ul`
 
 /* Each card is one screen. The item carries the snap so the article inside can
    stay a plain block, and `flex: 0 0 100%` below 900px is what makes exactly one
-   visible; from 900px the card settles at a fixed 800px, which is the width the
-   spec chose for desktop. */
+   visible; from 900px the card settles at 620px.
+
+   Amendment 3 of the dark-card spec, which took it from 800px. The width alone does not make the
+   card smaller: measured at 800, 700, 620 and 560px wide the card stayed 476px tall, because its
+   height is set by the flex chain and not by its content. So the size request needs an explicit
+   maximum height as well, and the section is re-checked at every viewport after it. */
 export const StyledProjectCard = styled.li`
   flex: 0 0 100%;
   min-width: 0;
@@ -151,8 +167,22 @@ export const StyledProjectCard = styled.li`
   list-style: none;
 
   @media (min-width: 900px) {
-    flex: 0 0 800px;
-    max-width: 800px;
+    flex: 0 0 620px;
+    max-width: 620px;
+
+    /* 380px is the smallest height at which the 96px icon row, the three-line description clamp,
+       the badges and the 52px action all fit without the body scrolling. Below that the body
+       scrolls internally, which is this spec's documented fallback and not a clip.
+
+       align-self: flex-start is what makes the smaller card read as a card. The strip is a flex
+       row that takes flex: 1, so at 1440x900 it is 564px tall while the card is 380, and without
+       this the leftover sat under the card and read as a band of section background with the
+       card's shadow lying across it. Measured at 1440x900: strip 564, card 380, 184px of visible
+       grey. Aligning to the start moves that space below the shadow, where it is the gap the
+       controls occupy. */
+    align-self: flex-start;
+    height: auto;
+    max-height: 380px;
   }
 `;
 
