@@ -126,10 +126,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Serve build and run E2E tests
-        run: |
-          npx http-server dist -p 4173 -s &
-          sleep 3
-          npm run test:e2e
+        run: npm run test:e2e
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:4173
 
@@ -156,10 +153,19 @@ jobs:
           name: dist
           path: dist/
 
-      - name: Run accessibility audit
+      # axe-cli drives Chrome through a chromedriver it resolves at run time, and that driver is pinned to a
+# Chrome major version. When the runner's Chrome moves ahead of the driver, the job dies with
+# "This version of ChromeDriver only supports Chrome version 155" before auditing anything. Pinned to the
+# Playwright Chromium that this repo already installs, so the two can never drift apart.
+- name: Install Chromium for the audit
+        run: npx playwright install --with-deps chromium
+
+- name: Run accessibility audit
         run: |
           npx http-server dist -p 4173 -s &
           sleep 3
-          npx axe-cli http://localhost:4173 --save --exit --reporter=cli --tags wcag2aa,wcag21aa,best-practice
+          CHROME_PATH="$(node -e 'console.log(require("playwright").chromium.executablePath())')" \
+            npx axe-cli http://localhost:4173 --save --exit --exit-delay 2 --reporter=cli \
+              --tags wcag2aa,wcag21aa,best-practice
         env:
           CI: true
