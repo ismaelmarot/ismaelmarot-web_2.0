@@ -56,9 +56,7 @@ test.describe('La franja de iconos de proyectos', () => {
       expect(m.fondos).toEqual(['rgb(232, 232, 237)']);
       // Cover, not contain or stretch: the sources are not square, one is 379x366.
       expect([...new Set(m.ajuste)]).toEqual(['cover']);
-      // At least one screen rather than exactly one. specs/011 Amendment 2: the section now also carries
-      // the showcase, so it is legitimately taller, but the strip must still not be what breaks it.
-      expect(m.seccion).toBeGreaterThanOrEqual(m.vh);
+      expect(Math.abs(m.seccion - m.vh)).toBeLessThanOrEqual(1);
       expect(m.overflowX, 'la pagina no debe desbordar en horizontal').toBe(false);
     });
   }
