@@ -153,14 +153,14 @@ jobs:
           name: dist
           path: dist/
 
-      # axe-cli drives Chrome through a chromedriver it resolves at run time, and that driver is pinned to a
-# Chrome major version. When the runner's Chrome moves ahead of the driver, the job dies with
-# "This version of ChromeDriver only supports Chrome version 155" before auditing anything. Pinned to the
-# Playwright Chromium that this repo already installs, so the two can never drift apart.
-- name: Install Chromium for the audit
+      # axe-cli drives Chrome through a chromedriver it resolves at run time, and that driver is pinned to
+      # a Chrome major version. When the runner's Chrome moves ahead of the driver, the job dies with
+      # "This version of ChromeDriver only supports Chrome version 155" before auditing anything. Pinned to
+      # the Playwright Chromium that this repo already installs, so the two can never drift apart.
+      - name: Install Chromium for the audit
         run: npx playwright install --with-deps chromium
 
-- name: Run accessibility audit
+      - name: Run accessibility audit
         run: |
           npx http-server dist -p 4173 -s &
           sleep 3
