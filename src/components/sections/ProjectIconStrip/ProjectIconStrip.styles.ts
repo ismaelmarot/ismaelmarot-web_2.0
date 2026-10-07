@@ -88,11 +88,21 @@ export const StyledIconFrame = styled.div<{ $index: number; $animate: boolean }>
   transform: scale(1);
   transition: transform var(--transition-normal) var(--ease-out),
     box-shadow var(--transition-normal) var(--ease-out);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  /* Three layers rather than one, because a single box-shadow has a crisp falloff that reads as a
+     hard edge under a flat tile. A tight contact layer lifts it off the background, a mid layer gives
+     it body and a wide one places it in the section. The values are lighter than the card's, which
+     is a 620px surface: at 96px a card-strength shadow reads as a drop shadow rather than as a lift. */
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 2px 6px rgba(0, 0, 0, 0.05),
+    0 6px 16px rgba(0, 0, 0, 0.06);
 
   &:hover {
     transform: scale(1.06);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 12px 28px rgba(0, 0, 0, 0.1);
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.08),
+      0 6px 14px rgba(0, 0, 0, 0.07),
+      0 14px 32px rgba(0, 0, 0, 0.1);
   }
 
   @media (max-width: 700px) {

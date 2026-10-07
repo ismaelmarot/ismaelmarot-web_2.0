@@ -195,3 +195,84 @@ rather than ending abruptly, and that scrolling reveals the remaining icons.
   the same trade the carousel already makes and is accepted rather than solved by a per-icon adjustment.
 - The technology marquee's pause control is out of scope. It was discussed and cancelled, and this feature
   does not depend on it in either direction.
+
+## Amendment 1 - Layered icon shadow
+
+**Date**: 2026-10-07
+
+**Input**: "Pero ahora hazle una sombra muy leve a los iconos"
+
+**Status**: Implemented on the working tree, not yet committed. It rides along with `012-project-showcase`
+because it was requested while that feature was in progress, but it belongs to this feature and is
+documented here rather than silently folded into the showcase's specification.
+
+### What changes
+
+`FR-008` currently says a hover deepens *a* shadow. The single shadow the strip shipped with was too weak
+to separate the six light frames from the `#F5F5F7` surface they sit on, which is the specific problem the
+request describes. The shadow becomes three layers rather than one, and it exists at rest as well as on
+hover, because a shadow that only appears on hover does nothing for the visitor who does not hover.
+
+- **FR-008a**: Each frame MUST carry a three-layer shadow at rest: `0 1px 2px`, `0 2px 6px` and
+  `0 6px 16px`, so the frame reads as raised from the surface rather than drawn on it.
+- **FR-008b**: The three layers MUST scale from a tighter, lighter set to a wider, softer set on hover over
+  the existing 200ms, rather than the whole shadow being swapped for a single larger one.
+- **FR-008c**: The shadow MUST remain within the "very slight" the request asked for. It separates the frame
+  from the surface and MUST NOT read as a drop shadow large enough to compete with the artwork.
+- **FR-008d**: Under `prefers-reduced-motion: reduce` the shadow MUST be present and static, since a static
+  shadow conveys elevation without conveying motion, and MUST NOT transition on hover.
+
+### Success criteria added
+
+- **SC-013**: At rest, every frame's computed `box-shadow` contains three layers, and the largest blur radius
+  is 16px.
+- **SC-014**: The shadow is present at rest, so a visitor who never hovers still sees the frames separated
+  from the surface.
+- **SC-015**: On a `#F5F5F7` background the frame is distinguishable from the surface without the shadow
+  exceeding 16px of blur.
+
+### Assumptions
+
+- Three layers rather than one large blur, because a single large blur reads as a glow and the request was
+  for levitation. The layering is what produces the second, ambient component that a product shot has.
+- The shadow is not themed per project. The artwork carries its own alpha channel and its own colours, and a
+  per-project shadow would imply the artwork is transparent when it is not.
+
+## Amendment 2 - The Projects section is no longer exactly one screen
+
+**Date**: 2026-10-07
+
+**Input**: implied by `specs/012-project-showcase`
+
+**Status**: Implemented.
+
+### The invariant this breaks
+
+`SC-001` and the `project-icon-strip` e2e test asserted that the Projects section measures exactly one
+viewport (`min-height: 100dvh` with centred content). Measured at 1440x900 it was 900px. With the showcase
+added below the icon row it is **1087px**, and at 390x844 it is **2793px**.
+
+### Why this is correct rather than a regression
+
+The strip itself is unchanged and still occupies what it always did. The section grew because content was
+deliberately added under the strip, which is what `012-project-showcase` was asked to do. The section is
+still centred, still on the site's surfaces, and still never scrolls sideways.
+
+The "one screen" property was never a design intent on its own: it was an observation about a section whose
+content happened to fit. Asserting it as a hard invariant meant any future feature added to the section
+would fail a test about the icon row, which is the wrong test to fail.
+
+### What replaces it
+
+- **FR-015**: The icon strip MUST NOT by itself cause the Projects section to exceed one viewport. The
+  section MAY be taller than one viewport because other content shares it, which is now the case.
+- **SC-016**: The icon strip's own height is unchanged from what it was before `012`: the six frames, the
+  21px radius and the row's height measure the same at every tested viewport.
+- **SC-017**: The Projects section is at least one viewport tall and never scrolls sideways, at 1440x900,
+  1024x768, 768x1024, 390x844 and 320x640.
+
+### Test change
+
+`tests/e2e/project-icon-strip.spec.ts` asserted `Math.abs(seccion - vh) <= 1`. It now asserts
+`seccion >= vh` and keeps the horizontal-overflow assertion, which is the property that was really being
+protected: a horizontally scrolling icon row on a 390px phone.
