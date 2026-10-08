@@ -3,6 +3,7 @@ import tseslint from 'typescript-eslint';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import testingLibraryPlugin from 'eslint-plugin-testing-library';
+import globals from 'globals';
 
 export default tseslint.config(
   { ignores: ['dist/', 'node_modules/', '*.config.*', 'coverage/', '.vite/', 'specs/', 'public/'] },
@@ -47,6 +48,19 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       '@typescript-eslint/consistent-type-imports': 'error',
       'testing-library/no-unnecessary-act': 'warn',
+    },
+  },
+  {
+    /* Node scripts under scripts/ run in Node, not in a browser. They are .mjs so they stay outside the
+       TypeScript program and outside Vite's module graph, which is what keeps the audit script out of
+       the bundle. Without this they are linted with browser globals and every `process` and `console`
+       reads as undefined. */
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        es2022: true,
+      },
     },
   },
   {

@@ -62,9 +62,31 @@ test.describe('La banda del Hero y el bloque de texto, medidos en el navegador',
     await page.waitForSelector('[data-testid="hero-band"]');
   };
 
+  /* Waits for the section to reach the height it settles at before anything measures it.
+   *
+   * The Hero exists before its fonts resolve, and a fallback with different metrics leaves the section
+   * taller than the viewport for a few hundred milliseconds. Measured at 47px over on a loaded CI runner
+   * and correct on every local run, which is what flaky looks like. Only the tests that measure the
+   * section's height need this: the others assert about the band or about overflow and are not racing
+   * the font swap.
+   */
+  const esperarAltoEstable = async (page: Page, vp: { width: number; height: number }) => {
+    await expect
+      .poll(
+        async () =>
+          page.evaluate(() => {
+            const seccion = document.querySelector<HTMLElement>('#hero');
+            return seccion ? Math.round(seccion.getBoundingClientRect().height) : -1;
+          }),
+        { timeout: 5000 }
+      )
+      .toBe(vp.height);
+  };
+
   for (const vp of MOVIL) {
     test(`la banda mide 60% en ${vp.width}x${vp.height}`, async ({ page }) => {
       await irA(page, vp);
+      await esperarAltoEstable(page, vp);
 
       const m = await medir(page);
 
@@ -79,6 +101,7 @@ test.describe('La banda del Hero y el bloque de texto, medidos en el navegador',
   for (const vp of ESCRITORIO) {
     test(`la banda sigue al 55% en ${vp.width}x${vp.height}`, async ({ page }) => {
       await irA(page, vp);
+      await esperarAltoEstable(page, vp);
 
       const m = await medir(page);
 

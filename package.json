@@ -13,7 +13,7 @@
     "test:watch": "vitest",
     "test:component": "vitest run --config vitest.component.config.ts",
     "test:e2e": "playwright test",
-    "test:a11y": "npm run build && npx http-server dist -p 4173 -s & sleep 2 && npx axe-cli http://localhost:4173 --save --exit --reporter=cli && pkill -f http-server",
+    "test:a11y": "npm run build && node scripts/audit-a11y.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -24,7 +24,7 @@
     "simple-icons": "^16.33.0"
   },
   "devDependencies": {
-    "@axe-core/cli": "^4.9.0",
+    "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "^1.45.0",
     "@testing-library/jest-dom": "^6.4.0",
     "@testing-library/react": "^16.0.0",

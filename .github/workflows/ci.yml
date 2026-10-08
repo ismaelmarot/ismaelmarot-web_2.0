@@ -160,19 +160,23 @@ jobs:
           name: dist
           path: dist/
 
-      # axe-cli drives Chrome through a chromedriver it resolves at run time, and that driver is pinned to
-      # a Chrome major version. When the runner's Chrome moves ahead of the driver, the job dies with
-      # "This version of ChromeDriver only supports Chrome version 155" before auditing anything. Pinned to
-      # the Playwright Chromium that this repo already installs, so the two can never drift apart.
+      # The same Chromium the browser tests use, so the audit and the suite are measuring one browser.
       - name: Install Chromium for the audit
         run: npx playwright install --with-deps chromium
 
+      # @axe-core/playwright rather than axe-cli.
+      #
+      # axe-cli resolves a chromedriver at run time, and the one it reaches for is pinned to a Chrome
+      # major version of its own. The runner installed Chrome 153 from Playwright while that driver
+      # announced it "only supports Chrome version 155", so every audit died with SessionNotCreatedError
+      # before auditing anything. An earlier attempt pinned CHROME_PATH to Playwright's Chromium and it
+      # did not help: the mismatch is between the driver axe-cli downloads and whatever browser it
+      # launches, not between a path variable and a browser.
+      #
+      # Driving the audit through Playwright removes the second tool entirely: the browser is the one
+      # already installed and already tested against, so nothing is left to keep in step. @axe-core/cli
+      # is removed, since nothing references it now.
       - name: Run accessibility audit
-        run: |
-          npx http-server dist -p 4173 -s &
-          sleep 3
-          CHROME_PATH="$(node -e 'console.log(require("playwright").chromium.executablePath())')" \
-            npx axe-cli http://localhost:4173 --save --exit --exit-delay 2 --reporter=cli \
-              --tags wcag2aa,wcag21aa,best-practice
+        run: node scripts/audit-a11y.mjs
         env:
           CI: true
