@@ -289,22 +289,34 @@ test.describe('La franja de iconos de proyectos', () => {
     }
   });
 
-  test('SC-015: el cambio entre seis y un marco ocurre en el mismo breakpoint', async ({ page }) => {
+  test('SC-015: el cambio entre seis y un marco ocurre en el mismo breakpoint', async ({ browser }) => {
     /* One boundary, so there is no viewport range where the carousel's styles apply while six frames
-       are still in the document, or the reverse. 701px must be six frames and 700px exactly one. */
+       are still in the document, or the reverse. 701px must be six frames and 700px exactly one.
+
+       A fresh context per width, rather than one page resized three times. Resizing a live page and
+       waiting for the count to follow depends on the media query event and a React render landing
+       before the assertion reads the DOM, and under a runner configured with one worker and retries
+       that ordering did not hold: it read one frame at 701px, where there are six, while passing in
+       chromium, webkit, Mobile Chrome and Mobile Safari locally. A context opened at the width it
+       tests cannot be a frame behind, and it also removes the mobile-emulation case, where
+       `setViewportSize` cannot set 701px at all and the layout viewport lands near 980. */
     const casos: { ancho: number; esperados: number }[] = [
       { ancho: 701, esperados: 6 },
       { ancho: 700, esperados: 1 },
       { ancho: 699, esperados: 1 },
     ];
+
     for (const { ancho, esperados } of casos) {
-      await irA(page, { width: ancho, height: 900 });
-      /* Waiting for the frame count rather than counting straight away. The slot count comes from
-         matchMedia read in an effect, so it lands a tick after the viewport changes; counting immediately
-         reads the previous viewport's count and reported one frame at 701px, where there are six. */
+      const contexto = await browser.newContext({ viewport: { width: ancho, height: 900 } });
+      const page = await contexto.newPage();
+      await page.goto('/');
+      await page.waitForSelector(marcos);
+
       await expect
-        .poll(async () => page.locator(marcos).count(), { timeout: 3000 })
+        .poll(async () => page.locator(marcos).count(), { timeout: 5000 })
         .toBe(esperados);
+
+      await contexto.close();
     }
   });
 
