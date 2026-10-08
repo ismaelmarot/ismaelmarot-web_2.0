@@ -122,8 +122,15 @@ jobs:
           name: dist
           path: dist/
 
+      # Every browser playwright.config.ts declares, not just chromium. This installed chromium alone
+      # while the config listed five projects, so firefox, webkit, Mobile Chrome and Mobile Safari all
+      # failed to launch with "Executable doesn't exist" and every E2E job failed before a single
+      # assertion ran. The count was 684 such errors in the run before specs/013 landed.
+      #
+      # --with-deps installs the system libraries the Linux runners are missing, which is why it is here
+      # rather than a bare `playwright install`: webkit in particular needs them.
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium firefox webkit
 
       - name: Serve build and run E2E tests
         run: npm run test:e2e
