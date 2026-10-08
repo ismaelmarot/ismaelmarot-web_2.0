@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   ESPACIOS,
+  INTERVALO_MOVIL_MS,
   INTERVALO_MS,
   FASE_MS,
   siguienteAsignacion,
@@ -299,10 +300,33 @@ describe('la asignacion de apps a los espacios de la fila', () => {
   });
 
   describe('las constantes del contrato', () => {
-    it('son seis espacios, cuatro segundos y dos fases de 240ms', () => {
+    it('son seis espacios y dos fases de 240ms', () => {
       expect(ESPACIOS).toBe(6);
-      expect(INTERVALO_MS).toBe(4000);
       expect(FASE_MS).toBe(240);
+    });
+
+    it('el intervalo es 2500ms en escritorio y 1500ms en mobile', () => {
+      /* Split by name rather than in one test, so a failure says which rhythm moved. The phone is
+         faster because a phone shows one icon with nothing else to look at.
+
+         What makes 1500ms a rhythm rather than a blur is the resting time it leaves, not the interval
+         itself: the fade is 240ms per half, so an arrangement sits fully visible for 1020ms of the
+         1500. Both are asserted so a future change to the fade has to be a deliberate one against
+         this relationship rather than an accident. */
+      expect(INTERVALO_MS, 'intervalo de escritorio').toBe(2500);
+      expect(INTERVALO_MOVIL_MS, 'intervalo de mobile').toBe(1500);
+    });
+
+    it('el intervalo deja tiempo de reposo suficiente en mobile', () => {
+      /* The invariant behind the number: whatever the interval is, the arrangement must sit fully
+         visible for longer than the transition takes, or the row reads as a continuous stream. */
+      const transicion = FASE_MS * 2;
+      expect(INTERVALO_MOVIL_MS - transicion, 'reposo visible en mobile').toBeGreaterThan(750);
+      expect(INTERVALO_MS - transicion, 'reposo visible en escritorio').toBeGreaterThan(1500);
+    });
+
+    it('el mobile rota más rápido que el escritorio', () => {
+      expect(INTERVALO_MOVIL_MS).toBeLessThan(INTERVALO_MS);
     });
   });
 });

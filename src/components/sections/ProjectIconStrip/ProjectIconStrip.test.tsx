@@ -2,7 +2,7 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ProjectIconStrip } from './ProjectIconStrip';
 import { getCssForElement } from '@/test-utils/css';
-import { ESPACIOS_MOVIL_QUERY, FASE_MS, INTERVALO_MS } from './iconRotation';
+import { ESPACIOS_MOVIL_QUERY, FASE_MS, INTERVALO_MOVIL_MS, INTERVALO_MS } from './iconRotation';
 import type { Project } from '@/types/project';
 
 /* Both shared hooks are mocked rather than configured, the way the strip's own tests did before the
@@ -68,11 +68,22 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-/** Advance past the interval and the fade, so the assignment has changed and faded back in. */
+/**
+ * Advance past the interval and the fade, so the assignment has changed and faded back in.
+ *
+ * Reads the same flag the component reads. The interval is shorter on a phone, so a single call
+ * advancing by the desktop interval would overshoot rather than land on the rotation, and the mobile
+ * cases would be asserting against a rhythm the hook is not using. Advancing the phone interval twice
+ * when the flag is set also covers the mobile cases that count several arrangements in a row.
+ */
 const rotar = () => {
-  act(() => {
-    vi.advanceTimersByTime(INTERVALO_MS);
-  });
+  const intervalo = viewportMovil ? INTERVALO_MOVIL_MS : INTERVALO_MS;
+  const vueltas = viewportMovil ? 2 : 1;
+  for (let i = 0; i < vueltas; i += 1) {
+    act(() => {
+      vi.advanceTimersByTime(intervalo);
+    });
+  }
   act(() => {
     vi.advanceTimersByTime(FASE_MS);
   });
@@ -396,6 +407,47 @@ describe('ProjectIconStrip', () => {
       viewportMovil = true;
       render(<ProjectIconStrip projects={seis} />);
       expect(screen.getAllByTestId('project-icon-frame')).toHaveLength(1);
+    });
+
+    it('rota al intervalo de mobile, 1500ms, no al de escritorio', () => {
+      /* The rhythm is a requirement, and it is the one thing a test of "it changed" cannot see: a row
+         rotating at 4s also eventually changes, so every other case here would pass at the wrong
+         interval. Advancing by the desktop interval in a phone context must NOT have rotated yet. */
+      viewportMovil = true;
+      render(<ProjectIconStrip projects={seis} />);
+      const antes = alts();
+
+      act(() => {
+        vi.advanceTimersByTime(INTERVALO_MOVIL_MS - 1);
+      });
+      expect(alts(), 'todavia no habia rotado a 1499ms').toEqual(antes);
+
+      act(() => {
+        vi.advanceTimersByTime(1);
+      });
+      act(() => {
+        vi.advanceTimersByTime(FASE_MS);
+      });
+      expect(alts()[0], 'roto a los 1500ms').not.toBe(antes[0]);
+    });
+
+    it('rota al intervalo de escritorio, 2500ms, no al de mobile', () => {
+      viewportMovil = false;
+      render(<ProjectIconStrip projects={seis} />);
+      const antes = alts();
+
+      act(() => {
+        vi.advanceTimersByTime(INTERVALO_MOVIL_MS);
+      });
+      expect(alts(), '1500ms no alcanza en escritorio').toEqual(antes);
+
+      act(() => {
+        vi.advanceTimersByTime(INTERVALO_MS - INTERVALO_MOVIL_MS);
+      });
+      act(() => {
+        vi.advanceTimersByTime(FASE_MS);
+      });
+      expect(alts()[0], 'roto a los 2500ms').not.toBe(antes[0]);
     });
 
     it('SC-014: el unico icono cambia de app en cada rotacion', () => {

@@ -136,8 +136,8 @@ interval, assert the apps in view do change, and assert nothing overflows horizo
 
 - **FR-001**: The six slots MUST stay in place. Rotation MUST NOT reorder, move or reflow the row's
   boxes; only which app occupies each slot changes.
-- **FR-002**: The apps shown MUST change automatically on an interval of 4 seconds while the row is in
-  view and not held.
+- **FR-002**: The apps shown MUST change automatically while the row is in view and not held, on an
+  interval of 1.5 seconds at or below the mobile breakpoint and 2.5 seconds above it. (Amendment 4)
 - **FR-003**: After each rotation, no slot MUST display the app it was displaying immediately before.
   This is the guarantee the feature rests on.
 - **FR-004**: Every slot MUST change at each rotation, not only some of them.
@@ -209,8 +209,9 @@ interval, assert the apps in view do change, and assert nothing overflows horizo
   padded with empty frames.
 - The rotation is a content change rather than an animation for its own sake. What a visitor with
   reduced motion gets is the six icons and no movement.
-- The interval is 4 seconds, which is short enough that the renewal is noticed and long enough that it
-  is not a scroll-driven distraction.
+- The interval is 1.5 seconds on a phone and 2.5 seconds elsewhere, which leaves each arrangement
+  resting long enough to be seen and short enough that the renewal is noticed. The fade is unchanged at
+  240ms per half. (Amendment 4)
 - Fading is preferred over sliding because the request describes disappearance and appearance, and a
   slide would require measuring every slot's position before and after the change.
 - Nothing becomes clickable. The section's existing call to action remains the only route onward.
@@ -244,7 +245,7 @@ bug. The count of frames and the styles both change at 700px, together.
 previous assignment behind, which means nothing to a single slot. The assignment is recomputed on the
 change rather than truncated, so the first frame after a rotation is drawn from the full set.
 
-**What is unchanged.** The 4s interval, the 240ms fade in two phases, the four pause conditions, reduced
+**What is unchanged.** The 240ms fade in two phases, the four pause conditions, reduced
 motion removing the rotation entirely, the desktop row, and every other requirement of this
 specification.
 
@@ -291,3 +292,35 @@ the helper, because a seeded generator that is subtly wrong is worse than no see
 60ms stagger, and a frame mid-scale measures narrower than its neighbours: the first reading came back as
 96, 96, 95, 94, 93, 91 against a clean 96 six times after the rotation. The test reported the slots moving
 and resizing when nothing had moved. It now waits out the entrance before measuring.
+
+### Amendment 4 - One interval becomes two: 1.5s on a phone, 2.5s elsewhere
+
+**Reason**: The request, after the rotation shipped, was that on a phone the transition between app
+icons should be 1.5 seconds. With that settled, the desktop interval was set at 2.5 seconds rather than
+left where it was.
+
+The earlier specification had a single 4s interval shared by both layouts. That is now two, chosen by the
+same `matchMedia` breakpoint the slot count already uses, so the layout and the rhythm change together.
+
+| | Interval | Fade | Resting visible | Transition's share | Full cycle of six |
+|---|---|---|---|---|---|
+| Mobile | 1500ms | 480ms | 1020ms | 32% | 9s |
+| Desktop | 2500ms | 480ms | 2020ms | 19% | 15s |
+
+**The number that matters is the resting time, not the interval.** At 1500ms with the unchanged 240ms
+fade, an arrangement sits fully visible for just over a second before the next begins. That is what
+makes 1.5s a rhythm rather than a blur, and it is why the fade was left alone: stretching it to fill the
+1.5s would leave almost no resting time and the row would read as a continuous stream.
+
+**Two constants rather than one computed value.** They sit in `iconRotation.ts` next to `ESPACIOS` and
+`ESPACIOS_MOVIL`, which is where the row's contract already lives, so the rhythm is read in one place and
+the tests import the numbers instead of repeating them.
+
+**Crossing the breakpoint restarts the timer.** The interval effect depends on the mobile flag, so a
+resize rebuilds the interval. That is correct rather than incidental: the interval genuinely changes with
+the viewport, and preserving the elapsed time across a change would keep counting against the old rhythm
+for up to its full length.
+
+**What does not change.** The 240ms fade, the two-phase swap, all four pause conditions, reduced motion
+removing the rotation entirely, the guarantee that no slot keeps its app, and the whole mobile layout
+decision of Amendment 1.

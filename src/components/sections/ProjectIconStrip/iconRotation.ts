@@ -34,8 +34,24 @@ export const ESPACIOS_MOVIL = 1;
  */
 export const ESPACIOS_MOVIL_QUERY = 700;
 
-/** How long an arrangement lasts, in milliseconds. Short enough to be noticed, long enough not to nag. */
-export const INTERVALO_MS = 4000;
+/**
+ * How long an arrangement lasts on a desktop or tablet, in milliseconds.
+ *
+ * 2500ms, which leaves each arrangement resting for about two seconds with the fade unchanged. Short
+ * enough that the renewal is noticed, long enough that an arrangement can be read.
+ */
+export const INTERVALO_MS = 2500;
+
+/**
+ * How long an arrangement lasts on a phone, in milliseconds.
+ *
+ * 1500ms, chosen so the same renewal is livelier where there is a single icon and nothing else to look
+ * at. The number that matters is not this one but the resting time it leaves: at 1500ms with the fade
+ * unchanged, an arrangement sits fully visible for just over a second, which is what makes it a rhythm
+ * rather than a blur. The fade is deliberately left alone; stretching it to fill the interval would leave
+ * almost no resting time.
+ */
+export const INTERVALO_MOVIL_MS = 1500;
 
 /** How long one half of the fade takes, in milliseconds. Two of them make half a second of change. */
 export const FASE_MS = 240;

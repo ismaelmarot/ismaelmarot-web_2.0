@@ -5,6 +5,7 @@ import {
   ESPACIOS_MOVIL,
   ESPACIOS_MOVIL_QUERY,
   FASE_MS,
+  INTERVALO_MOVIL_MS,
   INTERVALO_MS,
   siguienteAsignacion,
 } from './iconRotation';
@@ -110,17 +111,23 @@ export function useIconRotation(total: number, enPantalla: boolean): UseIconRota
      motion gets is the six icons and no movement at all.
 
      `total === 1` is the arithmetic case: a derangement of one element does not exist, so there is
-     nothing the row could change to and a timer would re-render the same icon every four seconds for
-     the life of the page.
+     nothing the row could change to and a timer would re-render the same single icon for the life of
+     the page.
 
      The row must also be on screen. `enPantalla` comes from the strip's own observer, which is
-     `triggerOnce`, so this is true from the moment the row is first seen and stays true. */
+     `triggerOnce`, so this is true from the moment the row is first seen and stays true.
+
+     The interval is shorter on a phone, where there is one icon and nothing else to look at. `esMovil`
+     is a dependency, so crossing the breakpoint rebuilds the interval with the other rhythm. That
+     restart is correct rather than incidental: the interval genuinely is different on either side of
+     it, and preserving the elapsed time would keep counting against the old rhythm for up to its full
+     length. */
   useEffect(() => {
     if (reduceMotion || enPantalla === false || total <= 1) return;
 
-    const id = window.setInterval(rotar, INTERVALO_MS);
+    const id = window.setInterval(rotar, esMovil ? INTERVALO_MOVIL_MS : INTERVALO_MS);
     return () => window.clearInterval(id);
-  }, [reduceMotion, enPantalla, total, rotar]);
+  }, [reduceMotion, enPantalla, total, rotar, esMovil]);
 
   /* Both timers have to be cleared with everything else, or a row that unmounts mid-fade leaves a timer
      holding state that no longer belongs to anything. The interval clears itself in the effect above;
