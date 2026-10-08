@@ -24,7 +24,20 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173,
+    /* 5174 rather than 5173, and strictly.
+
+       There are two Vite projects side by side in ~/Development/iM_projects: this one and the empty
+       `im-personal-web-2026` scaffold. Both default to 5173, so whichever starts second silently
+       lands on 5174 and `open: true` then opens the wrong site in the browser.
+
+       That is not hypothetical. It happened: the scaffold's dev server held 5173, this one moved to
+       5174 without a word, and the browser showed a placeholder page while the real work sat on
+       disk. `strictPort` is the part that matters. Without it, Vite walks to the next free port and
+       reports nothing that distinguishes "this is the real site" from "this is the empty one". With
+       it, a taken port is a hard error naming the port, so a collision is visible instead of
+       mysterious. */
+    port: 5174,
+    strictPort: true,
     open: true,
   },
 });
