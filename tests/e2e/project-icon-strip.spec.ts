@@ -299,8 +299,12 @@ test.describe('La franja de iconos de proyectos', () => {
     ];
     for (const { ancho, esperados } of casos) {
       await irA(page, { width: ancho, height: 900 });
-      const n = await page.locator(marcos).count();
-      expect(n, `${ancho}px`).toBe(esperados);
+      /* Waiting for the frame count rather than counting straight away. The slot count comes from
+         matchMedia read in an effect, so it lands a tick after the viewport changes; counting immediately
+         reads the previous viewport's count and reported one frame at 701px, where there are six. */
+      await expect
+        .poll(async () => page.locator(marcos).count(), { timeout: 3000 })
+        .toBe(esperados);
     }
   });
 
