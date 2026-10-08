@@ -195,3 +195,88 @@ rather than ending abruptly, and that scrolling reveals the remaining icons.
   the same trade the carousel already makes and is accepted rather than solved by a per-icon adjustment.
 - The technology marquee's pause control is out of scope. It was discussed and cancelled, and this feature
   does not depend on it in either direction.
+
+## Amendments
+
+### Amendment 4 - "No autoplay" is superseded; the rest of the assumption stands
+
+**Added by**: `specs/013-project-icon-rotation`, 2026-10-08.
+
+This specification's Assumptions say:
+
+> The strip is a preview, not a second carousel. It shares the carousel's 96px frame so the two are
+> recognisably the same asset, and shares none of its behaviour: **no autoplay**, no index, no dots, no
+> keyboard navigation, because none of that is meaningful for a row of six static images.
+
+**"No autoplay" no longer holds.** The strip now changes the apps it shows on a four-second interval,
+with the four pause conditions and the reduced-motion opt-out that `specs/013` specifies.
+
+The rest of the assumption is untouched and remains true:
+
+- **It is still not a carousel.** There is no index, no dots, no previous or next control, and nothing is
+  clickable. The section's existing "Ver proyectos" call to action remains the only route onward.
+- **It still shares only the frame with the carousel on `/projects`.** Nothing else is borrowed.
+- **It still shares none of the carousel's navigation behaviour.** There is no keyboard navigation,
+  because there is nothing to navigate: the slots are fixed positions and the apps move through them, so
+  there is no current slide to advance from.
+
+**What is also unchanged, and matters more than it looks:**
+
+The six slots do not reorder. Only the app in each slot changes. That is the reason this amendment is
+small: the row's own geometry, its DOM order, its entrance stagger keyed by slot index, its
+`object-fit: cover`, its 22% radius, its 96px frame, its entrance animation running once, its
+`role="list"` with `role="listitem"` frames, and its horizontal scrolling row with a masked edge on a
+phone are all untouched by the rotation.
+
+**Every success criterion in this specification continues to hold**, with two exceptions that
+`specs/013` adds its own criteria for: SC-006 gains the requirement that the row's computed transition
+duration stays at `0s` under reduced motion, which is where the rotation's fade would otherwise appear;
+and SC-011 gains that the layout shift stays below 0.1 across rotations, not only on load.
+
+**Verified against**: `tests/e2e/project-icon-strip.spec.ts`, unchanged. No assertion of this
+specification was deleted to make room for `specs/013`.
+
+### Amendment 5 - On a phone the row is one icon that rotates, not a carousel of six
+
+**Added by**: `specs/013-project-icon-rotation`, 2026-10-08.
+
+This specification made the row a horizontally scrolling carousel below 700px, and two of its success
+criteria describe that behaviour. Both are superseded.
+
+**SC-001 is narrowed.** It said:
+
+> Six frames render inside `#projects-summary` at 1440x900, 768x1024 and 390x844.
+
+It now reads: six frames render at 1440x900 and 768x1024, and **one** frame renders at 390x844. The
+count of frames is a function of the viewport, which the original criterion did not contemplate.
+
+**SC-007 is withdrawn.** It said:
+
+> At 390px the row's `scrollWidth` exceeds its `clientWidth` and every frame is reachable by scrolling,
+> and the masked edge is transparent rather than a hard cut.
+
+There is no scroller any more, so there is no `scrollWidth`, no reachability by scrolling, and no edge to
+mask. Its replacement is SC-014 below. The three techniques it required — `overflow-x: auto`,
+`scroll-snap-type` and the linear-gradient `mask-image` — are all removed rather than left in place,
+because a rule that cannot be reached has no effect and a `mask-image` with nothing to fade is dead
+weight in a stylesheet shipped to every visitor.
+
+**Why the carousel is being dropped rather than kept.** It was built because six 96px frames are 656px
+and a phone is 390px, and a clipped row hides half the work. Solving that by scrolling introduced a
+second problem that the original specification did not anticipate: a horizontal scroller inside a vertical
+page competes with the page's own scroll, and `scroll-snap-type: x proximity` makes that competition
+feel like a bug rather than like a choice. Showing one icon at a time removes the horizontal scroller
+entirely, and the rotation from `specs/013` now does the work of surfacing the other five apps.
+
+**What is unchanged.** The 96px frame, the 22% radius, `object-fit: cover`, the transparent-corner
+handling, the entrance animation with its 60ms stagger, `role="list"` with `role="listitem"`, and the
+desktop row's non-scrolling geometry. SC-002, SC-003, SC-004, SC-006, SC-008, SC-009 and SC-010 all stand
+as written, and SC-006's `transition-duration: 0s` under reduced motion is now more load-bearing than it
+was, because the rotation's fade is a transition on the same property.
+
+**SC-014 (new)**: At 390px the row renders exactly one frame, centred, that shows a different app after
+each interval, and the row does not scroll horizontally.
+
+**SC-015 (new)**: The row changes between the six-frame and one-frame layouts only at the 700px
+breakpoint it already used, so there is no viewport range in which the carousel styles apply while six
+frames are still in the document.

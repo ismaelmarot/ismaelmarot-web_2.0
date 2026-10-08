@@ -1,5 +1,6 @@
 import styled, { css, keyframes } from 'styled-components';
 import { tokens } from '@/styles/tokens';
+import { ESPACIOS_MOVIL_QUERY } from './iconRotation';
 
 /** Apple's own curve for an element arriving: quick out, soft landing. */
 const CURVA_APPLE = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)';
@@ -19,40 +20,26 @@ export const StyledIconStripRow = styled.div`
   justify-content: center;
   gap: ${tokens.space[4]};
 
-  /* Below 700px six 96px frames are 656px and a phone is 390px, so the row scrolls rather than
-     wrapping, and each frame snaps to a whole position. The mask is what keeps a cut edge from
-     reading as clipped: it fades the artwork into the background, the same technique the technology
-     marquee uses for the same reason.
+  /* Below 700px the row is one centred icon rather than a scroller.
 
-     700px rather than 656px because the content column carries 24px of padding either side, so the
-     row is available 48px narrower than the viewport. */
-  @media (max-width: 700px) {
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    overflow-x: auto;
-    scrollbar-width: none;
-    scroll-snap-type: x proximity;
-    -webkit-overflow-scrolling: touch;
-    /* padding-inline so the first and last frames are not flush against the mask's fade. */
-    padding-inline: ${tokens.space[6]};
-    mask-image: linear-gradient(
-      to right,
-      transparent 0%,
-      black 6%,
-      black 94%,
-      transparent 100%
-    );
-    -webkit-mask-image: linear-gradient(
-      to right,
-      transparent 0%,
-      black 6%,
-      black 94%,
-      transparent 100%
-    );
+     Feature 011 made this a horizontal carousel because six 96px frames are 656px and a phone is 390px,
+     and a clipped row hides half the work. Scrolling solved that and introduced a second problem the
+     original specification did not anticipate: a horizontal scroller inside a vertical page competes with
+     the page's own scroll, and scroll snapping makes that competition feel like a bug.
 
-    &::-webkit-scrollbar {
-      display: none;
-    }
+     specs/013 removed the scroller, and with it the three techniques it needed: overflow-x, the snap
+     type and the edge mask. All three are deleted rather than left in place, because a rule that cannot
+     be reached has no effect and a mask-image with nothing to fade is dead weight in a stylesheet
+     shipped to every visitor.
+
+     The single frame is centred here rather than relying on the flexbox default, so the one icon sits in
+     the middle of the band instead of starting at the left edge. 700px is the same breakpoint the
+     carousel used and the one specs/013's slot count changes at, so the styles and the number of frames
+     move together and there is no viewport range where one layout's rules apply while the other's
+     elements are in the document. */
+  @media (max-width: ${ESPACIOS_MOVIL_QUERY}px) {
+    justify-content: center;
+    padding-inline: 0;
   }
 
 `;
@@ -72,7 +59,7 @@ const aparecer = keyframes`
    source PNG in projects.json carries transparent corners, and they are not square: one is 379x366 and
    one is 1024px wide. A 96px square with a 22% radius is therefore the same decision the carousel
    makes, at the same size, so the same asset reads the same in both places. */
-export const StyledIconFrame = styled.div<{ $index: number; $animate: boolean }>`
+export const StyledIconFrame = styled.div<{ $index: number; $animate: boolean; $opacidad: number }>`
   flex: 0 0 auto;
   width: 96px;
   height: 96px;
@@ -84,20 +71,29 @@ export const StyledIconFrame = styled.div<{ $index: number; $animate: boolean }>
   justify-content: center;
   /* A border would be a bright line on this tile. The frame is defined by its own background. */
   border: 0;
-  scroll-snap-align: center;
   transform: scale(1);
   transition: transform var(--transition-normal) var(--ease-out),
-    box-shadow var(--transition-normal) var(--ease-out);
+    box-shadow var(--transition-normal) var(--ease-out),
+    /* The rotation's half of the fade, as a transition rather than a second animation. The entrance
+       above animates opacity and transform with an animation, and two animation values cannot coexist
+       on one element, so the recurring fade has to be a transition on the same property. A transition and
+       an animation do not conflict, and the entrance finishes 800ms after the row arrives while the
+       first rotation is 4s in, so they do not even overlap in time. */
+    opacity 240ms var(--ease-in-out);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  /* The rotation drives this. Kept off the entrance: the entrance animation carries fill-mode both and
+     sets opacity on its own, and a transition on the same property during it would be redundant. */
+  opacity: ${({ $opacidad }) => $opacidad};
 
   &:hover {
     transform: scale(1.06);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 12px 28px rgba(0, 0, 0, 0.1);
   }
 
-  @media (max-width: 700px) {
+  @media (max-width: ${ESPACIOS_MOVIL_QUERY}px) {
     &:hover {
-      /* A touch device has no hover, and a sticky hover state on a scrollable row reads as a bug. */
+      /* A touch device has no hover, and a sticky hover state on a row that renews itself every four
+         seconds reads as a bug rather than as feedback. */
       transform: scale(1);
     }
   }

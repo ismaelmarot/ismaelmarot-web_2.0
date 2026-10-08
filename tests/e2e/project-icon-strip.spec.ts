@@ -16,14 +16,68 @@ const irA = async (page: Page, vp: { width: number; height: number }) => {
 
 const marcos = '[data-testid="project-icon-frame"]';
 
+/**
+ * Bring the row into view and wait for it.
+ *
+ * `irA` waits for the frames to exist in the DOM, which is enough for the geometry tests because they
+ * measure with getBoundingClientRect and a laid-out element measures correctly wherever it is. The
+ * rotation needs the row to be genuinely on screen: the strip's observer is `triggerOnce`, so until the
+ * row enters the viewport it reports not-visible and no interval is created at all. At 1440x900 the row
+ * sits 1462px down, well below the fold, so a rotation test that did not scroll would wait forever for a
+ * change that was never going to be scheduled.
+ */
+const irAEnPantalla = async (page: Page, vp: { width: number; height: number }) => {
+  await irA(page, vp);
+  await page.locator(marcos).first().scrollIntoViewIfNeeded();
+  await page.waitForFunction(() => {
+    const marco = document.querySelector('[data-testid="project-icon-frame"]');
+    if (!marco) return false;
+    return marco.getBoundingClientRect().top < window.innerHeight;
+  });
+  /* The observer reports the intersection on its own callback, and the interval starts after that. */
+  await page.waitForTimeout(300);
+};
+
+/** The apps on screen, in slot order, read from the alt text a screen reader is given. */
+const appsVisibles = (page: Page) =>
+  page.$$eval('img[alt^="Icono de"]', (els) => els.map((e) => e.getAttribute('alt') ?? ''));
+
+/**
+ * Wait for the row's apps to actually change, rather than for a fixed duration.
+ *
+ * Sampling at "interval plus a margin" looks equivalent and is not: the row renews on a 4s timer, so a
+ * sample taken 5s after the last one lands either one or two rotations later depending on where the
+ * timer happened to be, and an out-of-phase sample compares an arrangement against itself. Waiting for
+ * the change makes each sample one rotation apart by construction.
+ */
+const esperarRotacion = async (page: Page, previa: string[]) => {
+  await page.waitForFunction(
+    (prev: string[]) => {
+      const alt = [...document.querySelectorAll('img[alt^="Icono de"]')].map(
+        (e) => e.getAttribute('alt') ?? ''
+      );
+      return alt.some((a, i) => a !== prev[i]);
+    },
+    previa,
+    { timeout: 20000 }
+  );
+  /* Past the fade, so the swap has happened and the icons are back at full opacity. */
+  await page.waitForTimeout(400);
+};
+
 test.describe('La franja de iconos de proyectos', () => {
+  /* The frame count is a function of the viewport since feature 011's Amendment 5: six above 700px and
+     one at or below it, because specs/013 replaced the phone carousel with a single rotating icon.
+     Everything else this block asserts — 96x96, the 22% radius, cover, the background, the absence of a
+     border, one screen of height and no horizontal overflow — applies to every viewport, so it is
+     asserted for all four rather than only the desktop ones. */
   for (const vp of [
-    { width: 1440, height: 900 },
-    { width: 768, height: 1024 },
-    { width: 390, height: 844 },
-    { width: 320, height: 640 },
+    { width: 1440, height: 900, marcos: 6 },
+    { width: 768, height: 1024, marcos: 6 },
+    { width: 390, height: 844, marcos: 1 },
+    { width: 320, height: 640, marcos: 1 },
   ]) {
-    test(`seis marcos de 96px en ${vp.width}x${vp.height}`, async ({ page }) => {
+    test(`${vp.marcos === 6 ? 'seis' : 'un'} marco de 96px en ${vp.width}x${vp.height}`, async ({ page }) => {
       await irA(page, vp);
 
       const m = await page.evaluate((sel) => {
@@ -49,7 +103,7 @@ test.describe('La franja de iconos de proyectos', () => {
         };
       }, marcos);
 
-      expect(m.n, 'un marco por proyecto').toBe(6);
+      expect(m.n, `marcos en ${vp.width}px`).toBe(vp.marcos);
       expect([...new Set(m.tamanos)], 'todos los marcos del mismo tamaño').toHaveLength(1);
       expect(m.tamanos[0]).toBe('96x96');
       expect([...new Set(m.radios)], '22% de 96 es 21px').toEqual(['21px']);
@@ -174,37 +228,80 @@ test.describe('La franja de iconos de proyectos', () => {
     await ctx.close();
   });
 
-  test('en móvil la fila se desliza y el borde cortado se desvanece', async ({ page }) => {
+  test('SC-014: en móvil muestra un solo icono, centrado, y la fila no se desliza', async ({ page }) => {
+    /* specs/013 removed feature 011's horizontal carousel. It was built because six 96px frames are
+       656px and a phone is 390px, and a clipped row hides half the work; scrolling solved that and
+       introduced a horizontal scroller inside a vertical page, which competes with the page's own
+       scroll. The rotation now surfaces the other five apps instead, so there is nothing to scroll to. */
     await irA(page, { width: 390, height: 844 });
     await page.locator('#projects-summary').scrollIntoViewIfNeeded();
     await page.waitForTimeout(800);
 
     const m = await page.evaluate((sel) => {
-      const f = document.querySelector<HTMLElement>(sel)!;
-      const fila = f.parentElement!;
+      const fila = document.querySelector<HTMLElement>('[data-testid="project-icon-row"]')!;
       const s = getComputedStyle(fila);
+      const marcos = [...document.querySelectorAll<HTMLElement>(sel)];
+      const banda = document.querySelector<HTMLElement>('#projects-summary')!;
+      const marco = marcos[0]!.getBoundingClientRect();
+      const centroFila = fila.getBoundingClientRect().left + fila.getBoundingClientRect().width / 2;
       return {
+        marcos: marcos.length,
         overflowX: s.overflowX,
-        // 6 frames of 96 plus five gaps of 16 is 656, plus the row's own padding, against 342.
-        desborde: fila.scrollWidth > fila.clientWidth,
+        justificado: s.justifyContent,
         scrollWidth: fila.scrollWidth,
         clientWidth: fila.clientWidth,
-        barra: s.scrollbarWidth,
-        mascara: s.maskImage || s.webkitMaskImage || '',
-        // Every frame must be reachable, which is the point of scrolling rather than wrapping.
-        alcanzables: [...document.querySelectorAll(sel)].length,
+        desviacionDelCentro: Math.abs(marco.left + marco.width / 2 - centroFila),
+        // The band is shorter now: one 96px row instead of a scrollable one.
+        banda: banda.getBoundingClientRect().height,
         overflowXPagina: document.documentElement.scrollWidth > window.innerWidth,
       };
     }, marcos);
 
-    expect(m.desborde, 'la fila debe desbordar y ser deslizable').toBe(true);
-    expect(m.overflowX).toBe('auto');
-    expect(m.scrollWidth).toBeGreaterThan(m.clientWidth);
-    expect(m.barra, 'sin barra visible').toBe('none');
-    // Without the mask a cut frame reads as clipped rather than as continuing.
-    expect(m.mascara).toContain('linear-gradient');
-    expect(m.alcanzables).toBe(6);
+    expect(m.marcos, 'un solo marco en móvil').toBe(1);
+    expect(m.overflowX, 'ya no es un scroller').toBe('visible');
+    expect(m.scrollWidth, 'y por lo tanto no hay nada que deslizar').toBe(m.clientWidth);
+    expect(m.justificado, 'el icono queda centrado').toBe('center');
+    // Two pixels of tolerance for sub-pixel rounding on a 390px viewport.
+    expect(m.desviacionDelCentro, 'el marco está centrado en la fila').toBeLessThanOrEqual(2);
     expect(m.overflowXPagina, 'la página no debe desbordar').toBe(false);
+    return m;
+  });
+
+  test('SC-014: el único icono de móvil cambia de app en cada rotación', async ({ page }) => {
+    test.setTimeout(90000);
+    await irA(page, { width: 390, height: 844 });
+    await page.locator('#projects-summary').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(500);
+
+    const appsVisiblesEnMovil = () => page.$$eval('img[alt^="Icono de"]', (els) =>
+      els.map((e) => e.getAttribute('alt') ?? '')
+    );
+
+    let previo = await appsVisiblesEnMovil();
+    expect(previo, 'un solo icono').toHaveLength(1);
+
+    for (let ciclo = 0; ciclo < 3; ciclo += 1) {
+      await esperarRotacion(page, previo);
+      const actual = await appsVisiblesEnMovil();
+      expect(actual, `ciclo ${ciclo}`).toHaveLength(1);
+      expect(actual[0], `ciclo ${ciclo}: ${previo[0]} -> ${actual[0]}`).not.toBe(previo[0]);
+      previo = actual;
+    }
+  });
+
+  test('SC-015: el cambio entre seis y un marco ocurre en el mismo breakpoint', async ({ page }) => {
+    /* One boundary, so there is no viewport range where the carousel's styles apply while six frames
+       are still in the document, or the reverse. 701px must be six frames and 700px exactly one. */
+    const casos: { ancho: number; esperados: number }[] = [
+      { ancho: 701, esperados: 6 },
+      { ancho: 700, esperados: 1 },
+      { ancho: 699, esperados: 1 },
+    ];
+    for (const { ancho, esperados } of casos) {
+      await irA(page, { width: ancho, height: 900 });
+      const n = await page.locator(marcos).count();
+      expect(n, `${ancho}px`).toBe(esperados);
+    }
   });
 
   test('en escritorio la fila no necesita deslizarse', async ({ page }) => {
@@ -218,5 +315,169 @@ test.describe('La franja de iconos de proyectos', () => {
     }, marcos);
 
     expect(m.scrollWidth).toBe(m.clientWidth);
+  });
+
+  test.describe('la rotacion de apps', () => {
+    test('SC-001 y SC-002: los seis espacios cambian y ninguno conserva su app', async ({ page }) => {
+      /* Five rotations at 4s each is 20s of waiting, which is past the default timeout. */
+      test.setTimeout(90000);
+      await irAEnPantalla(page, { width: 1440, height: 900 });
+
+      let previo = await appsVisibles(page);
+
+      for (let ciclo = 0; ciclo < 4; ciclo += 1) {
+        await esperarRotacion(page, previo);
+        const actual = await appsVisibles(page);
+
+        actual.forEach((alt, espacio) => {
+          expect(alt, `ciclo ${ciclo}, espacio ${espacio}: ${previo[espacio]} -> ${alt}`).not.toBe(
+            previo[espacio]
+          );
+        });
+        expect(new Set(actual).size, `ciclo ${ciclo}: sin repetidos`).toBe(actual.length);
+        previo = actual;
+      }
+    });
+
+    test('SC-004: con el tiempo se ven las seis apps', async ({ page }) => {
+      test.setTimeout(90000);
+      await irAEnPantalla(page, { width: 1440, height: 900 });
+
+      const vistas = new Set(await appsVisibles(page));
+      let previo = await appsVisibles(page);
+
+      for (let ciclo = 0; ciclo < 5; ciclo += 1) {
+        await esperarRotacion(page, previo);
+        (await appsVisibles(page)).forEach((alt) => vistas.add(alt));
+        previo = await appsVisibles(page);
+      }
+
+      expect(vistas.size).toBe(6);
+    });
+
+    test('SC-005: los seis espacios no se mueven ni cambian de tamano al rotar', async ({ page }) => {
+      test.setTimeout(90000);
+      await irAEnPantalla(page, { width: 1440, height: 900 });
+
+      /* Past the entrance before taking the first measurement. Feature 011's entrance animates each
+         frame's `scale` from 0.9 with a 60ms stagger, and a frame mid-scale measures narrower than its
+         neighbours: a first reading came back as 96, 96, 95, 94, 93, 91 and the post-rotation reading as
+         a clean 96 six times. Comparing the two reported the slots moving and resizing when nothing had
+         moved. The stagger runs to 300ms and the animation to 500ms after it, so 1000ms is the whole of
+         it. */
+      await page.waitForTimeout(1000);
+
+      const antes = await page.$$eval(marcos, (els) =>
+        els.map((e) => {
+          const r = e.getBoundingClientRect();
+          return { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) };
+        })
+      );
+
+      const previo = await appsVisibles(page);
+      await esperarRotacion(page, previo);
+
+      const despues = await page.$$eval(marcos, (els) =>
+        els.map((e) => {
+          const r = e.getBoundingClientRect();
+          return { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) };
+        })
+      );
+
+      expect(despues).toEqual(antes);
+    });
+
+    test('SC-007: el desplazamiento acumulado de la pagina se mantiene bajo 0.1 rotando', async ({ page }) => {
+      test.setTimeout(90000);
+      await irAEnPantalla(page, { width: 1440, height: 900 });
+
+      let previo = await appsVisibles(page);
+      for (let ciclo = 0; ciclo < 3; ciclo += 1) {
+        await esperarRotacion(page, previo);
+        previo = await appsVisibles(page);
+      }
+
+      const total = await page.evaluate(() => {
+        let acumulado = 0;
+        for (const entry of performance.getEntriesByType('layout-shift') as unknown as {
+          value: number;
+          hadRecentInput: boolean;
+        }[]) {
+          if (entry.hadRecentInput === false) acumulado += entry.value;
+        }
+        return acumulado;
+      });
+
+      expect(total, 'CLS acumulado').toBeLessThan(0.1);
+    });
+
+    test('la fila se desvanece y reaparece, no cambia de golpe', async ({ page }) => {
+      test.setTimeout(90000);
+      await irAEnPantalla(page, { width: 1440, height: 900 });
+
+      /* Sample during the first half of the fade: the opacity has to be on its way down. */
+      const opacidades = await page.evaluate(async () => {
+        const marcos = [...document.querySelectorAll<HTMLElement>('[data-testid="project-icon-frame"]')];
+        const leidas: number[] = [];
+        for (let i = 0; i < 24; i += 1) {
+          leidas.push(Number(getComputedStyle(marcos[0]!).opacity));
+          await new Promise((r) => setTimeout(r, 60));
+        }
+        return leidas;
+      });
+
+      const minimo = Math.min(...opacidades);
+      const maximo = Math.max(...opacidades);
+      expect(maximo, 'los iconos vuelven a verse').toBeGreaterThan(0.9);
+      expect(minimo, 'los iconos se desvanecen a mitad de camino').toBeLessThan(0.9);
+    });
+
+    test('SC-008: bajo movimiento reducido la fila no cambia y no hay transicion', async ({ browser }) => {
+      const ctx = await browser.newContext({
+        reducedMotion: 'reduce',
+        locale: 'es-ES',
+        viewport: { width: 1440, height: 900 },
+      });
+      const page = await ctx.newPage();
+      await irAEnPantalla(page, { width: 1440, height: 900 });
+
+      const antes = await appsVisibles(page);
+      await page.waitForTimeout(13000);
+      expect(await appsVisibles(page)).toEqual(antes);
+
+      const transicion = await page.$eval(
+        '[data-testid="project-icon-frame"]',
+        (e) => getComputedStyle(e).transitionDuration
+      );
+      expect(transicion, 'feature 011 SC-006').toBe('0s');
+      await ctx.close();
+    });
+
+    test('SC-009: no cambia con el cursor encima ni con la pestana oculta', async ({ page }) => {
+      test.setTimeout(90000);
+      await irAEnPantalla(page, { width: 1440, height: 900 });
+
+      /* Hovering the row's centre rather than the first frame. The frames have gaps between them, and
+         in webkit a pointer aimed at a frame's edge lands in a gap, which is outside the frame but still
+         inside the row, so the row's mouseenter has to be aimed at the row itself for the test to mean
+         what it says.
+
+         The baseline is read after the hover has settled: the interval is rebuilt whenever the focus
+         state changes, so a rotation already in flight when the pointer arrives completes on its own
+         terms, and reading before that measures the transition into the paused state. */
+      await page.hover('[data-testid="project-icon-row"]', { position: { x: 5, y: 5 } });
+      await page.waitForTimeout(800);
+      const conHover = await appsVisibles(page);
+      await page.waitForTimeout(9000);
+      expect(await appsVisibles(page), 'con el cursor encima').toEqual(conHover);
+
+      /* The document hidden state, checked by overriding the property the hook reads. */
+      await page.evaluate(() => {
+        Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+      });
+      await page.waitForTimeout(9000);
+      expect(await appsVisibles(page), 'con la pestana oculta').toEqual(conHover);
+
+    });
   });
 });

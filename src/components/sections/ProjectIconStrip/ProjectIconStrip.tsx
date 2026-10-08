@@ -9,6 +9,7 @@ import {
   StyledIconImage,
   StyledIconFallback,
 } from './ProjectIconStrip.styles';
+import { useIconRotation } from './useIconRotation';
 import type { Project } from '@/types/project';
 
 export interface ProjectIconStripProps {
@@ -40,6 +41,22 @@ export const ProjectIconStrip = ({
   // A project with no iconUrl still gets its frame, so a missing asset does not shift the row.
   const animating = !reduceMotion && isIntersecting;
 
+  /* Fixed slots and an assignment of apps to them. The slots are what get rendered and they never move
+     or reorder; only the assignment changes, so the icon in a slot is replaced rather than the row being
+     permuted.
+
+     That is the whole reason for the indirection. Permuting the array instead would change `$index` from
+     a slot index to an app index, and `$index` is what the entrance's 60ms stagger is built from, which
+     feature 011's SC-005 measures.
+
+     The slot count comes from the hook because it depends on the viewport: one on a phone, six
+     elsewhere. The component does not need to know that, and reading it from one place means the number
+     of frames and the styles that hide them change at the same breakpoint. */
+  const { asignacion, espacios, opacidad, alEntrar, alSalir } = useIconRotation(
+    projects.length,
+    isIntersecting
+  );
+
   if (projects.length === 0) return null;
 
   /* role="list" rather than a bare div with an aria-label, which is a mistake this project made
@@ -47,16 +64,30 @@ export const ProjectIconStrip = ({
      screen reader would meet six images with no indication of what they were. The frames carry
      role="listitem", so the row is a list of six things rather than six images in a div. */
   return (
-    <StyledIconStrip ref={ref} role="list" aria-label="Iconos de los proyectos">
+    <StyledIconStrip
+      ref={ref}
+      role="list"
+      aria-label="Iconos de los proyectos"
+      onMouseEnter={alEntrar}
+      onMouseLeave={alSalir}
+      onFocusCapture={alEntrar}
+      onBlurCapture={alSalir}
+    >
       <StyledIconStripRow data-testid="project-icon-row">
-        {projects.map((project, index) => {
+        {asignacion.slice(0, espacios).map((indiceApp, index) => {
+          const project = projects[indiceApp];
+          if (!project) return null;
+          /* Keyed by slot, not by app: the app in a slot is what changes, and a key that followed the
+             app would make React tear down and rebuild the frame on every rotation. The frame has to
+             survive so its `src` is updated in place and the row never reflows. */
           const fallo = fallos[project.id];
           return (
             <StyledIconFrame
-              key={project.id}
+              key={index}
               role="listitem"
               $index={index}
               $animate={animating}
+              $opacidad={opacidad}
               data-testid="project-icon-frame"
             >
               {project.iconUrl && !fallo ? (
