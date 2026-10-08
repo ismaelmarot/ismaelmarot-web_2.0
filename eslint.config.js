@@ -48,5 +48,18 @@ export default tseslint.config(
       '@typescript-eslint/consistent-type-imports': 'error',
       'testing-library/no-unnecessary-act': 'warn',
     },
+  },
+  {
+    /* The testing-library rules are written for React Testing Library and are applied to every .ts file
+       above. Playwright exposes its own `page.getByRole`, which is not an RTL render result and has no
+       `screen` to be read from, so `prefer-screen-queries` fires on a correct Playwright assertion.
+
+       Scoped to the browser tests. The rules about DOM traversal rather than about which query API is
+       called stay on: those files measure through page.evaluate and locator assertions rather than
+       reaching into the DOM, and that is enforced rather than assumed. */
+    files: ['tests/e2e/**/*.spec.ts'],
+    rules: {
+      'testing-library/prefer-screen-queries': 'off',
+    },
   }
 );
