@@ -60,6 +60,16 @@ test.describe('La banda del Hero y el bloque de texto, medidos en el navegador',
     // Waits for the Hero to exist rather than for a fixed delay, so the measurement never races
     // the first paint. The band is the first thing on the page, so it is the right signal.
     await page.waitForSelector('[data-testid="hero-band"]');
+
+    /* Waits for the webfont. globals.css loads Inter from Google Fonts with `display=swap`, so the Hero
+       renders first with a fallback and re-measures when the real face arrives. The fallback has
+       different metrics and every measurement in this file is in pixels, so measuring during the swap
+       reads the wrong geometry: the section measured 714px against a 667px viewport on CI, on chromium
+       and on webkit alike, and passed on every local run where the font was already cached.
+
+       `document.fonts.ready` resolves when the pending loads finish or fail, so a run with no access
+       to fonts.googleapis.com is not made to wait for a font that will never arrive. */
+    await page.evaluate(() => document.fonts.ready);
   };
 
   /* Waits for the section to reach the height it settles at before anything measures it.

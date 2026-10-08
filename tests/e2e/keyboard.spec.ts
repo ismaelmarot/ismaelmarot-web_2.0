@@ -38,10 +38,15 @@ test.describe('Keyboard Navigation', () => {
     /* Focused directly rather than tabbed to. Two synthetic Tabs land on the carousel's pause button in
        webkit and on the header link in chromium, so counting keystrokes asserts whichever browser ran it
        last. What this test means is that the header's links are focusable and carry real destinations,
-       and that is checked by focusing each and reading its href. */
+       and that is checked by focusing each and reading its href.
+
+       "At least one", not "more than one". The header collapses to a menu button on a phone, where the
+       navigation links live inside that button rather than in the header, so a phone context has only
+       the logo link and this asserted a count that is a layout decision rather than an accessibility
+       one. It failed on Mobile Chrome and Mobile Safari for exactly that reason. */
     const enlaces = page.locator('header a[href]');
     const total = await enlaces.count();
-    expect(total).toBeGreaterThan(1);
+    expect(total).toBeGreaterThan(0);
 
     for (let i = 0; i < total; i += 1) {
       const enlace = enlaces.nth(i);
