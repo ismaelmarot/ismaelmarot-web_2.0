@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { slugify, truncate, formatDate, classNames, getTechCategoryColor, getTechCategoryLabel } from '@/utils/helpers';
+import {
+  slugify,
+  truncate,
+  formatDate,
+  formatProjectName,
+  classNames,
+  getTechCategoryColor,
+  getTechCategoryLabel,
+} from '@/utils/helpers';
 
 describe('helpers', () => {
   describe('slugify', () => {
@@ -68,6 +76,40 @@ describe('helpers', () => {
 
     it('returns category name for unknown', () => {
       expect(getTechCategoryLabel('unknown')).toBe('unknown');
+    });
+  });
+
+  /* The six real names from projects.json. Four of them carry capitals on purpose and must survive
+     byte for byte; a general title-case would turn them into Linkio, Qentry and Nauticacademy. This
+     group is the only thing standing between the rule and that regression. */
+  describe('formatProjectName', () => {
+    it('escribe con espacios y mayusculas los nombres que tienen guion', () => {
+      expect(formatProjectName('car-expense-tracker')).toBe('Car Expense Tracker');
+      expect(formatProjectName('cash-counter')).toBe('Cash Counter');
+    });
+
+    it('no toca los nombres sin guion, ni siquiera los que estan en minuscula', () => {
+      expect(formatProjectName('trash2treasure')).toBe('trash2treasure');
+      expect(formatProjectName('LinkIO')).toBe('LinkIO');
+      expect(formatProjectName('QEntry')).toBe('QEntry');
+      expect(formatProjectName('NauticAcademy')).toBe('NauticAcademy');
+    });
+
+    it('no deja espacios fantasma con guiones al principio o al final', () => {
+      /* Sin el filtro de segmentos vacios, '-leading' devolvia ' Leading' y 'trailing-' devolvia
+         'Trailing ', y eso se ve como texto indentado dentro de la tarjeta. */
+      expect(formatProjectName('-leading')).toBe('Leading');
+      expect(formatProjectName('trailing-')).toBe('Trailing');
+      expect(formatProjectName('x--y')).toBe('X Y');
+    });
+
+    it('tolera la cadena vacia y no lanza', () => {
+      expect(formatProjectName('')).toBe('');
+    });
+
+    it('deja intacto un nombre que ya viene escrito', () => {
+      expect(formatProjectName('Test Project')).toBe('Test Project');
+      expect(formatProjectName('UPPER-CASE')).toBe('UPPER CASE');
     });
   });
 });

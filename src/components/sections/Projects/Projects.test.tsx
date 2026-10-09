@@ -7,7 +7,10 @@ import type { Project } from '@/types/project';
 const mockProjects: Project[] = [
   {
     id: '1',
-    name: 'Trash2Treasure',
+    /* Raw repository name, as projects.json stores it. The fixture used to arrive here already
+       formatted, which meant this file asserted nothing about formatProjectName: it passed with the
+       component completely absent. */
+    name: 'trash2treasure',
     description: 'A recycling app',
     technologies: ['TypeScript'],
     githubUrl: 'https://github.com/user/trash2treasure',
@@ -19,7 +22,7 @@ const mockProjects: Project[] = [
   },
   {
     id: '2',
-    name: 'Car Expense Tracker',
+    name: 'car-expense-tracker',
     description: 'Vehicle expenses',
     technologies: ['TypeScript'],
     githubUrl: 'https://github.com/user/car-expense-tracker',
@@ -59,7 +62,7 @@ describe('Projects', () => {
   it('renders one row per project', () => {
     renderProjects(mockProjects);
     expect(screen.getAllByRole('article')).toHaveLength(mockProjects.length);
-    expect(screen.getByRole('heading', { name: 'Trash2Treasure' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'trash2treasure' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Car Expense Tracker' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'NauticAcademy' })).toBeInTheDocument();
   });
@@ -195,7 +198,7 @@ describe('Projects', () => {
 
   it('renders one dot per project and marks the first', () => {
     renderProjects(mockProjects);
-    expect(screen.getByRole('button', { name: /Proyecto 1 de 3: Trash2Treasure/ })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: /Proyecto 1 de 3: trash2treasure/ })).toHaveAttribute(
       'aria-current',
       'true'
     );
@@ -208,7 +211,7 @@ describe('Projects', () => {
     expect(
       screen.getByRole('button', { name: /Proyecto 1 de 1: NauticAcademy/ })
     ).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Trash2Treasure/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /trash2treasure/ })).not.toBeInTheDocument();
   });
 
   it('shows no dots when the filtered category is empty', () => {

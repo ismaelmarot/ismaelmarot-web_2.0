@@ -45,7 +45,7 @@ import { ProjectGalleryViewer } from './ProjectGalleryViewer';
 import { StyledGalleryThumb } from './ProjectGalleryViewer.styles';
 import { Icon } from '@/components/ui/Icon';
 import type { IconName } from '@/components/ui/Icon';
-import { formatDate, formatBytes, formatKilobytes } from '@/utils/helpers';
+import { formatDate, formatBytes, formatKilobytes, formatProjectName } from '@/utils/helpers';
 import { DEFAULT_APP_LANGUAGES } from '@/types/project';
 import type { Project, ProjectPlatform, ProjectViewport } from '@/types/project';
 
@@ -158,7 +158,7 @@ export const ProjectDetail = ({ project, shareUrl }: ProjectDetailProps) => {
         )}
 
         <StyledDetailHeading>
-          <StyledDetailName>{project.name}</StyledDetailName>
+          <StyledDetailName>{formatProjectName(project.name)}</StyledDetailName>
           {categories.length > 0 && (
             <StyledDetailMeta data-testid="detail-categories">
               {categories.map((category, index) => (
@@ -373,7 +373,7 @@ export const ProjectDetail = ({ project, shareUrl }: ProjectDetailProps) => {
           </StyledVersionList>
         ) : (
           <StyledDetailNote>
-            {project.name} does not publish formal versions.
+            {formatProjectName(project.name)} does not publish formal versions.
           </StyledDetailNote>
         )}
       </StyledDetailSection>

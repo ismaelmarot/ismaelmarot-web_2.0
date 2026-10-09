@@ -17,7 +17,7 @@ import {
 import { useProjectRow } from './useProjectRow';
 import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
-import { NO_DESCRIPTION_FALLBACK } from '@/utils/helpers';
+import { formatProjectName, NO_DESCRIPTION_FALLBACK } from '@/utils/helpers';
 import type { Project } from '@/types/project';
 
 export interface ProjectRowProps {
@@ -52,7 +52,7 @@ export const ProjectRow = ({ project }: ProjectRowProps) => {
             )}
           </StyledProjectIconFrame>
 
-          <StyledProjectName as="h3">{project.name}</StyledProjectName>
+          <StyledProjectName as="h3">{formatProjectName(project.name)}</StyledProjectName>
         </StyledProjectRowMain>
 
         <StyledProjectBody>

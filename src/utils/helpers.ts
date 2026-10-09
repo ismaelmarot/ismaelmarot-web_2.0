@@ -1,5 +1,28 @@
 export const NO_DESCRIPTION_FALLBACK = 'No description available';
 
+/**
+ * A repository name, written the way it reads rather than the way GitHub stores it.
+ *
+ * Only names carrying a hyphen are rewritten, and that guard is the whole rule: `LinkIO`,
+ * `QEntry` and `NauticAcademy` carry capitals on purpose, and a general title-case would turn them
+ * into `Linkio`, `Qentry` and `Nauticacademy`. `trash2treasure` has no hyphen and stays as it is.
+ *
+ * `filter(Boolean)` drops empty segments so a leading or trailing hyphen cannot leave a phantom space:
+ * without it `-leading` became " Leading" and `trailing-` became "Trailing ", which then reads as
+ * indented in the card.
+ *
+ * Presentation only. Routes use the numeric id, and outbound links use the URL fields, so nothing
+ * here reaches a link.
+ */
+export function formatProjectName(name: string): string {
+  if (!name.includes('-')) return name;
+  return name
+    .split('-')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
 export function slugify(text: string): string {
   return text
     .toLowerCase()
