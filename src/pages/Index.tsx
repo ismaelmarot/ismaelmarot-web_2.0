@@ -45,7 +45,7 @@ export const IndexPage = () => {
       <SectionSummary
         id="about-summary"
         title="Sobre mí"
-        description="Una breve introducción sobre quién soy, mi recorrido y mi forma de trabajar."
+        description="Me interesa crear tecnología que tenga sentido. Disfruto transformar ideas en productos digitales, encontrar soluciones a problemas reales y cuidar cada detalle del proceso, desde el concepto hasta su implementación."
         ctaLabel="Conocé más"
         ctaHref="/about"
         background="muted"
