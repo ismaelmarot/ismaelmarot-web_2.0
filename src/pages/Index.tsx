@@ -53,7 +53,7 @@ export const IndexPage = () => {
       <SectionSummary
         id="contact-summary"
         title="Contacto"
-        description="¿Tienes un proyecto en mente o quieres colaborar? Estoy a un mensaje de distancia."
+        description="¿Tienes un proyecto en mente o quieres que trabajemos juntos? Estoy a un mensaje de distancia."
         ctaLabel="Contactar"
         ctaHref="/contact"
         background="default"
