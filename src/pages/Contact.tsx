@@ -5,7 +5,7 @@ export const ContactPage = () => {
   return (
     <Contact
       methods={siteConfig.socialLinks}
-      introText="¿Tienes un proyecto en mente o quieres colaborar? Estoy a un mensaje de distancia."
+      introText="¿Tienes un proyecto en mente o quieres que trabajemos juntos? Estoy a un mensaje de distancia."
     />
   );
 };
