@@ -66,6 +66,27 @@ describe('ProjectRow', () => {
     expect(frame).toContain('height: 96px');
   });
 
+  // The home icon strip has carried a 0.04 shadow since the projects page was built. This is the
+  // same value on purpose: not var(--shadow-xs), which is 0.1 and reads as grime on a 96px tile.
+  it('gives the icon the subtle shadow the home icon strip uses', () => {
+    renderRow(mockProject);
+    const frame = getCssForElement(screen.getByTestId('project-icon-frame'));
+    expect(frame).toContain('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04)');
+  });
+
+  // The frame comment above claims the fallback is kept identical to the frame so a failed icon
+  // cannot change the geometry. It was not: measured, the fallback had no radius, no background and
+  // no shadow, so a broken icon dropped the tile and left a bare glyph on the card. These asserts
+  // are what make that comment true.
+  it('gives the fallback the same frame as a loaded icon', () => {
+    renderRow({ ...mockProject, iconUrl: '' });
+    const fallback = getCssForElement(screen.getByTestId('project-icon-fallback'));
+
+    expect(fallback).toContain('width: 96px');
+    expect(fallback).toContain('border-radius: 21px');
+    expect(fallback).toContain('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04)');
+  });
+
   // Amendment 3 inverted the dark gradient of Amendment 1: the card is now white, flat, and
   // separated by shadow. Rewritten rather than deleted, per SC-010 of the carousel spec, so the
   // old surface stays guarded. The contrast pairs this depended on are measured in

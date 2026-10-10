@@ -5,6 +5,7 @@ import {
   StyledDetailTextButton,
   StyledDetailIconButton,
   StyledDetailHeader,
+  StyledDetailIconFrame,
   StyledDetailIcon,
   StyledDetailIconFallback,
   StyledDetailHeading,
@@ -144,18 +145,20 @@ export const ProjectDetail = ({ project, shareUrl }: ProjectDetailProps) => {
       </p>
 
       <StyledDetailHeader>
-        {showIcon ? (
-          <StyledDetailIcon
-            src={project.iconUrl}
-            alt={`${project.name} icon`}
-            decoding="async"
-            onError={handleIconError}
-          />
-        ) : (
-          <StyledDetailIconFallback data-testid="detail-icon-fallback" aria-hidden="true">
-            <Icon name="folder" size={32} />
-          </StyledDetailIconFallback>
-        )}
+        <StyledDetailIconFrame data-testid="detail-icon-frame">
+          {showIcon ? (
+            <StyledDetailIcon
+              src={project.iconUrl}
+              alt={`${project.name} icon`}
+              decoding="async"
+              onError={handleIconError}
+            />
+          ) : (
+            <StyledDetailIconFallback data-testid="detail-icon-fallback" aria-hidden="true">
+              <Icon name="folder" size={32} />
+            </StyledDetailIconFallback>
+          )}
+        </StyledDetailIconFrame>
 
         <StyledDetailHeading>
           <StyledDetailName>{formatProjectName(project.name)}</StyledDetailName>

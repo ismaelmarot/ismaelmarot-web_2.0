@@ -69,6 +69,33 @@ describe('ProjectDetail', () => {
     expect(screen.getByAltText('Trash2Treasure icon')).toBeInTheDocument();
   });
 
+  // These six icons have transparent corners and the img was object-fit: contain in a square, so a
+  // box-shadow on the img itself traced the 72x72 rectangle: a grey block behind a rounded icon.
+  // The frame exists so the shadow lands on a rounded surface, as it does on the card.
+  it('draws the icon shadow on a rounded frame, not on the square image box', () => {
+    renderDetail();
+    const frame = getCssForElement(screen.getByTestId('detail-icon-frame'));
+
+    expect(frame).toContain('width: 72px');
+    expect(frame).toContain('height: 72px');
+    expect(frame).toContain('border-radius: 16px');
+    expect(frame).toContain('overflow: hidden');
+    expect(frame).toContain('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04)');
+
+    // The image fills the frame now that the frame clips it, matching the card rather than floating
+    // inside a square with transparent margins.
+    expect(screen.getByAltText('Trash2Treasure icon')).toHaveStyle({ objectFit: 'cover' });
+  });
+
+  it('keeps the shadow when the icon fails to load', () => {
+    renderDetail({ ...webProject, iconUrl: '' });
+    const frame = getCssForElement(screen.getByTestId('detail-icon-frame'));
+    const fallback = getCssForElement(screen.getByTestId('detail-icon-fallback'));
+
+    expect(fallback).toBeTruthy();
+    expect(frame).toContain('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04)');
+  });
+
   it('lists the categories as a comma separated sentence', () => {
     renderDetail();
     const header = screen.getByTestId('detail-categories');

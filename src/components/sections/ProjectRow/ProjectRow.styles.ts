@@ -88,6 +88,10 @@ export const StyledProjectIconFrame = styled.span`
   border: 1px solid transparent;
   background: ${tokens.colors.cardFrame};
 
+  /* The same 0.04 alpha the home icon strip has used, so an icon looks the same wherever a project
+     appears. Not var(--shadow-xs), which is 0.1: on a 96px tile that reads as a drop of grime. */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+
   /* Amendment 2 took this from 120px to 80px below 520px, and Amendment 3 took the desktop value to
      96px to match the smaller card. At 320px the card is 256px wide inside the gutters, and a
      120px icon, the name and a 48px action cannot share one line there, which this spec's own edge
@@ -115,6 +119,11 @@ export const StyledProjectIconFallback = styled.span`
   width: 96px;
   height: 96px;
   flex: 0 0 96px;
+  overflow: hidden;
+  border-radius: 21px;
+  border: 1px solid transparent;
+  background: ${tokens.colors.cardFrame};
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   color: ${tokens.colors.cardFgMuted};
 
   /* Kept identical to the frame above, so a failed icon cannot change the geometry. */
@@ -122,6 +131,7 @@ export const StyledProjectIconFallback = styled.span`
     width: 80px;
     height: 80px;
     flex: 0 0 80px;
+    border-radius: 18px;
   }
 `;
 

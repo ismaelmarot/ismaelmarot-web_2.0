@@ -92,11 +92,30 @@ export const StyledDetailHeader = styled.header`
   gap: ${tokens.space[4]};
 `;
 
-export const StyledDetailIcon = styled.img`
+/* The icon needs a frame rather than a bare box-shadow. These six PNGs have transparent corners and
+   the img is object-fit: contain in a square, so a shadow applied to the img itself would trace the
+   72x72 rectangle, not the artwork: a grey block behind a rounded icon. Drawing the shadow on a
+   rounded frame, as the card does, keeps the three places a project icon shows consistent. */
+export const StyledDetailIconFrame = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 72px;
   height: 72px;
   flex: 0 0 72px;
-  object-fit: contain;
+  overflow: hidden;
+  /* 22% of the width, the same ratio the 96px card frame uses at 21px, scaled to this size rather
+     than copied, so the silhouette matches the card at 72px the way it matches at 96px. */
+  border-radius: 16px;
+  border: 1px solid transparent;
+  background: ${tokens.colors.cardFrame};
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+`;
+
+export const StyledDetailIcon = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   object-position: center;
 `;
 
@@ -104,9 +123,8 @@ export const StyledDetailIconFallback = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 72px;
-  height: 72px;
-  flex: 0 0 72px;
+  width: 100%;
+  height: 100%;
   color: var(--color-text-secondary);
 `;
 
