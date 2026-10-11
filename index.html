@@ -6,6 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Ismael Marot - Web Developer Portfolio" />
     <title>Ismael Marot | Web Developer</title>
+    <!-- Feature 014. The footer signature, Playwrite US Modern at weight 400.
+         A <link> rather than an @import in globals.css on purpose: globals.css is a
+         render-blocking stylesheet, so an @import there would put this request in series
+         behind the Inter one for a font two words depend on. Two display=swap values because
+         they are two faces, not one weight of one face: the name is Inter first and then
+         handwriting, which is a change of style rather than of weight.
+         Preconnected to fonts.gstatic.com, where the font file itself is served, so the second
+         hop starts before the stylesheet has finished being parsed. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Playwrite+US+Modern:wght@400&display=swap"
+    />
     <script>
       // Replays the path stashed by 404.html. This runs in <head>, before the module script,
       // so the router initialises with the real URL already in place.

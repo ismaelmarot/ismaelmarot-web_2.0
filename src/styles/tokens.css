@@ -102,6 +102,10 @@
   /* Typography - Inter font family */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, Consolas, monospace;
+  /* Feature 014. The signature face, and the site fallback behind it. Declared here so that no
+     component holds a font stack and the fallback is written once. Playwrite has no bold: its axis
+     runs 100 to 400, so this token is only ever used at 400. */
+  --font-hand: 'Playwrite US Modern', var(--font-sans);
 
   /* Typographic Scale - Exact Spec Values */
   --text-display-hero: clamp(3.5rem, 8vw, 7rem);           /* Hero headline - weight 700 */
