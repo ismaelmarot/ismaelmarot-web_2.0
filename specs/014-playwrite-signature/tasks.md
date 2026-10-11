@@ -73,7 +73,7 @@ by measuring, not by guessing.
 - [x] T024 E2E in chromium and webkit
 - [x] T025 axe at 1440, 768, 390 and 320, re-reading the copyright's contrast (SC-007)
 - [x] T026 Confirm no existing Footer or Layout test was deleted (SC-008)
-- [ ] T027 Commit, push, deploy, and verify the signature in the deployed site
+- [x] T027 Commit, push, deploy, and verify the signature in the deployed site
 
 ## Notes
 
