@@ -5,7 +5,6 @@ import {
   StyledFooter,
   StyledInner,
   StyledCopyright,
-  StyledSignature,
   StyledSocialLinks,
 } from './Footer.styles';
 import { Navigation } from '@/components/layout/Navigation';
@@ -33,11 +32,8 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(
         {...props}
       >
         <StyledInner>
-          {/* Feature 014. The name is the only part in the signature face; the symbol and the year
-              stay in the paragraph's stack. The text a visitor reads, and the order it arrives in,
-              are unchanged: still one paragraph reading "© {year} {name}". */}
           <StyledCopyright>
-            © {getCurrentYear()} <StyledSignature>{copyrightText || 'Ismael Marot'}</StyledSignature>
+            © {getCurrentYear()} {copyrightText || 'Ismael Marot'}
           </StyledCopyright>
 
           <StyledSocialLinks aria-label="Social links">

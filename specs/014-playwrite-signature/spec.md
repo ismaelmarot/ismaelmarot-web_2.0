@@ -277,3 +277,33 @@ earlier features. Each passes three times out of three when run alone, and the s
 appears on the previous commit with this feature fully stashed. The pattern is a test that waits on a
 CSS state reached by an animation, losing the race when the machine is busy. This feature's own twelve
 tests passed on every run, in both browsers.
+
+### Amendment 3 - Withdrawn by the maintainer after it shipped
+
+**Status**: the code of this feature is no longer in the site. Every requirement above, every success
+criterion and every test written for it was met, verified and deployed, and the feature was then removed
+at the maintainer's request. Nothing in this document describes the site's current state.
+
+**What was reverted.** The commit `c52b716`, by `git revert`, which is why the history still shows the
+feature having existed rather than the rewrite that would have hidden it. The reverted files were:
+
+- `index.html` — the `preconnect` and the Playwrite stylesheet link
+- `src/styles/tokens.css` — `--font-hand`
+- `src/components/layout/Footer/Footer.tsx` — `StyledSignature` around the name
+- `src/components/layout/Footer/Footer.styles.ts` — the signature style and the reserved `height: 21px`
+- `src/components/layout/Footer/Footer.test.tsx` — the signature tests and the `copyrightOf` matcher
+- `tests/e2e/footer-signature.spec.ts` — the twelve browser tests, in full
+
+This document and its `plan.md` and `tasks.md` are kept deliberately. The measurement that motivated
+the reserved height is the reason the idea is worth returning to rather than a dead end, and the reason
+the typeface was kept off the headings is a property of the typeface, not a decision about this site.
+
+**What the site is now.** The copyright reads `© 2026 Ismael Marot`, in Inter, at 14px, in
+`--color-text-tertiary`, in a `<p>` with no reserved height, exactly as it did before this feature.
+
+**If it is ever brought back**, Amendment 1 is the part to read first. The reserved `height: 21px` is
+not optional and is not a `line-height`, and the reason the name needs its own declared weight is that
+the parent paragraph may one day be set above 400. The one thing that would have to be reconsidered
+rather than reused is the typeface itself: Playwrite US Modern sets a connected script, which is a
+larger visual commitment than the spec's "one deliberate moment at the end of the page" was written to
+justify, and that judgement is the maintainer's to make rather than this document's.

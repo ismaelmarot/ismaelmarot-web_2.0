@@ -1,5 +1,9 @@
 # Tasks: The footer signature in Playwrite US Modern
 
+> **Withdrawn.** Every task below was carried out, verified and deployed, and the code was then
+> reverted by the maintainer. See Amendment 3 in `spec.md`. This list is a record of what the work was,
+> not a description of the site.
+
 **Input**: Design documents from `specs/014-playwrite-signature/`
 
 **Prerequisites**: plan.md, spec.md
@@ -74,10 +78,17 @@ by measuring, not by guessing.
 - [x] T025 axe at 1440, 768, 390 and 320, re-reading the copyright's contrast (SC-007)
 - [x] T026 Confirm no existing Footer or Layout test was deleted (SC-008)
 - [x] T027 Commit, push, deploy, and verify the signature in the deployed site
+- [x] T028 Revert the feature code at the maintainer's request, keeping this record, and deploy the
+      revert (Amendment 3)
 
 ## Notes
 
-T021 is not ceremonial. The previous two features in this repository both shipped tests that passed
+T021 is not ceremonial, and it earned its place: the twelve browser tests were written after the
+implementation and each was checked against a broken version of the feature.
+
+**T028 is recorded here because a revert is not the absence of work.** The six files were reverted with
+`git revert` rather than rewritten out of the history, and the spec was kept rather than deleted,
+because the reasoning in it is still correct and is the reason to return to the idea knowingly. The previous two features in this repository both shipped tests that passed
 while measuring nothing, because a fixture had been written in the shape the assertion expected rather
 than in the shape the data has. A test written after the implementation is exactly the test most likely
 to encode the implementation's own mistake.
