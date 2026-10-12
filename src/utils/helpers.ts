@@ -3,6 +3,11 @@ export const NO_DESCRIPTION_FALLBACK = 'No description available';
 /**
  * A repository name, written the way it reads rather than the way GitHub stores it.
  *
+ * Feature 015, `specs/015-project-identity`. Used in the three places a name is visible: the card
+ * title, the detail heading and the sentence about formal versions. Not used in any `alt` or
+ * `aria-label`, because a visitor using a screen reader is told the repository name, which is the
+ * thing they can look up.
+ *
  * Only names carrying a hyphen are rewritten, and that guard is the whole rule: `LinkIO`,
  * `QEntry` and `NauticAcademy` carry capitals on purpose, and a general title-case would turn them
  * into `Linkio`, `Qentry` and `Nauticacademy`. `trash2treasure` has no hyphen and stays as it is.

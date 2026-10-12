@@ -79,7 +79,8 @@ describe('helpers', () => {
     });
   });
 
-  /* The six real names from projects.json. Four of them carry capitals on purpose and must survive
+  /* Feature 015, specs/015-project-identity SC-002. The six real names from projects.json. Four of
+     them carry capitals on purpose and must survive
      byte for byte; a general title-case would turn them into Linkio, Qentry and Nauticacademy. This
      group is the only thing standing between the rule and that regression. */
   describe('formatProjectName', () => {

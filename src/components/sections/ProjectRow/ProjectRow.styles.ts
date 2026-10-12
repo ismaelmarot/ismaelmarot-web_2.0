@@ -88,8 +88,11 @@ export const StyledProjectIconFrame = styled.span`
   border: 1px solid transparent;
   background: ${tokens.colors.cardFrame};
 
-  /* The same 0.04 alpha the home icon strip has used, so an icon looks the same wherever a project
-     appears. Not var(--shadow-xs), which is 0.1: on a 96px tile that reads as a drop of grime. */
+  /* Feature 015, specs/015-project-identity. The same 0.04 alpha the home icon strip has used since
+     feature 011, so an icon looks the same wherever a project appears. Not var(--shadow-xs), which is
+     0.1: on a 96px tile that reads as a drop of grime. A literal rather than a token because the
+     strip's value is not one, and a token covering two of its three call sites would leave the third
+     inconsistent for no gain. */
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 
   /* Amendment 2 took this from 120px to 80px below 520px, and Amendment 3 took the desktop value to
@@ -111,7 +114,10 @@ export const StyledProjectIcon = styled.img`
   object-position: center;
 `;
 
-/* Kept identical to the frame so a failed icon never changes the card geometry. */
+/* Kept identical to the frame so a failed icon never changes the card geometry.
+   Feature 015, specs/015-project-identity. This comment claimed the property before the code had it:
+   measured, the fallback had no radius, no background and no shadow, so a broken icon dropped the tile
+   and left a bare glyph on the card. It carries the frame now, which is what the line always said. */
 export const StyledProjectIconFallback = styled.span`
   display: inline-flex;
   align-items: center;

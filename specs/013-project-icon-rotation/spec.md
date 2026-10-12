@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-08
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: User description: "In the Home > Proyectos section I want the icons to change, rotating their positions." Followed by: "I want the one that is there to disappear and another one to appear. When more apps are added it will be better." And: "Rotate the six" and "All six at once", every four seconds.
 

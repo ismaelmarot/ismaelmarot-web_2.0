@@ -69,9 +69,10 @@ describe('ProjectDetail', () => {
     expect(screen.getByAltText('Trash2Treasure icon')).toBeInTheDocument();
   });
 
-  // These six icons have transparent corners and the img was object-fit: contain in a square, so a
-  // box-shadow on the img itself traced the 72x72 rectangle: a grey block behind a rounded icon.
-  // The frame exists so the shadow lands on a rounded surface, as it does on the card.
+  // Feature 015, specs/015-project-identity FR-010. These six icons have transparent corners and the
+  // img was object-fit: contain in a square, so a box-shadow on the img itself traced the 72x72
+  // rectangle: a grey block behind a rounded icon. The frame exists so the shadow lands on a rounded
+  // surface, as it does on the card.
   it('draws the icon shadow on a rounded frame, not on the square image box', () => {
     renderDetail();
     const frame = getCssForElement(screen.getByTestId('detail-icon-frame'));

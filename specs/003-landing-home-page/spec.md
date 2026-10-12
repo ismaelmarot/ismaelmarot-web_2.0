@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-02
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: User description: "La página debe tener Landing (donde se ve un resumen del resto de las secciones, con botón de link para ir a las páginas específicas). Las páginas deben ser: Sobre mí, Proyectos, Tecnologías, Contactos, Github"
 

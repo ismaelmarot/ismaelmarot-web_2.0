@@ -7,9 +7,9 @@ import type { Project } from '@/types/project';
 const mockProjects: Project[] = [
   {
     id: '1',
-    /* Raw repository name, as projects.json stores it. The fixture used to arrive here already
-       formatted, which meant this file asserted nothing about formatProjectName: it passed with the
-       component completely absent. */
+    /* Feature 015, specs/015-project-identity, Amendment 1. Raw repository name, as projects.json
+       stores it. The fixture used to arrive here already formatted, which meant this file asserted
+       nothing about formatProjectName: it passed with the component completely absent. */
     name: 'trash2treasure',
     description: 'A recycling app',
     technologies: ['TypeScript'],

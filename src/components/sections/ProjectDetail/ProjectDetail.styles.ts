@@ -92,10 +92,11 @@ export const StyledDetailHeader = styled.header`
   gap: ${tokens.space[4]};
 `;
 
-/* The icon needs a frame rather than a bare box-shadow. These six PNGs have transparent corners and
-   the img is object-fit: contain in a square, so a shadow applied to the img itself would trace the
-   72x72 rectangle, not the artwork: a grey block behind a rounded icon. Drawing the shadow on a
-   rounded frame, as the card does, keeps the three places a project icon shows consistent. */
+/* Feature 015, specs/015-project-identity, FR-009 to FR-011. The icon needs a frame rather than a bare
+   box-shadow. These six PNGs have transparent corners and the img was object-fit: contain in a square,
+   so a shadow applied to the img itself traced the 72x72 rectangle rather than the artwork: a grey block
+   behind a rounded icon. Drawing the shadow on a rounded frame, as the card does, keeps the three
+   places a project icon shows consistent. */
 export const StyledDetailIconFrame = styled.span`
   display: inline-flex;
   align-items: center;
@@ -112,6 +113,7 @@ export const StyledDetailIconFrame = styled.span`
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 `;
 
+/* cover, not contain: the frame clips the artwork now, which is what the card's image does. */
 export const StyledDetailIcon = styled.img`
   width: 100%;
   height: 100%;

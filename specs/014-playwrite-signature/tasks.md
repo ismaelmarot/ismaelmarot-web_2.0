@@ -1,8 +1,8 @@
 # Tasks: The footer signature in Playwrite US Modern
 
-> **Withdrawn.** Every task below was carried out, verified and deployed, and the code was then
-> reverted by the maintainer. See Amendment 3 in `spec.md`. This list is a record of what the work was,
-> not a description of the site.
+> **Retirada.** Every task below was carried out, verified and deployed, and the code was then reverted
+> by the maintainer. See the withdrawal note at the top of `spec.md` and its Amendment 3. This list is a
+> record of what the work was, not a description of the site.
 
 **Input**: Design documents from `specs/014-playwrite-signature/`
 

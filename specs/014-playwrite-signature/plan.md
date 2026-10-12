@@ -2,8 +2,9 @@
 
 **Branch**: `014-playwrite-signature` | **Date**: 2026-10-11 | **Spec**: [spec.md](./spec.md)
 
-> **Withdrawn.** This plan was executed and its code was then reverted at the maintainer's request.
-> See Amendment 3 in `spec.md`. The measurements it justifies are still the useful part.
+> **Retirada.** This plan was executed and its code was then reverted at the maintainer's request. See
+> the withdrawal note and Amendment 3 in `spec.md`. The measurements it justifies are sound and were
+> proven; the typeface they were measured against is the part that did not survive.
 
 **Input**: Feature specification from `specs/014-playwrite-signature/spec.md`
 

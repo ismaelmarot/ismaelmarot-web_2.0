@@ -4,7 +4,20 @@
 
 **Created**: 2026-10-11
 
-**Status**: Draft
+**Status**: Retirada
+
+> **Retirada el 2026-10-11.** La implementación se completó, se probó y se desplegó, y luego se
+> retiró a pedido del mantenedor, con el motivo de que la tipografía no era la deseada. Playwrite US
+> Modern resultó ser un trazo manuscrito conectado, y la imagen revisada en pantalla mostró que a
+> 14px ese trazo no lee como una firma sino como un texto raro. La decisión no fue técnica: la fuente
+> se aplicaba correctamente y pasó todas sus verificaciones.
+>
+> El trabajo se conserva en `c52b716` por si vuelve a hacer falta con otra tipografía o con otra
+> medida. Todo el diseño, las medidas y las pruebas eran correctos e independientes de la elección de
+> la fuente; lo único que no salió bien fue la fuente misma.
+>
+> La implementación se revirtió con `1064317`. Este documento se conserva siguiendo el patrón de
+> `specs/007-contact-form`, y el detalle de lo que costó queda en el Amendment 3.
 
 **Input**: User description: "quiero utlizar en una parte de mi web, la siguiente pitografia:
 https://fonts.google.com/share?selection.family=Playwrite+US+Modern:wght@100..400". Followed by a
@@ -284,6 +297,15 @@ tests passed on every run, in both browsers.
 criterion and every test written for it was met, verified and deployed, and the feature was then removed
 at the maintainer's request. Nothing in this document describes the site's current state.
 
+**Why it was withdrawn, which is a visual judgement and not a finding.** The feature passed everything
+it set out to check: the typeface loaded from the CDN, drew the glyphs, held the layout still, resolved
+to Inter when the CDN was blocked, and reported zero accessibility violations at four viewports. What
+settled it was looking at the rendered footer. Playwrite US Modern is a connected script, and at the
+footer's 14px that script reads as an unfamiliar face rather than as a signature. A feature can satisfy
+every criterion it wrote for itself and still be the wrong typeface; the criteria in this document
+cannot tell the difference, which is worth stating because the document's own Success Criteria section
+would otherwise imply that passing them was sufficient.
+
 **What was reverted.** The commit `c52b716`, by `git revert`, which is why the history still shows the
 feature having existed rather than the rewrite that would have hidden it. The reverted files were:
 
@@ -303,7 +325,7 @@ the typeface was kept off the headings is a property of the typeface, not a deci
 
 **If it is ever brought back**, Amendment 1 is the part to read first. The reserved `height: 21px` is
 not optional and is not a `line-height`, and the reason the name needs its own declared weight is that
-the parent paragraph may one day be set above 400. The one thing that would have to be reconsidered
-rather than reused is the typeface itself: Playwrite US Modern sets a connected script, which is a
-larger visual commitment than the spec's "one deliberate moment at the end of the page" was written to
-justify, and that judgement is the maintainer's to make rather than this document's.
+the parent paragraph may one day be set above 400. Both of those survive and both were proven by
+measurement. The typeface itself does not: a connected script at 14px was judged not to read as a
+signature, and that judgement stands until the typeface changes. The engineering here is reusable with
+another font; the font is not reusable with this document's premise.
