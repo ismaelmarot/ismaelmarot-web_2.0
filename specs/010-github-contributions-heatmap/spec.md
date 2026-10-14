@@ -261,6 +261,15 @@ FR-001 through FR-004 and FR-006 through FR-015 stand unchanged.
 - The heatmap stays on the Technologies page; no page moves are part of this feature.
 ## Amendments
 
+> **Read this before relying on FR-015, FR-016 or FR-017.** Those three requirements decide *which day* the
+> calendar is talking about. They do not say anything about *how old the calendar is*, and the gap between
+> those two questions is what `specs/019-contribution-freshness` was written for. A build can contain the
+> visitor's current date, correctly identified and marked, and still describe a number that was true hours
+> ago — which is what the page did, on most days, for as long as this section existed.
+>
+> `specs/019` keeps FR-015, FR-016 and FR-017 in force and adds what happens when the data behind them is
+> not current. It is the continuation of Amendment 2 below, which fixed the same symptom's timezone half.
+
 ### Amendment 1 - Twenty-two of twenty-three, and the twenty-third asked for a second browser
 
 **Added by**: record audit, 2026-10-14. This feature is complete except for T023: "Commit, push, run the
