@@ -1,4 +1,10 @@
-import { formatPeriod } from '@/components/sections/Contributions/useContributions';
+import {
+  dataAge,
+  formatFetchHour,
+  formatPeriod,
+  isStale,
+  STALE_AFTER_HOURS,
+} from '@/components/sections/Contributions/useContributions';
 import { fetchContributions, summarise } from '@/data/fetch-contributions';
 import type { ContributionDay } from '@/types/contributions';
 
@@ -128,5 +134,124 @@ describe('fetchContributions', () => {
 
     expect(result.success).toBe(false);
     expect(result.errors[0]).toMatch(/401/);
+  });
+});
+
+/**
+ * The freshness derivation, added by specs/019.
+ *
+ * Every case is reachable without touching the real clock because both functions take `now`. That is the
+ * reason they are pure: the boundary at three hours and the future-timestamp case are the two the
+ * component cannot produce on its own, and a test that has to wait for a real hour to check them is a
+ * test that is never run.
+ */
+describe('dataAge', () => {
+  const ahora = new Date('2026-10-14T12:00:00Z');
+
+  it('measures the hours since the fetch', () => {
+    expect(dataAge('2026-10-14T09:00:00Z', ahora)).toBeCloseTo(3, 5);
+    expect(dataAge('2026-10-14T11:30:00Z', ahora)).toBeCloseTo(0.5, 5);
+  });
+
+  it('returns zero rather than a fraction when the fetch is this instant', () => {
+    expect(dataAge('2026-10-14T12:00:00Z', ahora)).toBe(0);
+  });
+
+  it('returns null when the field is absent', () => {
+    // Not the same as zero hours old. Every build made before specs/019 shipped without the field.
+    expect(dataAge(undefined, ahora)).toBeNull();
+    expect(dataAge('', ahora)).toBeNull();
+  });
+
+  it('returns null rather than NaN when the field does not parse', () => {
+    expect(dataAge('no es una fecha', ahora)).toBeNull();
+  });
+
+  it('reports a future timestamp as negative rather than clamping it', () => {
+    // Clock skew between a build runner and a visitor is real. Hiding it here would make the caller
+    // unable to tell it apart from a fetch that genuinely happened before now.
+    expect(dataAge('2026-10-14T13:00:00Z', ahora)).toBeCloseTo(-1, 5);
+  });
+});
+
+describe('isStale', () => {
+  const ahora = new Date('2026-10-14T12:00:00Z');
+  const hace = (hours: number) =>
+    new Date(ahora.getTime() - hours * 3_600_000).toISOString();
+
+  it('is false below the threshold', () => {
+    expect(isStale(hace(0), ahora)).toBe(false);
+    expect(isStale(hace(2.9), ahora)).toBe(false);
+  });
+
+  it('is true at the threshold, which is where the word stops being true', () => {
+    expect(isStale(hace(STALE_AFTER_HOURS), ahora)).toBe(true);
+    expect(isStale(hace(STALE_AFTER_HOURS + 0.1), ahora)).toBe(true);
+  });
+
+  it('is false for a timestamp in the future', () => {
+    // "Última lectura a las 14:00" for a build that claims to be from the afternoon would name an hour
+    // the visitor has not reached. Treating skew as fresh is the smaller wrong answer.
+    expect(isStale('2026-10-14T13:00:00Z', ahora)).toBe(false);
+  });
+
+  it('is false when the age is unknown, rather than guessing from the calendar', () => {
+    // Reading the last cell to guess an age is the substitution specs/010 Amendment 2 refused for the
+    // same reason: it presents something that is not today's as though it were.
+    expect(isStale(undefined, ahora)).toBe(false);
+    expect(isStale('no es una fecha', ahora)).toBe(false);
+  });
+
+  it('takes its threshold as an argument so the boundary is testable at any value', () => {
+    expect(isStale(hace(1), ahora, 0.5)).toBe(true);
+    expect(isStale(hace(1), ahora, 2)).toBe(false);
+  });
+});
+
+describe('formatFetchHour', () => {
+  const instante = '2026-10-14T09:37:00Z';
+
+  /**
+   * The local wall-clock reading of an instant, computed without asking the formatter to do it.
+   *
+   * `toLocaleTimeString(locale)` resolves the timezone from the runtime, not from the locale: on this
+   * machine `es-ES` renders in UTC-3 and reads 06:37 for a 09:37Z instant, which is correct and is the
+   * whole point of the function. Asserting a hard-coded "09:37" would have been asserting that the
+   * formatter ignores the visitor's zone, which is the defect specs/010's Amendment 2 fixed for dates
+   * and this function has to not reintroduce for hours.
+   */
+  const local = (iso: string) => {
+    const minutos = -new Date(iso).getTimezoneOffset();
+    return new Date(new Date(iso).getTime() + minutos * 60_000).toISOString().slice(11, 16);
+  };
+
+  it('renders the hour in the visitor\'s own zone rather than in UTC', () => {
+    expect(formatFetchHour(instante, 'es-ES')).toBe(local(instante));
+  });
+
+  it('renders the same instant differently under different locales, because the zone follows the reader', () => {
+    // Only meaningful when the runner is not on UTC, which is the case this defect exists in.
+    if (new Date(instante).getTimezoneOffset() === 0) return;
+
+    expect(formatFetchHour(instante, 'es-ES')).not.toBe(instante.slice(11, 16));
+  });
+
+  it('renders two digits, so the line never reads "a las 9:05"', () => {
+    const madrugada = '2026-10-14T09:05:00Z';
+    const conCeros = new Date(madrugada);
+    const minutos = -conCeros.getTimezoneOffset();
+    const esperado = new Date(conCeros.getTime() + minutos * 60_000)
+      .toISOString()
+      .slice(11, 16);
+
+    expect(formatFetchHour(madrugada, 'es-ES')).toBe(esperado);
+    expect(formatFetchHour(madrugada, 'es-ES')).toMatch(/^\d{2}:\d{2}$/);
+  });
+
+  it('renders a different wall clock for two instants an hour apart', () => {
+    const manana = new Date(instante).getTime() + 3_600_000;
+    expect(formatFetchHour(new Date(manana).toISOString(), 'es-ES')).not.toBe(
+      formatFetchHour(instante, 'es-ES')
+    );
   });
 });
