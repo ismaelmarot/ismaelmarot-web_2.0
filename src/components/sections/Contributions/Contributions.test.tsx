@@ -17,7 +17,23 @@ const week = (start: string, counts: number[]): ContributionWeek => ({
   }),
 });
 
-const fixture = (weeks: ContributionWeek[], total: number): ContributionsData => ({
+/**
+ * `fetchedAt` defaults to now, deliberately.
+ *
+ * It used to be pinned at '2026-10-03', years old relative to whenever the suite runs. The moment the
+ * component started reading the field to decide how to describe the number, every test in this file about
+ * "today" would have quietly moved onto the stale branch and kept passing while asserting something it
+ * never meant to. A fixed old timestamp in a freshness test is the fixture version of the defect
+ * specs/019 exists to remove, so each existing test keeps testing what it names.
+ *
+ * Pass a timestamp explicitly for the stale wording, or `undefined` for a build that predates the field
+ * being read at all.
+ */
+const fixture = (
+  weeks: ContributionWeek[],
+  total: number,
+  fetchedAt: string | undefined = new Date().toISOString()
+): ContributionsData => ({
   username: 'ismaelmarot',
   calendar: { weeks, totalContributions: total },
   summary: {
@@ -27,8 +43,15 @@ const fixture = (weeks: ContributionWeek[], total: number): ContributionsData =>
     longestStreak: 3,
     averagePerWeek: 1.5,
   },
-  fetchedAt: '2026-10-03T00:00:00.000Z',
+  fetchedAt,
 });
+
+/** A week whose LAST day is today, because today is the final cell of the whole calendar. */
+const weekEndingToday = (counts: number[]) => {
+  const start = new Date(`${localToday()}T00:00:00Z`);
+  start.setUTCDate(start.getUTCDate() - 6);
+  return week(start.toISOString().slice(0, 10), counts);
+};
 
 describe('Contributions', () => {
   it('renders the heading and the period', () => {
@@ -125,13 +148,6 @@ describe('Contributions most recent day', () => {
   // machine west of Greenwich in the evening. That is the same defect in the test rather than
   // the component, and it would have hidden the fix.
   const todayIso = localToday();
-
-  /** A week whose LAST day is today, because today is the final cell of the whole calendar. */
-  const weekEndingToday = (counts: number[]) => {
-    const start = new Date(`${todayIso}T00:00:00Z`);
-    start.setUTCDate(start.getUTCDate() - 6);
-    return week(start.toISOString().slice(0, 10), counts);
-  };
 
   const shadowOf = (cell: Element) => getComputedStyle(cell).boxShadow;
 
@@ -334,5 +350,116 @@ describe("Contributions today is the visitor's day, not the runner's", () => {
 
     expect(screen.queryByTestId('contributions-today')).not.toBeInTheDocument();
     expect(markedCells()).toBe(0);
+  });
+});
+
+/**
+ * How old the data is, which is what specs/019 added.
+ *
+ * The fixture's default is "now", so every describe above exercises the fresh wording without knowing
+ * it. These take the timestamp explicitly and assert the other branch. The subject throughout is one
+ * thing: a number the build read hours ago must not be presented as today's.
+ */
+describe('La frescura de los datos', () => {
+  const haceHoras = (hours: number) => new Date(Date.now() - hours * 3_600_000).toISOString();
+
+  it('dice "Hoy" cuando el build es reciente', () => {
+    render(
+      <Contributions data={fixture([weekEndingToday([5, 1, 0, 2, 3, 1, 4])], 16, haceHoras(0.5))} />
+    );
+
+    expect(screen.getByTestId('contributions-today')).toHaveTextContent('Hoy · 4 contribuciones');
+  });
+
+  it('nombra la hora en vez de decir "Hoy" cuando el build es viejo', () => {
+    render(
+      <Contributions data={fixture([weekEndingToday([5, 1, 0, 2, 3, 1, 4])], 16, haceHoras(4))} />
+    );
+
+    const label = screen.getByTestId('contributions-today');
+    expect(label).not.toHaveTextContent('Hoy');
+    expect(label).toHaveTextContent(/Última lectura a las \d{2}:\d{2} · 4 contribuciones/);
+  });
+
+  it('sigue mostrando el cero cuando el día está vacío y el build es viejo', () => {
+    // The report this specification exists for. The count is genuinely zero as of the build and
+    // genuinely non-zero now, so the line has to show both facts rather than one of them.
+    render(
+      <Contributions data={fixture([weekEndingToday([5, 1, 0, 2, 3, 1, 0])], 12, haceHoras(4))} />
+    );
+
+    const label = screen.getByTestId('contributions-today');
+    expect(label).toHaveTextContent('sin contribuciones');
+    expect(label).not.toHaveTextContent('Hoy');
+  });
+
+  it('usa el singular también cuando el build es viejo', () => {
+    render(
+      <Contributions data={fixture([weekEndingToday([5, 1, 0, 2, 3, 1, 1])], 13, haceHoras(5))} />
+    );
+
+    expect(screen.getByTestId('contributions-today')).toHaveTextContent(
+      /Última lectura a las \d{2}:\d{2} · 1 contribución/
+    );
+  });
+
+  it('cruza a la rama vieja justo en el umbral y no antes', () => {
+    const { unmount } = render(
+      <Contributions data={fixture([weekEndingToday([1, 0, 0, 0, 0, 0, 2])], 3, haceHoras(3))} />
+    );
+    expect(screen.getByTestId('contributions-today')).not.toHaveTextContent('Hoy');
+    unmount();
+
+    // A fraction under the threshold is still "today": the boundary is where the word stops being
+    // true, not where the number starts being old.
+    render(
+      <Contributions data={fixture([weekEndingToday([1, 0, 0, 0, 0, 0, 2])], 3, haceHoras(2.9))} />
+    );
+    expect(screen.getByTestId('contributions-today')).toHaveTextContent('Hoy · 2 contribuciones');
+  });
+
+  it('trata un timestamp en el futuro como reciente, no como una hora que no ha llegado', () => {
+    const futuro = new Date(Date.now() + 3_600_000).toISOString();
+
+    render(<Contributions data={fixture([weekEndingToday([5, 1, 0, 2, 3, 1, 4])], 16, futuro)} />);
+
+    expect(screen.getByTestId('contributions-today')).toHaveTextContent('Hoy · 4 contribuciones');
+  });
+
+  it('cae en la redacción de siempre cuando el build no trae el campo', () => {
+    // Every artifact deployed before specs/019 is in this state: the fetcher wrote the field and the
+    // bundler dropped it because nothing read it. Naming an invalid hour would be worse than saying
+    // nothing about the age.
+    render(<Contributions data={fixture([weekEndingToday([5, 1, 0, 2, 3, 1, 4])], 16, undefined)} />);
+
+    expect(screen.getByTestId('contributions-today')).toHaveTextContent('Hoy · 4 contribuciones');
+  });
+
+  it('cae en la redacción de siempre cuando el campo no se puede leer', () => {
+    render(
+      <Contributions data={fixture([weekEndingToday([5, 1, 0, 2, 3, 1, 4])], 16, 'no es una fecha')} />
+    );
+
+    expect(screen.getByTestId('contributions-today')).toHaveTextContent('Hoy · 4 contribuciones');
+  });
+
+  it('no nombra una hora cuando el calendario no llega a hoy, ni siquiera viejo', () => {
+    // FR-015 wins over freshness. A calendar that stops short of the visitor's day says nothing about
+    // that day, and "última lectura" about a day that is not in the data would be a new claim.
+    render(
+      <Contributions data={fixture([week('2026-09-29', [1, 2, 3, 4, 5, 6, 7])], 28, haceHoras(9))} />
+    );
+
+    expect(screen.queryByTestId('contributions-today')).not.toBeInTheDocument();
+  });
+
+  it('no anuncia la hora, porque la celda ya dice que es hoy', () => {
+    render(
+      <Contributions data={fixture([weekEndingToday([5, 1, 0, 2, 3, 1, 4])], 16, haceHoras(6))} />
+    );
+
+    // The label is aria-hidden and always was. The cell's own aria-label carries "(hoy)", and adding
+    // the reading time would say the same fact twice with different wording.
+    expect(screen.getByTestId('contributions-today')).toHaveAttribute('aria-hidden', 'true');
   });
 });

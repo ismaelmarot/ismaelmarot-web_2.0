@@ -38,8 +38,16 @@ export interface ContributionsData {
   username: string;
   calendar: ContributionCalendar;
   summary: ContributionsSummary;
-  /** ISO timestamp of the build that produced this file. */
-  fetchedAt: string;
+  /**
+   * ISO timestamp of the build that produced this file.
+   *
+   * Optional, and it is the fetcher's field rather than the consumer's. The fetcher always writes it,
+   * but a build made before anything in the shipped code read it has no copy of it at all: the bundler
+   * drops an object property nobody accesses. Every artifact deployed before `specs/019` is in that
+   * state, so a consumer that assumed the field was present would be right about the type and wrong
+   * about the data.
+   */
+  fetchedAt?: string;
 }
 
 /**

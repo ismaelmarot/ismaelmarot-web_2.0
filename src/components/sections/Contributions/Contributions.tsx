@@ -17,7 +17,7 @@ import {
   StyledContributionStatLabel,
   StyledContributionCell,
 } from './Contributions.styles';
-import { formatPeriod, localToday } from './useContributions';
+import { formatFetchHour, isStale, formatPeriod, localToday } from './useContributions';
 import contributionsData from '@/data/contributions.json';
 import {
   CONTRIBUTION_LEVELS,
@@ -41,6 +41,26 @@ const formatTotal = (value: number): string =>
 const describeToday = (count: number): string => {
   if (count === 0) return 'sin contribuciones';
   return `${formatNumber(count)} ${count === 1 ? 'contribución' : 'contribuciones'}`;
+};
+
+/**
+ * The line under the grid, which has to say how much of "today" is actually true.
+ *
+ * A fresh build keeps the word "Hoy", which is what a visitor at 10:00 reading a 09:00 build wants to
+ * see. A build older than the threshold gets the hour it was read instead, because the count is still
+ * worth showing and it is no longer today's count. "Sin contribuciones" and "sin contribuciones a las
+ * 05:37" are different claims and the difference is the whole defect.
+ *
+ * `dataAge` returns null when the field is absent or unreadable, and null falls through to the fresh
+ * wording rather than naming an invalid date. Every build made before this field was read by shipped code
+ * is in that case, which is what its absence in the current bundle means.
+ */
+const describeTodayLine = (count: number, fetchedAt: string | undefined): string => {
+  const conteo = describeToday(count);
+
+  if (!isStale(fetchedAt) || !fetchedAt) return `Hoy · ${conteo}`;
+
+  return `Última lectura a las ${formatFetchHour(fetchedAt)} · ${conteo}`;
 };
 
 export const Contributions = ({ data }: ContributionsProps) => {
@@ -137,7 +157,7 @@ export const Contributions = ({ data }: ContributionsProps) => {
               every viewport rather than under the container's right edge. */}
           {todayDay && (
             <StyledContributionsToday aria-hidden="true" data-testid="contributions-today">
-              Hoy · {describeToday(todayDay.count)}
+              {describeTodayLine(todayDay.count, contributions.fetchedAt)}
             </StyledContributionsToday>
           )}
         </StyledContributionsContent>
