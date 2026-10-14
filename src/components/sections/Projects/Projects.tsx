@@ -66,7 +66,7 @@ export const Projects = ({ projects = [] }: ProjectsProps) => {
       <StyledProjectsContainer size="xl" padding="lg">
         <StyledProjects>
           <StyledProjectsHeader>
-            <StyledProjectsHeadline as="h2">Proyectos</StyledProjectsHeadline>
+            <StyledProjectsHeadline as="h1">Proyectos</StyledProjectsHeadline>
           </StyledProjectsHeader>
 
           {!hasNoProjectsAtAll && (

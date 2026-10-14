@@ -23,7 +23,7 @@ export const StyledContactHeader = styled.div`
   gap: ${tokens.space[4]};
 `;
 
-export const StyledContactHeadline = styled.h2`
+export const StyledContactHeadline = styled.h1`
   margin: 0;
   font-size: var(--text-display-section);
   font-weight: 700;

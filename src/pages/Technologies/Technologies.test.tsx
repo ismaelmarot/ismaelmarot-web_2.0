@@ -17,7 +17,7 @@ describe('TechnologiesPage', () => {
     );
 
     expect(
-      screen.getByRole('heading', { level: 2, name: 'Tecnologías' })
+      screen.getByRole('heading', { level: 1, name: 'Tecnologías' })
     ).toBeInTheDocument();
   });
 

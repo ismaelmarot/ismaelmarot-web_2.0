@@ -10,7 +10,7 @@ describe('ContactPage', () => {
   it('renders the contact heading', () => {
     render(<ContactPage />);
 
-    expect(screen.getByRole('heading', { level: 2, name: 'Contacto' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Contacto' })).toBeInTheDocument();
   });
 
   it('renders the intro sentence the page passes', () => {

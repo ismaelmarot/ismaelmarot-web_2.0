@@ -27,7 +27,7 @@ export const StyledContributionsHeader = styled.div`
   flex-wrap: wrap;
 `;
 
-export const StyledContributionsTitle = styled.h3`
+export const StyledContributionsTitle = styled.h2`
   margin: 0;
   font-size: var(--text-large-subtitle);
   font-weight: 700;

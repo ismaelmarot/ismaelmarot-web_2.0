@@ -30,7 +30,7 @@ describe('AboutPage', () => {
   it('renders the About section heading', () => {
     render(<AboutPage />);
 
-    expect(screen.getByRole('heading', { level: 2, name: /sobre m[ií]/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: /sobre m[ií]/i })).toBeInTheDocument();
   });
 
   it('renders without a router, because it renders no link', () => {

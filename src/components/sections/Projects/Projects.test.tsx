@@ -70,13 +70,13 @@ describe('Projects', () => {
   it('keeps the published order regardless of the selected category', () => {
     renderProjects(mockProjects);
     const publishedOrder = screen
-      .getAllByRole('heading', { level: 3 })
+      .getAllByRole('heading', { level: 2 })
       .map((heading) => heading.textContent);
 
     fireEvent.click(screen.getByRole('button', { name: 'Work' }));
 
     const filteredOrder = screen
-      .getAllByRole('heading', { level: 3 })
+      .getAllByRole('heading', { level: 2 })
       .map((heading) => heading.textContent);
 
     expect(filteredOrder).toEqual(

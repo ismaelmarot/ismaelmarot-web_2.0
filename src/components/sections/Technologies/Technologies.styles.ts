@@ -17,7 +17,7 @@ export const StyledTechnologiesHeader = styled.div`
   }
 `;
 
-export const StyledTechnologiesHeadline = styled.h2`
+export const StyledTechnologiesHeadline = styled.h1`
   margin: 0;
   font-size: var(--text-display-section);
   font-weight: 700;
@@ -43,7 +43,7 @@ export const StyledCategoryGroup = styled.div`
   gap: ${tokens.space[4]};
 `;
 
-export const StyledCategoryTitle = styled.h3`
+export const StyledCategoryTitle = styled.h2`
   margin: 0;
   font-size: var(--text-label);
   font-weight: 500;

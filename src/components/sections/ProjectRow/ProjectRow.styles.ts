@@ -141,7 +141,7 @@ export const StyledProjectIconFallback = styled.span`
   }
 `;
 
-export const StyledProjectName = styled.h3`
+export const StyledProjectName = styled.h2`
   flex: 1;
   margin: 0;
   font-size: var(--text-card-title);

@@ -32,7 +32,7 @@ export const Technologies = ({
       <Container size="xl" padding="lg">
         <StyledTechnologies ref={categoriesRef}>
           <StyledTechnologiesHeader>
-            <StyledTechnologiesHeadline as="h2">Tecnologías</StyledTechnologiesHeadline>
+            <StyledTechnologiesHeadline as="h1">Tecnologías</StyledTechnologiesHeadline>
           </StyledTechnologiesHeader>
 
           <Contributions />

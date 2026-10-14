@@ -52,7 +52,7 @@ export const ProjectRow = ({ project }: ProjectRowProps) => {
             )}
           </StyledProjectIconFrame>
 
-          <StyledProjectName as="h3">{formatProjectName(project.name)}</StyledProjectName>
+          <StyledProjectName as="h2">{formatProjectName(project.name)}</StyledProjectName>
         </StyledProjectRowMain>
 
         <StyledProjectBody>

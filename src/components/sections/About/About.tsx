@@ -30,7 +30,7 @@ export const About = ({
     >
       <Container size="xl" padding="lg">
         <StyledAbout ref={contentRef}>
-          <StyledAboutHeadline as="h2">Sobre mí</StyledAboutHeadline>
+          <StyledAboutHeadline as="h1">Sobre mí</StyledAboutHeadline>
           <StyledAboutContent>
             <StyledAboutText as="p">{content}</StyledAboutText>
           </StyledAboutContent>

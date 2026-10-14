@@ -7,7 +7,7 @@ export const StyledAbout = styled.div`
   margin: 0 auto;
 `;
 
-export const StyledAboutHeadline = styled.h2`
+export const StyledAboutHeadline = styled.h1`
   margin: 0 0 ${tokens.space[6]} 0;
   font-size: var(--text-display-section);
   font-weight: 700;

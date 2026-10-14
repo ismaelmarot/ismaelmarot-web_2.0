@@ -138,7 +138,7 @@ test.describe('Projects section is one screen', () => {
         borde: s.borderTopWidth + ' ' + s.borderTopStyle,
         sombra: s.boxShadow,
         fondoSeccion: section.backgroundColor,
-        nombre: getComputedStyle(article.querySelector('h3')!).color,
+        nombre: getComputedStyle(article.querySelector('h2')!).color,
         marco: getComputedStyle(article.querySelector('[data-testid="project-icon-frame"]')!)
           .backgroundColor,
         // Scoped to the category list by its accessible name. A plain `ul span` matches the
@@ -181,7 +181,7 @@ test.describe('Projects section is one screen', () => {
           const r = a.getBoundingClientRect();
           const desc = a.querySelector('p')!;
           return {
-            nombre: a.querySelector('h3')!.textContent!.trim(),
+            nombre: a.querySelector('h2')!.textContent!.trim(),
             w: Math.round(r.width),
             h: Math.round(r.height),
             // Whether the description is cut through the middle rather than by its clamp.

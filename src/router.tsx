@@ -45,7 +45,13 @@ export const router = createBrowserRouter(
       ],
     },
   ],
-  // The site is served from a subpath on GitHub Pages; without this every
-  // route resolves to the catch-all 404 page.
+  // GitHub Pages serves this site from the account root, so BASE_URL is '/'. This used to read "served
+  // from a subpath", which was true when the site published under /ismaelmarot-web_2.0 and stopped
+  // being true in a41bd75, and the comment outlived the fact it described.
+  //
+  // basename still has to be declared even at the root. The router matches '/' against this value, and
+  // a deep load of /projects resolves to the catch-all 404 without it. `tests/e2e/routes.spec.ts` is what
+  // would catch that going wrong, since it asserts the URL after every route loads rather than only that
+  // the page rendered.
   { basename: import.meta.env.BASE_URL }
 );

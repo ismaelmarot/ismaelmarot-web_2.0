@@ -26,7 +26,7 @@ describe('ProjectsPage', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByRole('heading', { level: 2, name: 'Proyectos' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Proyectos' })).toBeInTheDocument();
   });
 
   it('renders one row per published project', () => {
@@ -38,7 +38,7 @@ describe('ProjectsPage', () => {
 
     // Each row's name is a level-3 heading, which is what a screen reader navigates by and what makes
     // "one row per project" countable without reaching into the DOM for the card elements.
-    const names = screen.getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent);
+    const names = screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent);
 
     expect(names).toHaveLength(published.length);
     published.forEach((name) => {
@@ -56,7 +56,7 @@ describe('ProjectsPage', () => {
     // getAllByRole returns document order, so comparing the whole sequence is the assertion. This is
     // the one thing the page does that the section cannot: it sorts, and specs/005 FR-004 requires the
     // published order to survive the filter. A set comparison would have passed either way.
-    const names = screen.getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent);
+    const names = screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent);
 
     expect(names).toEqual(published);
   });

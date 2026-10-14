@@ -83,7 +83,7 @@ export const StyledProjectsHeader = styled.div`
   }
 `;
 
-export const StyledProjectsHeadline = styled.h2`
+export const StyledProjectsHeadline = styled.h1`
   margin: 0;
   font-size: var(--text-display-section);
   font-weight: 700;

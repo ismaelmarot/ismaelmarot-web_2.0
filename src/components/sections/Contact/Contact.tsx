@@ -29,7 +29,7 @@ export const Contact = ({
       <Container size="lg" padding="lg">
         <StyledContact ref={methodsRef}>
           <StyledContactHeader>
-            <StyledContactHeadline as="h2">Contacto</StyledContactHeadline>
+            <StyledContactHeadline as="h1">Contacto</StyledContactHeadline>
             {introText && <StyledContactIntro as="p">{introText}</StyledContactIntro>}
           </StyledContactHeader>
 
