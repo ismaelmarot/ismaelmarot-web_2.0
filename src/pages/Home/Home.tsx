@@ -3,11 +3,11 @@ import { SectionSummary } from '@/components/sections/SectionSummary';
 import { TechnologyMarquee } from '@/components/sections/TechnologyMarquee';
 import { ProjectIconStrip } from '@/components/sections/ProjectIconStrip';
 import { siteConfig } from '@/data/site-config';
-import { StyledIndexPage } from './Index.styles';
+import { StyledHomePage } from './Home.styles';
 
-export const IndexPage = () => {
+export const HomePage = () => {
   return (
-    <StyledIndexPage>
+    <StyledHomePage>
       <Hero
         name={siteConfig.name}
         title={siteConfig.title}
@@ -58,6 +58,6 @@ export const IndexPage = () => {
         ctaHref="/contact"
         background="default"
       />
-    </StyledIndexPage>
+    </StyledHomePage>
   );
 };

@@ -8,10 +8,8 @@ import {
   StyledProjectsFilterWrapper,
   StyledProjectsList,
   StyledProjectCard,
-  StyledProjectsSkeletonCard,
   StyledProjectsDots,
   StyledProjectsEmpty,
-  StyledProjectsError,
 } from './Projects.styles';
 import { useProjects } from './useProjects';
 import { useProjectsCarousel } from './useProjectsCarousel';
@@ -28,8 +26,6 @@ export interface ProjectsProps {
 
 export const Projects = ({ projects = [] }: ProjectsProps) => {
   const {
-    isLoading,
-    error,
     activeCategory,
     setActiveCategory,
     visibleProjects,
@@ -50,61 +46,6 @@ export const Projects = ({ projects = [] }: ProjectsProps) => {
     onAdvance: advance,
     pausedForFocus: focusInside,
   });
-
-  if (isLoading) {
-    return (
-      <StyledProjectsSection
-        id="projects"
-        ariaLabel="Projects"
-        size="xl"
-        background="muted"
-        fullViewport={true}
-        composition="projects"
-        verticalAlign="top"
-      >
-        <StyledProjectsContainer size="xl" padding="lg">
-          <StyledProjects>
-            <StyledProjectsHeader>
-              <StyledProjectsHeadline as="h2">Proyectos</StyledProjectsHeadline>
-            </StyledProjectsHeader>
-            <StyledProjectsList aria-hidden="true">
-              {[...Array(4)].map((_, i) => (
-                <StyledProjectCard key={i}>
-                  <StyledProjectsSkeletonCard />
-                </StyledProjectCard>
-              ))}
-            </StyledProjectsList>
-          </StyledProjects>
-        </StyledProjectsContainer>
-      </StyledProjectsSection>
-    );
-  }
-
-  if (error) {
-    return (
-      <StyledProjectsSection
-        id="projects"
-        ariaLabel="Projects"
-        size="xl"
-        background="muted"
-        fullViewport={true}
-        composition="projects"
-        verticalAlign="center"
-      >
-        <StyledProjectsContainer size="xl" padding="lg">
-          <StyledProjects>
-            <StyledProjectsHeader>
-              <StyledProjectsHeadline as="h2">Proyectos</StyledProjectsHeadline>
-            </StyledProjectsHeader>
-            <StyledProjectsError>
-              <p>Failed to load projects. Please try again later.</p>
-              <button type="button" onClick={() => window.location.reload()}>Retry</button>
-            </StyledProjectsError>
-          </StyledProjects>
-        </StyledProjectsContainer>
-      </StyledProjectsSection>
-    );
-  }
 
   return (
     <StyledProjectsSection
