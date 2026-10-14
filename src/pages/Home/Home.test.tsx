@@ -1,13 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { getCssForElement } from '@/test-utils/css';
-import { IndexPage } from './Index';
+import { HomePage } from './Home';
 
-describe('IndexPage', () => {
+describe('HomePage', () => {
   it('renders hero section with name and title', () => {
     render(
       <MemoryRouter>
-        <IndexPage />
+        <HomePage />
       </MemoryRouter>
     );
 
@@ -18,7 +18,7 @@ describe('IndexPage', () => {
   it('renders all section summaries', () => {
     render(
       <MemoryRouter>
-        <IndexPage />
+        <HomePage />
       </MemoryRouter>
     );
 
@@ -33,7 +33,7 @@ describe('IndexPage', () => {
   it('orders the sections hero, projects, technologies, about, contact', () => {
     render(
       <MemoryRouter>
-        <IndexPage />
+        <HomePage />
       </MemoryRouter>
     );
 
@@ -51,7 +51,7 @@ describe('IndexPage', () => {
   it('alternates the background band from one section to the next', () => {
     render(
       <MemoryRouter>
-        <IndexPage />
+        <HomePage />
       </MemoryRouter>
     );
 
@@ -74,7 +74,7 @@ describe('IndexPage', () => {
   it('renders CTA buttons with correct labels', () => {
     render(
       <MemoryRouter>
-        <IndexPage />
+        <HomePage />
       </MemoryRouter>
     );
 
