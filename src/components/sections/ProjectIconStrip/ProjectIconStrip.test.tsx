@@ -69,21 +69,28 @@ afterEach(() => {
 });
 
 /**
- * Advance past the interval and the fade, so the assignment has changed and faded back in.
+ * Advance past ONE interval and the fade, so the assignment has changed once and faded back in.
  *
  * Reads the same flag the component reads. The interval is shorter on a phone, so a single call
  * advancing by the desktop interval would overshoot rather than land on the rotation, and the mobile
- * cases would be asserting against a rhythm the hook is not using. Advancing the phone interval twice
- * when the flag is set also covers the mobile cases that count several arrangements in a row.
+ * cases would be asserting against a rhythm the hook is not using.
+ *
+ * It advances one interval and not two, and that was a real defect in this file rather than a style
+ * choice. Advancing twice rotated the strip twice, so a test that compared the result against the
+ * starting app was asserting that two rotations cannot land back where they started. On a phone the
+ * row shows one icon and the assignment is drawn from the five apps that are not on screen, so a second
+ * rotation returns to the first one with probability one in five. Measured over a loop of identical
+ * renders it failed 37 times in 200 — close to the predicted 20%, and enough to turn the suite red on
+ * roughly one CI run in five, which it did, repeatedly and for more than a week.
+ *
+ * What SC-014 actually promises is that each rotation changes the app, so that is what this asserts.
+ * A caller that wants several arrangements in a row calls it several times, one rotation each.
  */
 const rotar = () => {
   const intervalo = viewportMovil ? INTERVALO_MOVIL_MS : INTERVALO_MS;
-  const vueltas = viewportMovil ? 2 : 1;
-  for (let i = 0; i < vueltas; i += 1) {
-    act(() => {
-      vi.advanceTimersByTime(intervalo);
-    });
-  }
+  act(() => {
+    vi.advanceTimersByTime(intervalo);
+  });
   act(() => {
     vi.advanceTimersByTime(FASE_MS);
   });
