@@ -1,16 +1,18 @@
 <!--
 Sync Impact Report
-Version change: 2.2.0 → 2.2.1
+Version change: 2.2.1 → 2.3.0
+Basis: specs/017-constitution-alignment, Amendment 1 (Proposal A) and Amendment 2 (Proposal Casing),
+approved by the maintainer on 2026-10-14.
 Modified principles:
-  - Architecture & Code Organization: Styling (expanded with explicit prohibitions: CSS Modules, vanilla-extract, Tailwind CSS)
-  - Architecture & Code Organization: Component Structure (updated responsibilities to match mandatory rules)
-  - Architecture & Code Organization: Shared Styling (new subsection added)
-  - Architecture & Code Organization: Dependencies (new subsection added)
-  - Project Context: Styling solution (unchanged)
+  - Architecture & Code Organization: Component Structure (the hook and the stylesheet are required when
+    the component has state and styles respectively; the barrel is exempt from a case-insensitive
+    filesystem collision; every component folder carries a test)
+  - Architecture & Code Organization: Path Aliases (the `@/contracts/components` example is removed, since
+    the file it named has been deleted as having no importers)
 Added sections:
-  - Architecture & Code Organization: Shared Styling
-  - Architecture & Code Organization: Dependencies
+  - Architecture & Code Organization: Component Structure: Naming and the barrel
 Removed sections: None
+Removed files: src/contracts/components.ts (333 lines, zero importers, deleted under Proposal A)
 Follow-up TODOs: None
 -->
 
@@ -59,6 +61,36 @@ Responsibilities:
 
 Do not mix component-specific logic, styles, and rendering in the same file.
 
+**Three of the five are conditional, and the exceptions are the rule rather than a deviation from it.**
+
+- **The stylesheet is required when the component has component-specific styles.** A component that renders
+  no styled element of its own has no `.styles.ts`. Four of the seven pages are in that position today: they
+  compose a section component and return it, and the only thing they could put in a `.styles.ts` would be
+  an empty `styled.div` that nothing renders — the unnecessary abstraction the Maintainability section
+  below forbids.
+- **The hook is required when the component has state, effects or handlers.** A component that is props and
+  a return statement has no `use*.ts`. An empty hook is a file whose only content is a signature, and the
+  next developer has to open it to learn that.
+- **The test is not conditional.** Every component and every page has one. This one was never optional and
+  the six pages and five components that lacked one had no test of their own.
+
+This is written down because thirty of thirty component folders were already following the conditional
+reading and seven page folders were not, and a convention that every developer has to rediscover by
+comparing folders is a convention that will be rediscoverable incorrectly.
+
+### Naming and the barrel
+
+A folder whose component is named `Index` cannot hold both `Index.tsx` and `index.ts`. macOS and Windows are
+case-insensitive, both paths resolve to the same file, and `tsc` fails with TS1149. Every other folder gets
+away with the pattern because the component's name and the word "index" differ — `Container/Container.tsx`
+alongside `Container/index.ts`.
+
+A component whose name collides case-insensitively with `index` MUST be given a different name. The landing
+page was `Index` and is now `Home`, which is also what the site calls it everywhere it speaks about itself.
+
+Barrels export the component, its props type and its styled components. Imports between folders go through
+the barrel; only a component importing from its own folder reaches past it, and only for its own files.
+
 ### Styling
 Use styled-components for component styling.
 
@@ -80,10 +112,14 @@ Examples:
 ```tsx
 import { Header } from '@/components/Header';
 import { classNames } from '@/utils/helpers';
-import type { HeaderProps } from '@/contracts/components';
+import type { Project } from '@/types/project';
 ```
 
 Relative imports should ONLY be used when technically necessary and there is no appropriate `@/` alias.
+
+A component's props are declared in the component's own file and re-exported from its barrel. They are not
+collected into a separate contracts module: `src/contracts/` was removed on 2026-10-14 with 333 lines and
+zero importers, and a second copy of an interface that already exists is a second thing to keep in step.
 
 ### Dependencies
 Use the simplest architecture compatible with the project.
@@ -135,4 +171,4 @@ Amendments require:
 
 All PRs and reviews must verify constitution compliance. Complexity must be justified. Use `.specify/memory/` guidance files for runtime development decisions.
 
-**Version**: 2.2.1 | **Ratified**: 2026-09-28 | **Last Amended**: 2026-09-29
+**Version**: 2.3.0 | **Ratified**: 2026-09-28 | **Last Amended**: 2026-10-14

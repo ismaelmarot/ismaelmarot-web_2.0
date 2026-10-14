@@ -164,3 +164,44 @@ The delivery service is unavailable, the connection drops, or something unexpect
 - Whether the form should degrade to a plain, no-JavaScript submission is a question for planning, not an assumption: at least one candidate service supports it, and it would be wasteful to rule it out without looking.
 - Out of scope: visitor accounts, saved drafts, file attachments, routing to several recipients, any interface for reviewing spam, and analytics on submissions.
 - A visitor on a slow connection is expected to wait for the in-progress state rather than seeing an unexplained delay.
+## Amendments
+
+### Amendment 1 - The workflow change T038 asked to be recorded, and the six boxes that were never ticked
+
+**Added by**: record audit, 2026-10-14. This feature was implemented in full in commit `b4679e0` on
+2026-10-03, deployed, withdrawn the same day, and its status changed from `Draft` to `Retirada`. Thirty of
+its thirty-eight tasks were ticked. The eight that were not are closed here, and one of them was carrying
+the only record of a change to this repository's CI.
+
+**The workflow change, which is what T038's third clause asked for and what no document recorded.**
+
+Delivering through Web3Forms needs an access key, and an access key must not be committed. The
+implementation therefore extended the deployment workflow: `VITE_WEB3FORMS_ACCESS_KEY` was declared in
+the `ImportMetaEnv` interface in `src/vite-env.d.ts` (T002) and passed into the build step of the
+deployment workflow from repository secrets (T003). Both tasks were ticked when they were done, but the
+*consequence* — that this feature was the reason the build step began reading a secret at all — appears
+nowhere in this specification and nowhere else.
+
+It is recorded here because the withdrawal reverted it. The current `ci.yml` has no such secret and the
+current `vite-env.d.ts` has no such field, so the repository no longer shows any trace of this rule.
+The record that survives is a single bullet in the Implementation Notes of `tasks.md` — the only place it
+was ever written down, and a place a reader looking for a specification would not think to look.
+
+**The six verification tasks T031 through T037 are void, not completed.** They are the accessibility pass,
+the responsive pass at 320/375/768px, the three checks that the taller contact block still reads well and
+that `package.json` and the secrets were left alone, and the full suite run. All six verify code that no
+longer exists. They are left unticked rather than ticked, because the code they would test was removed,
+and a box marked done against a component that was deleted the same day asserts a verification that never
+happened.
+
+**T038 is ticked**, on the evidence that its first two clauses were satisfied and its third is this
+amendment: the status is no longer `Draft`, the retirement note at the head of this document records the
+service decision and why Web3Forms could not deliver from a `*.github.io` origin on a free plan, and the
+workflow change is recorded above.
+
+**What a reader should take from this document.** Nothing in it describes the site. There is no form on
+`/contact`; the section offers direct contact methods with `mailto:` links. The 28 functional
+requirements and 10 success criteria in this document are a specification of a feature that was built,
+found to have no free delivery path from its hosting provider, and removed. The design, the validation and
+the states were not at fault, and the work is preserved in `b4679e0` for the day there is a paid plan, a
+custom domain or a different relay.

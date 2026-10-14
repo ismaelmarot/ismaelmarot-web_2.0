@@ -152,7 +152,11 @@ description: "Task list for dark project cards with auto-advance"
 - [X] T038 Run axe at 1440, 390 and 320 and confirm zero WCAG 2.1 AA violations
 - [X] T039 Measure CLS on load, since the icon frame grew from 88px to 120px
 - [X] T040 Verify under emulated `prefers-reduced-motion` that the carousel does not advance and the toggle reports stopped
-- [ ] T041 Commit, push to `main`, run the target `deploy.yml` workflow in `ismaelmarot/ismaelmarot.github.io` and confirm the same measurements on production
+- [X] T041 Commit, push to `main`, run the target `deploy.yml` workflow in `ismaelmarot/ismaelmarot.github.io` and confirm the same measurements on production
+  <!-- Ticked 2026-10-14 by the record audit. The box was left unticked when the work was done, but the
+       Verification Results below already state that they were "measured against a production build, and
+       then against production after deploying", and they are the result of this task. Ticked here because
+       the evidence exists, not because the box existed. -->
 
 ---
 
@@ -161,7 +165,14 @@ description: "Task list for dark project cards with auto-advance"
 **Purpose**: Confirm the code delivers the spec, and record it
 
 - [ ] T042 Run `/speckit.analyze` and confirm FR-001 through FR-020 and SC-001 through SC-012 are each satisfied or explicitly deferred
-- [ ] T043 Update `**Status**: Draft` to `Implemented` in `specs/009-projects-carousel-dark/spec.md` and record any requirement that shipped differently
+  <!-- Left unticked, and deliberately so. `/speckit.analyze` was never run for this feature. It is the
+       one task in this list that has no evidence behind it in either direction, and ticking it to make
+       the list look finished would be the exact failure this repository's specs keep warning about.
+       What remains unverified as a result is recorded in Amendment 5 of the spec. -->
+- [X] T043 Update `**Status**: Draft` to `Implemented` in `specs/009-projects-carousel-dark/spec.md` and record any requirement that shipped differently
+  <!-- Ticked 2026-10-14 by the record audit. Both halves were done: the header said Implemented, and
+       four Amendments below record what shipped differently — the grey gradient, the phone-sized frame,
+       the light cards and the equal card heights. -->
 
 ---
 

@@ -279,3 +279,35 @@ FR-002 through FR-016 stand unchanged.
 - Project names and descriptions stay in their current data, including the machine-readable names, so nothing in the data layer changes.
 - The project detail page, the category filter behaviour and the existing action link keep their current behaviour; only their presentation changes.
 - Snap behaviour on mobile browsers with a collapsing address bar is verified in a real browser rather than assumed, and relaxed if it mislands.
+## Amendments
+
+### Amendment 1 - The one edge case in this specification that was never reproduced, and the condition it named
+
+**Added by**: record audit, 2026-10-14. Sixty-four of this feature's sixty-five tasks are complete, and the
+sixty-fifth is T025: "In the browser, reproduce the collapsing address bar on a narrow viewport and relax
+`scroll-snap-type` to `proximity` at that breakpoint." It was never done, and this document leaves it
+unticked.
+
+**What T025 was watching for is still in the specification twice, as an Edge Case and as an Assumption.**
+The Edge Case says mandatory snap "can make a mandatory snap land between cards", and the Assumptions
+close with the commitment that the snap behaviour "is verified in a real browser rather than assumed, and
+relaxed if it mislands". That commitment is the reason T025 exists, and it is the one promise in this
+document that was not kept.
+
+**The condition has never been met, in either direction.** `src/components/sections/Projects/Projects.styles.ts`
+still declares `scroll-snap-type: x mandatory` at line 127, and `Projects.test.tsx:181` asserts that exact
+string, so the relaxation would break a passing test rather than merely being absent. Whether a collapsing
+address bar mislands the strip is therefore **an open question, not a confirmed defect**. Nothing in the
+repository records the address bar ever having been reproduced as a problem, and nothing records it being
+ruled out either.
+
+**Everything else in this feature was verified against production**, which is worth stating so that this
+one gap is read as one gap rather than as doubt about the feature: T046 confirmed the measurements on
+production and is ticked, and the Verification Results in `tasks.md` are recorded "against production at
+`https://ismaelmarot.github.io/projects`".
+
+**If anyone picks this up**, the two conditions that make it reproducible are both present in the
+environment: `src/components/sections/ProjectDetail/ProjectDetail.styles.ts:300` uses the same mandatory
+snap for its gallery, so the relaxation is a decision about two components rather than one, and the
+Playwright config already declares Mobile Chrome and Mobile Safari projects, which is what a collapsing
+address bar requires to observe.

@@ -280,3 +280,50 @@ each interval, and the row does not scroll horizontally.
 **SC-015 (new)**: The row changes between the six-frame and one-frame layouts only at the 700px
 breakpoint it already used, so there is no viewport range in which the carousel styles apply while six
 frames are still in the document.
+
+### Amendment 6 - The pause control was never cancelled, and this sentence is what made a later feature
+  decide against a reuse that was available
+
+**Added by**: `specs/016-technology-marquee`, 2026-10-14.
+
+This specification's Assumptions say:
+
+> The technology marquee's pause control is out of scope. It was discussed and cancelled, and this feature
+> does not depend on it in either direction.
+
+**"Cancelled" was the wrong word and it was load-bearing.** Nothing was cancelled. The technology
+marquee's pause control shipped on 2026-10-03 in commit `4e3ae15`, four days before this specification was
+written, and `src/components/sections/TechnologyMarquee/useMarqueePause.ts` has been in the repository ever
+since, tested, and citing WCAG 2.2.2 failure F16 in its own JSDoc. It exists today and it works.
+
+What this sentence actually decided, and what its own first clause already said, is narrower: reusing that
+control was **out of this feature's scope**. 011 would not build a pause control for the icon strip, and
+would not depend on the marquee's existing. That is a scope boundary, and it was the right call for a
+feature whose subject is six static icons and one entrance animation.
+
+**The cost of the wording is now on the record, and it was paid by `specs/013`.** Four days after this
+specification was written, `specs/013`'s research table recorded the decision not to reuse the control:
+
+> | Reuse the technology marquee's pause control | That control was discussed and cancelled in
+> feature 011, and it belongs to a different component |
+
+It read *cancelled* as *does not exist*, and declined a reuse that was sitting in the repository, tested,
+doing the same job. `specs/013` therefore wrote its own pause logic — `useIconRotation` carries its own
+pause conditions — where a shared, already-tested component was available. **That research row is left
+exactly as it was written**, because a research document is a record of what was decided at the time and
+rewriting it would be a worse lie than leaving it.
+
+**The corrected reading, for anyone reading either document later:** the marquee's pause control exists,
+it has its own specification in `specs/016-technology-marquee`, and a future feature that needs to stop
+moving content should reuse `useMarqueePause` rather than write a fourth implementation.
+
+### Amendment 7 - This document's Amendments section opens at Amendment 4, and that gap is not explained
+
+**Added by**: record audit, 2026-10-14. The Amendments section above begins at Amendment 4. Amendments 1,
+2 and 3 are not in this file and are not referenced anywhere in it. Whether they were superseded and
+removed, merged into a later amendment, or never written is not recoverable from the repository.
+
+**Nothing is invented to fill the gap.** The numbering is left as it is and the fact is recorded, because
+a sequence that starts at 4 is visible to anyone who opens this file, and an unexplained sequence invites
+the reader to assume the first three said something they no longer say. Amendment 6 above is the only
+addition here, numbered 6 to follow the existing sequence rather than to imply it was repaired.

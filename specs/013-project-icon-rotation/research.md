@@ -167,3 +167,18 @@ measures it over three rotations rather than the implementation asserting it.
 | Rotate by one position each time | Rejected by the maintainer in favour of all six changing at once |
 | Random shuffle of apps into slots | The same thing as a permutation here, and it cannot guarantee no slot keeps its app without rejection sampling, which the derangement does |
 | Reuse the technology marquee's pause control | That control was discussed and cancelled in feature 011, and it belongs to a different component |
+
+> **Correction, 2026-10-14, added by `specs/016-technology-marquee`.** The row above is left as it was
+> written, because this is a record of what was decided at the time. One half of its reasoning was wrong.
+>
+> The pause control was **not** cancelled and never stopped existing. It shipped with the technology
+> marquee in `4e3ae15` on 2026-10-03, four days before feature 011 was written, and
+> `src/components/sections/TechnologyMarquee/useMarqueePause.ts` has been in the repository since, tested,
+> citing WCAG 2.2.2 failure F16 in its own JSDoc. What `specs/011` actually scoped out was **the reuse**,
+> within that feature, not the control itself — which is what `specs/011`'s own Amendment 6 now says
+> explicitly.
+>
+> So this row declined a reuse that was available, and `useIconRotation` carries its own pause conditions
+> where a shared, already-tested component existed. That is the recorded cost of the marquee having shipped
+> without a specification. **The right second clause of this row was "it belongs to a different component",
+> which remains true** — the two features pause different things.

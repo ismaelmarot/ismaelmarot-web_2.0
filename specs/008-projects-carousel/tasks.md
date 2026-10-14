@@ -98,6 +98,9 @@ description: "Task list for the projects full-screen carousel"
 - [X] T023 [US2] Add `scroll-behavior: smooth` to the strip in `src/components/sections/Projects/Projects.styles.ts` and disable it inside a `prefers-reduced-motion: reduce` query
 - [X] T024 [US2] Keep the strip's default `touch-action` in `src/components/sections/Projects/Projects.styles.ts` so a vertical gesture still scrolls the page while a horizontal one moves the strip
 - [ ] T025 [US2] In the browser, reproduce the collapsing address bar on a narrow viewport and relax `scroll-snap-type` to `proximity` at that breakpoint only if a mandatory snap lands between cards
+  <!-- Left unticked 2026-10-14 by the record audit. Never performed; the collapsing address bar was
+       never reproduced, so whether mandatory snap mislands is an open question rather than a confirmed
+       defect. Recorded in Amendment 1 of the spec. -->
 
 **Checkpoint**: Every project is reachable by swipe, drag and keyboard, and nothing advances by itself
 

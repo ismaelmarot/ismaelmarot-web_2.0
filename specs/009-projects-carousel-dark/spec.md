@@ -431,3 +431,41 @@ height without capping the content.
 - The dots introduced in the previous feature remain; the request did not ask to remove them.
 - Seven seconds is long enough for the descriptions as written, which are clamped to three lines.
 - Auto-advance starting by itself is acceptable here because the stop control is present, visible and keyboard reachable, which is what WCAG 2.2.2 requires.
+### Amendment 5 - One analysis was never run, and two boxes were closed on evidence rather than on faith
+
+**Added by**: record audit, 2026-10-14. This feature shipped on 2026-10-03 and carries four Amendments
+above, all of which record real departures from what this document specified. Its status says
+`Implemented`. Its task list said 82 of 85 complete, with the three unfinished boxes being the deploy
+verification, the `/speckit.analyze` pass, and the task that changes the status to `Implemented`.
+
+**Two of those three are now closed, on evidence rather than on the passage of time.**
+
+- **The deploy verification was performed and the box was simply never ticked.** The Verification Results
+  in `tasks.md` already open with the sentence "Measured against a production build, and then against
+  production after deploying." Every one of SC-001 through SC-012 in that table carries a production
+  value. The evidence existed; the marker did not. T041 is now ticked with a note saying so.
+- **The status change and the divergence record were both done.** The header reads `Implemented` and the
+  four Amendments above are the divergence record. T043 is now ticked with a note naming both halves.
+
+**One box is left open on purpose: T042, `/speckit.analyze`.** It was never run. Nothing in this
+repository's history ever ran it against this feature, and there is no artifact of it — no report, no
+trail, no comment — to reconstruct it from. Ticking it would be the failure `specs/015` records as
+Amendment 1, where a component test passed while measuring nothing: a green box with nothing behind it is
+worse than an open one, because it tells the next reader the requirement was checked.
+
+**What actually goes unverified as a result**, stated so that nobody assumes the opposite:
+
+- **No requirement of this feature has been traced line by line to its implementation.** The Verification
+  Results table maps twelve success criteria to measured values, and that is real evidence. It is not the
+  same as confirming FR-001 through FR-020 each individually, which is what T042 asked for. The four
+  Amendments are, in effect, a partial analysis that was performed by hand while implementing and never
+  written as one.
+- **No requirement is recorded as explicitly deferred.** That half of T042's wording has no answer at
+  all. If an FR of this feature was quietly dropped rather than superseded, this document does not say
+  which.
+
+**What this feature does have**, and it is not nothing: eighty-five tasks, twelve measured criteria with
+production values, two defects that verification found and that were fixed before shipping — the `goTo`
+clamp that showed the second-to-last project, and the `role` structure that took list semantics away from
+the dots — and four Amendments recording where the implementation diverged from this document. The gap
+is the formality of a single command, not the absence of verification.

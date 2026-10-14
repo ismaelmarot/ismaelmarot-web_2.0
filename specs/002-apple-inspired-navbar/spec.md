@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-01
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: User description: "Rediseñar y adaptar el Navbar/Header con estética y comportamiento inspirados en apple.com: minimalista, limpio y premium, responsive (desktop/tablet/mobile), sin copiar literalmente su diseño; tablet progresiva con hamburger cuando los enlaces no quepan; mobile con hamburger y menú animado, accesible por teclado y cierre al seleccionar sección; respetar arquitectura existente (componentes con .tsx/.styles.ts/use*.ts/index.ts, alias @/, styled-components)."
 
@@ -110,3 +110,41 @@ Un visitante en mobile ve solo el nombre del portfolio y un botón hamburger. Al
 - La paleta, tipografía (Inter, pesos 400/500/600/700) y tokens actuales ya reflejan la dirección Apple y no se redefinen.
 - El CTA de GitHub se mantiene en desktop; en mobile aparece dentro del menú.
 - El header actual con blur al hacer scroll (`useHeader`) se conserva como comportamiento base.
+
+## Amendments
+
+### Amendment 1 - The one task that was never performed, and why running it now would prove nothing
+
+**Added by**: record audit, 2026-10-14. This specification shipped on 2026-10-02 and twenty-two of its
+twenty-three tasks were completed on the day it was written. It then carried `**Status**: Draft` for
+six weeks.
+
+**T023 — "Run quickstart.md validation at 360/768/1024/1440px" — was never performed, and this document
+leaves it unticked.** Ticking it would assert a measurement nobody took.
+
+**The reason it is not simply performed now is that the header it would validate no longer exists in the
+shape this specification describes.** Three later features changed it:
+
+- `specs/003-landing-home-page` Amendment 2 made the header turn with the Hero's black band, so the
+  header's colour, contrast and backdrop behaviour are now a function of scroll position in a way this
+  specification did not contemplate.
+- `specs/003-landing-home-page` Amendment 7 moved landing text next to the band, which changed what the
+  header sits above at the top of the page.
+- `specs/015-project-identity` changed how project names render, and the header is not involved, but the
+  feature is cited from `src/components/layout/Header/Header.styles.ts` as an origin for the values in
+  use.
+
+Running T023 against today's code would produce a pass that says nothing about this specification and a
+fail that would be attributed to it. The honest form is to record that the four viewport widths were never
+walked for this feature, and to point at the browser suites that do cover the header today.
+
+**What actually covers the header now**, in place of the manual pass T023 asked for:
+`src/components/layout/Header/Header.test.tsx`, `Navigation/Navigation.test.tsx` and
+`MobileMenu/MobileMenu.test.tsx` assert the states and the keyboard behaviour that FR-004 through FR-010
+describe, and `tests/e2e/homepage.spec.ts` and `tests/e2e/keyboard.spec.ts` drive them in a real browser.
+Those suites were written after this feature, not by it.
+
+**What stays unverified**: the specific measurements SC-005 asks for — that the hamburger appears in
+tablet *before* any link loses legibility, with no clipped text and no overflow — is a judgement about a
+rendered moment. No test asserts the threshold at which the navigation collapses, and the breakpoints in
+FR-011 are the declared answer rather than a measured one.

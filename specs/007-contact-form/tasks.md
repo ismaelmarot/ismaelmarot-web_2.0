@@ -144,13 +144,35 @@ entered content survives, and a second attempt works without retyping.
 **Purpose**: Improvements that affect multiple user stories
 
 - [ ] T031 [P] Run the accessibility pass: full keyboard order, visible focus at every stop, and zero WCAG 2.1 A/AA violations in the empty, invalid, sending and unavailable states (FR-014, FR-017, SC-007)
+  <!-- VOID, not completed. This verifies code that no longer exists: the form was deployed and withdrawn
+       on 2026-10-03 and the component was removed. Left unticked deliberately. The a11y state of the
+       form as it shipped was measured and is recorded in the Phase 3 notes below and in Amendment 1 of
+       the spec; what is gone is the code, not the evidence about it. -->
 - [ ] T032 [P] Check the responsive behaviour at 320px, 375px and 768px: no horizontal scrolling, controls large enough to tap (FR-018, SC-008)
+  <!-- VOID, for the same reason as T031. -->
 - [ ] T033 [P] Confirm the contact section still reads well with the taller block, since `min-height` is a minimum and not a cap
+  <!-- VOID, for the same reason as T031. The section is back to direct contact methods. -->
 - [ ] T034 [P] Confirm `package.json` is unchanged and no dependency or user-interface framework was added (FR-025, SC-009)
+  <!-- Answered a different way, and it is worth having: the repository today has no bootstrap, no
+       Tailwind and no vanilla-extract, 36 of 36 `.styles.ts` files use styled-components, and
+       `package.json` carries no form library. The withdrawal removed the feature rather than the
+       dependency, so FR-025 holds. Recorded here because a reader needs to know it was settled by the
+       removal and not by this box. -->
 - [ ] T035 [P] Confirm `.env` and `.env.local` are untracked and the access key appears nowhere in the repository (FR-022)
+  <!-- VOID, and independently true. There is no access key in the repository: the withdrawal removed the
+       field from `vite-env.d.ts`, the key from the workflow's `env:` block and the local placeholder
+       with the component. FR-022 holds today for the same reason FR-025 does. -->
 - [ ] T036 Run the full suite: `npm test`, `npm run test:component`, `npm run lint`, `npm run typecheck`, `npm run build`
+  <!-- VOID as a verification of this feature. The suite runs on every commit in CI; running it here
+       would verify today's code, not the form's. -->
 - [ ] T037 Run the manual verification list in `quickstart.md`
-- [ ] T038 Update `spec.md` status and add implementation notes recording the service decision and the workflow change
+  <!-- VOID. The list requires a real submission from the deployed site, and the deployed site has no
+       form. -->
+- [X] T038 Update `spec.md` status and add implementation notes recording the service decision and the workflow change
+  <!-- Ticked 2026-10-14 by the record audit. Status is `Retirada`. The service decision is the note at
+       the head of the spec. The workflow change — the build step gaining an `env:` block for
+       VITE_WEB3FORMS_ACCESS_KEY — was recorded in the Implementation Notes above and is now recorded in
+       Amendment 1 of the spec, which is the clause that asked for it. -->
 
 ---
 

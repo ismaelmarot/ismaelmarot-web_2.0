@@ -107,6 +107,8 @@ description: "Task list for the GitHub contributions heatmap"
 - [X] T021 Run axe on `/technologies` and confirm zero WCAG 2.1 AA violations
 - [X] T022 Capture the strip before and after the scroll, as the evidence that what was reported as missing is now on screen
 - [ ] T023 Commit, push, run the target `deploy.yml` workflow in `ismaelmarot/ismaelmarot.github.io`, and repeat T019 to T021 against production
+  <!-- Left unticked 2026-10-14 by the record audit. Never performed. Re-running it now would measure
+       a page that three later features have changed. Recorded in Amendment 1 of the spec. -->
 
 ---
 

@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-02
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: User description: "la seccion de Proyectos debe mostrar proyectos de mi github en https://github.com/ismaelmarot - Nombre - descripcion - icono - go Live / Go Live App (button link) - Github Repo (button link) todo con diseno estilo apple"
 
@@ -110,3 +110,35 @@ When a project does not have a live deployment URL, the "Go Live" / "Go Live App
 - The existing design system (styled-components, design tokens in `src/styles/`) will be used for Apple-style visual consistency
 - No pagination is required for v1; all projects from the profile are displayed in a scrollable grid
 - The GitHub API rate limits are acceptable for the expected traffic of a personal portfolio
+
+## Amendments
+
+### Amendment 1 - Closed eight weeks after it shipped, and what its own notes left open
+
+**Added by**: record audit, 2026-10-14. The feature shipped on 2026-10-02 in commit `475efe3` and its
+fifty tasks were completed on the day it was written. It carried `**Status**: Draft` for the eight weeks
+that followed, which is the single largest gap between the record and the code in this repository: a
+feature with a complete task list and no record of ever having been finished.
+
+**The status is corrected here rather than by ticking a box.** There was no task in this feature's list
+whose description was "mark this implemented", so there is nothing to tick. T044 and T045 closed the two
+known contrast issues that the Notes recorded, and every task is genuinely `[X]`. What is being
+corrected is the header.
+
+**The two defects this feature recorded as out of scope have both since been resolved, by other work.**
+
+- **`ContactMethod` nested a `listitem` inside a `listitem`** with no `role="list"` above it, which axe
+  reported as `aria-required-parent` on `/contact` at three nodes. `src/components/sections/Contact/Contact.tsx`
+  now declares `role="list"` with an accessible name on the container that holds the methods, and
+  `ContactMethod.tsx` no longer declares a role of its own, with a comment recording why nesting one
+  broke the list. Closed.
+- **The `--color-fg-subtle` contrast findings** were left as pre-existing and outside this feature's
+  scope. This document does not claim they were fixed here, because nothing in this feature's history
+  fixed them; whether they are still open is a question for the tokens, and the audit that closed this
+  specification did not measure them.
+
+**What remains genuinely unverified in this specification**, and is left unverified rather than marked
+as passing: SC-004 asks for a Lighthouse score of 90+ with no layout shift, and no Lighthouse run exists
+anywhere in this repository's tooling or history. The CI pipeline measures layout shift indirectly
+through the browser tests and measures accessibility through axe, but it has never run Lighthouse. SC-004
+is therefore the one criterion in this document that no test and no measurement has ever confirmed.

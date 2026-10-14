@@ -259,3 +259,27 @@ FR-001 through FR-004 and FR-006 through FR-015 stand unchanged.
 - GitHub's contribution calendar includes the current day when queried without an explicit range, which was verified against the API rather than assumed; both the ranged and unranged queries returned the current day.
 - No month labels are added to the grid, so the initial view shows the recent weeks without a per-column date reference. The section's period text states the range. This is a known limitation, accepted rather than overlooked.
 - The heatmap stays on the Technologies page; no page moves are part of this feature.
+## Amendments
+
+### Amendment 1 - Twenty-two of twenty-three, and the twenty-third asked for a second browser
+
+**Added by**: record audit, 2026-10-14. This feature is complete except for T023: "Commit, push, run the
+target `deploy.yml` workflow in `ismaelmarot/ismaelmarot.github.io`, and repeat T019 to T021 against
+production." It was never performed and it stays unticked.
+
+**Why it is not simply performed now.** T019 to T021 were measurements taken against a local build of the
+strip. Repeating them against production three weeks later would measure a different artifact, because
+three features have changed `/technologies` since: `specs/013-project-icon-rotation` and
+`specs/015-project-identity` both altered what that page renders. A pass now would be evidence about
+today's page; a fail would be attributed to this feature. The tick is left where it was, and the fact is
+recorded here so that the missing box is not read as a forgotten step.
+
+**What this feature does have.** Twenty-two ticked tasks, the measurements behind them in `tasks.md`, and
+the two Amendments that record where the implementation diverged from this document — the label under the
+grid that replaced the cell outline, and the reading of "today" in the visitor's timezone rather than the
+runner's. The gap is one round trip to a URL.
+
+**One requirement in this document has no Key Entities section**, unlike the other thirteen specifications
+in this repository, and this amendment records that rather than leaving it to be noticed. The entities are
+easy to name and were left implicit because this is a read-only artefact: the calendar, the week, the day
+and the level. Nothing else in the document depends on the omission.

@@ -12,6 +12,29 @@ description: "Task list for Personal Developer Portfolio visual system implement
 
 **Organization**: Tasks are grouped by implementation phase per the updated plan. Each task is concrete, executable, small, and verifiable.
 
+> ## Every task below is unticked, and that is the record
+>
+> **All 132 tasks in this file are open.** This is not an unfinished feature: the design system, the
+> global styles, the five home sections, the animation layer and the responsive pass have been in
+> production since 2026-10-02 in commit `475efe3`. The list was simply never marked, and it stayed that
+> way for the entire life of the site.
+>
+> **The boxes are left open deliberately.** Each task below is an audit or build step whose completion can
+> only honestly be asserted by whoever performed it. Ticking 132 boxes from a code inspection would
+> produce a fully green list asserting a verification that nobody did, which is the failure
+> `specs/015/spec.md` records as Amendment 1 — a test that passed while measuring nothing — and the
+> failure `specs/011/tasks.md` hit three times with `tsc` failing so that `npm run build` never ran and a
+> preview server silently served the previous `dist`.
+>
+> **What the boxes would have said is written down instead**, measured against the source on 2026-10-14, in
+> **Amendment 1 of `spec.md`**. That amendment also records the finding this list could never have caught:
+> two of this feature's requirements, FR-015 and FR-016, are implemented as complete markup and can never
+> be reached by a visitor, because the data pipeline is build-time and the two states have no setter.
+>
+> **Two requirements remain genuinely open questions for whoever picks this up**, and they are listed in
+> that amendment rather than resolved here: either give FR-015 and FR-016 a real seam, or withdraw them and
+> delete the branches. Neither choice has been made.
+
 ---
 
 ## Format: `- [ ] [TaskID] [P?] [Story?] Description with file path`

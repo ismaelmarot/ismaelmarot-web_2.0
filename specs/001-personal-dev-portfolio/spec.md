@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-28
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: User description: "Create a personal developer portfolio website for Ismael Marot. The purpose of the website is to present Ismael as a web developer and showcase the applications and projects he has built. The website should include: 1. A home/hero section introducing Ismael as a web developer. 2. An About section with a concise personal and professional introduction. 3. A Projects section showing the applications and projects Ismael has built. 4. Project information should be based on Ismael's GitHub repositories, including relevant repository information such as project name, description, technologies, links and other useful metadata when available. 5. Projects should support visual presentation through screenshots or images. 6. A Technologies section showing the main technologies and tools used by Ismael. 7. A Contact section with appropriate ways to contact or find Ismael online. 8. Clear navigation between the main sections. 9. Responsive behavior for desktop, tablet and mobile devices. 10. Smooth and intentional animations and transitions. 11. The visual experience should be inspired by Apple's design principles: simplicity, strong visual hierarchy, generous spacing, refined typography, subtle motion and polished interactions. It must not copy Apple's website or proprietary designs. 12. The website should prioritize the projects and their visual presentation rather than excessive text. 13. The interface should feel modern, professional, clean and personal. 14. The website should be accessible and usable with keyboard navigation. 15. The website should provide appropriate loading, empty and error states when project information cannot be retrieved. 16. The website should be deployable as a static website through GitHub Pages. 17. The initial version should remain simple and avoid unnecessary features or complexity. The specification should focus on user needs, behavior, content and acceptance criteria. Do not decide specific implementation libraries or architecture unless they are required to describe the user experience."
 
@@ -439,3 +439,140 @@ A visitor experiences appropriate feedback when project data is loading, unavail
 - No authentication, user accounts, or dynamic user-generated content needed
 - Analytics/tracking is out of scope for initial version
 - CMS or content editing interface is out of scope — content managed via code/data files
+## Amendments
+
+### Amendment 1 - The largest gap between the record and the repository, closed by writing down what is actually there
+
+**Added by**: record audit, 2026-10-14. This is the oldest and by far the largest specification in the
+repository. It was written on 2026-09-28, it describes twenty-three functional requirements for the whole
+portfolio, it has a full `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/` and a
+sixteen-of-sixteen requirements checklist, and it carried `**Status**: Draft` for the entire life of the
+site.
+
+**Its task list was never ticked. Not one of its 132 tasks.** That is the finding. Everything else in this
+repository that had drifted was a status line or a box; here the entire record of the design system, the
+global styles, the five home sections, the animation layer and the responsive pass sat at zero, while
+`src/styles/tokens.css`, `src/styles/tokens.ts`, `src/styles/globals.css`, the Hero, the About, the
+Projects, the Technologies and the Contact sections have all been in production since 2026-10-02, in
+commit `475efe3`.
+
+**The task list is not ticked here, and the reason matters.** Those 132 tasks are audit and build steps
+whose completion can only honestly be asserted by someone who performed them. Marking them from a
+codebase inspection would produce 132 green boxes asserting a verification nobody did, which is the exact
+defect `specs/015` records as Amendment 1 and the one `specs/011` hit three times while building its
+browser tests. **The boxes stay open.** What follows is the state of the repository measured directly,
+so that a reader can see what the list would have said.
+
+### What the repository actually contains, measured against this specification
+
+**Present and working, verified by reading the code.**
+
+- **The visual system is the one this document asked for.** `src/styles/tokens.css` carries 216 lines of
+  tokens, `src/styles/tokens.ts` mirrors them as TypeScript, and `src/styles/globals.css` carries 306
+  lines of reset, focus styles, the reduced-motion rule and the global keyframes. FR-020's "simplicity,
+  hierarchy, spacing, refined typography" is this arrangement.
+- **All five home sections exist** as components with the constitution's five-file structure:
+  `sections/Hero/`, `sections/About/`, `sections/Projects/`, `sections/Technologies/` and
+  `sections/Contact/`. FR-001, FR-002, FR-003, FR-007, FR-008.
+- **Technologies are grouped by category**, `category: 'language'` and its siblings in
+  `src/data/technologies.ts`, with brand marks resolved through `simple-icons`. FR-007.
+- **Projects carry screenshots and a live link.** `src/types/project.ts` carries `screenshotUrls`, capped at
+  `MAX_SCREENSHOTS_PER_PROJECT` by `specs/006`, and the detail page renders the gallery. FR-005, FR-006.
+- **The full-viewport section behaviour exists and is enforced by tests.**
+  `common/Section/Section.styles.ts` implements `fullViewport` and `specs/003` built seven tests around it
+  after it broke once. FR-021, FR-023.
+- **Reduced motion is honoured site-wide**, through the global rule in `globals.css` and the
+  `useReducedMotion` provider that throws outside itself rather than silently returning a default. FR-012.
+- **The site is static and deploys to GitHub Pages at the account root**, with the 404 replay shim in
+  `public/404.html` decided in `specs/003`'s research. FR-018.
+- **The empty state is reachable.** `hasNoProjectsAtAll` in `useProjects.ts` is derived from the array and
+  renders the real empty message. FR-017.
+
+### Two requirements that the code satisfies on paper and not in practice
+
+This is the part worth having written down, because both requirements are marked as met by their presence
+in the source and neither can ever be reached by a visitor.
+
+- **FR-015 — the loading state — cannot render.** `Projects.tsx` contains a complete skeleton branch,
+  four `StyledProjectsSkeletonCard` placeholders inside an `aria-hidden` list. The state that selects it is
+  `const [isLoading] = useState(false)` in `src/components/sections/Projects/useProjects.ts:17`. There is
+  no setter. The destructuring with no second binding is deliberate, and it is why the value is `false`
+  forever.
+- **FR-016 — the error state and its retry — cannot render.** `Projects.tsx` contains a complete error
+  branch with a retry button that reloads the page. The state that selects it is
+  `const [error] = useState<string | null>(null)` at `useProjects.ts:18`. Also no setter.
+
+**Why this happened, which is the part that generalises.** Project data is fetched at **build time** by
+`npm run fetch:github` and committed as `src/data/projects.json`. The component imports it as a static
+JSON module, so by the time `Projects` mounts the data is already in the bundle. There is no request to be
+loading or to fail. The loading and error branches were specified against a runtime-fetch mental model and
+the implementation moved to build-time fetching, and the branches were left behind when it did.
+
+**What this costs.** Roughly a hundred lines of unreachable markup, three styled declarations
+(`StyledProjectsSkeletonCard`, `StyledProjectsEmpty`, `StyledProjectsError`), and two requirements that this
+document has claimed since 2026-09-28 and that no visitor has ever seen. It is also the reason FR-015 and
+FR-016 are the only requirements in this specification that no test covers: a test that asserts a
+skeleton would have to force `isLoading` true, and there is no seam to do it through.
+
+**Two ways to close it, and neither is chosen here.** Either wire a real seam so a failed or absent
+`projects.json` produces the states this document asked for, which is honest but adds a code path for a
+condition a static build cannot produce; or withdraw FR-015 and FR-016 and delete the branches, which is
+what the constitution's YAGNI principle argues for. **This amendment does not make that call.** It records
+that the call is open, which is the whole reason this specification was reopened.
+
+### What this specification does not claim
+
+**The sixteen-of-sixteen requirements checklist says the requirements are well-formed. It does not say they
+are met.** `/speckit.checklist`'s own template is explicit that `[x]` means "reviewed and satisfied for
+requirements quality" and "does not mean implementation work is complete". Read alongside the two
+requirements above, that distinction is the difference between a green checklist and a delivered feature,
+and this repository has just demonstrated it.
+
+**No Lighthouse run backs SC-004**, exactly as with `specs/004`. No Lighthouse tooling exists in the
+repository. Layout shift is measured through the Playwright suites instead.
+
+**Nothing here was verified in a browser during this audit.** Everything above was established by reading
+the source. The browser measurements this specification would have called for were never recorded in any
+document, which is the deepest form of the gap: not a wrong status, not an unticked box, but 132 tasks
+whose verification trail does not exist at all.
+
+### Amendment 2 - FR-015 and FR-016 are withdrawn, because the state they describe cannot occur
+
+**Added by**: `specs/017-constitution-alignment`, 2026-10-14. This is the decision Amendment 1 left open.
+
+Amendment 1 established that FR-015, the loading state, and FR-016, the error state with its retry, are
+implemented as complete markup that no visitor can reach. `Projects.tsx` held a four-card skeleton and an
+error branch with a retry button; `useProjects.ts` held `const [isLoading] = useState(false)` and
+`const [error] = useState<string | null>(null)`, neither of which has a setter. **Both requirements are
+withdrawn, and the branches are deleted.**
+
+**The reason, stated once and plainly.** Project data is fetched at **build time** by `npm run fetch:github`
+and committed as `src/data/projects.json`. `Projects` imports it as a static JSON module, so by the time
+the component mounts, every project is already in the bundle. There is no request to be loading and none
+to fail. A missing or malformed `projects.json` is a build failure, and a build failure never reaches a
+visitor.
+
+**Why withdrawal rather than a real seam.** The alternative was to make the states reachable, which would
+have meant a loading state for data that is already present and an error state for a failure that cannot
+happen in the deployed artifact. The constitution's principle VI, YAGNI, argues for the code that is
+needed over the code that is defensible. FR-015 and FR-016 were specified on 2026-09-28 against a mental
+model of runtime fetching, and the implementation moved to build-time fetching without them being revisited.
+
+**What survives, and what does not.**
+
+- **FR-017, the empty state, stays.** `hasNoProjectsAtAll` is derived from the array rather than from a
+  request: an empty `projects.json`, or a category with nothing in it, both render, and both are
+  asserted in `src/pages/Projects/Projects.test.tsx`.
+- **The loading skeleton is deleted**, along with `StyledProjectsSkeletonCard`.
+- **The error branch and its retry button are deleted**, along with `StyledProjectsError`. A retry button
+  that reloads a page that will fail identically is worse than no button.
+- **`useProjects` no longer returns `isLoading` or `error`**, and its JSDoc now records why, so that the
+  next feature does not add them back.
+
+**What this costs, stated rather than hidden.** A visitor on a very old browser that fails to parse the
+JSON module sees an exception rather than an explanation. That is a different failure from the one these
+requirements claimed to handle, and the probability of it is not comparable to the probability of the
+request failure they were written for.
+
+**FR-001 through FR-014 and FR-018 through FR-023 are untouched.** This amendment withdraws two
+requirements and amends none of the other twenty-one.
