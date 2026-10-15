@@ -6,8 +6,6 @@ export interface UseContactBandReturn {
   email: string;
   /** The networks, in display order, with anything that has no destination dropped. */
   redes: ContactMethod[];
-  /** The owner's name, the same value the Hero opens with. */
-  nombre: string;
 }
 
 /**
@@ -34,6 +32,5 @@ export function useContactBand(): UseContactBandReturn {
   return {
     email: siteConfig.email,
     redes,
-    nombre: siteConfig.name,
   };
 }

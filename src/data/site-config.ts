@@ -33,6 +33,30 @@ export const siteConfig: SiteConfig = {
       iconName: 'linkedin',
       displayOrder: 3,
     },
+    /* specs/021. These two have no profile yet, so they point at the platform's own landing page and
+       nowhere else — no guessed handle, no invented path. A mark whose link resolved to a profile that
+       may not exist is a broken link, which is what specs/007 cost the most. Putting the real profile in
+       is one change to the two values below and nothing else in the repository has to move: the band,
+       the footer and the contact page all read this list.
+
+       `type` is their own rather than `other`, so the icon table resolves the right glyph and the
+       contact card keeps a distinct identity once a real brand surface is warranted. */
+    {
+      id: 'facebook',
+      type: 'facebook',
+      label: 'Facebook',
+      value: 'https://www.facebook.com',
+      iconName: 'facebook',
+      displayOrder: 4,
+    },
+    {
+      id: 'instagram',
+      type: 'instagram',
+      label: 'Instagram',
+      value: 'https://www.instagram.com',
+      iconName: 'instagram',
+      displayOrder: 5,
+    },
   ],
   seo: {
     title: 'Ismael Marot | Web Developer Portfolio',

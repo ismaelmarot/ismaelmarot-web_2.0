@@ -33,23 +33,42 @@ export const StyledContactBandInner = styled.div`
 /* The question is the band's heading, and it is the largest text in it. The address is a link rather
    than a heading, so the band keeps exactly one level-two heading and the page's outline does not
    gain a second top-level voice. */
+/* Subordinate to the address at every viewport, and not a display size.
+
+   specs/020 shipped this heading at --text-display-section, 72px at desktop, against an address of
+   36px. specs/021 moved it down, but to --text-large-subtitle, whose floor of 20px is ABOVE the
+   address's own floor of 18px — so the band still rendered the question larger than the address on a
+   phone, and on a 320px screen the question was the thing that read as the subject. Measured, not
+   assumed: 20px against 18px at both 390 and 320.
+
+   --text-body is 16px and its floor is below the address's, which is what FR-001 asks for. It is the
+   least interesting token on the scale and that is the point: this heading is deliberately not a
+   display, because the display in this band is an email address. The ratio is 0.4 at desktop and 0.89
+   on a 320px screen, and the second number is honest — at 288px of column there is no room for a
+   difference and pretending otherwise would mean a question too small to read. */
 export const StyledContactBandTitle = styled.h2`
-  margin: 0 0 ${tokens.space[3]};
-  font-size: var(--text-display-section);
-  font-weight: ${tokens.fontWeights.bold};
-  line-height: 1.05;
+  margin: 0;
+  font-size: var(--text-body);
+  font-weight: ${tokens.fontWeights.semibold};
+  line-height: 1.3;
   letter-spacing: -0.01em;
-  color: ${tokens.colors.textPrimary};
-  max-width: 16ch;
+  color: ${tokens.colors.textTertiary};
+  max-width: 18ch;
 `;
 
 /* Two columns above the fold and one below it. `align-items: end` puts the address's baseline and the
    link's baseline near each other rather than centring two boxes of different heights against each
    other, which is what a visitor comparing them actually sees. */
+/* Two equal columns, which is the requirement: the address has half the width to itself and the
+   question and the button share the other half. The gap is 40px, so each column is (1232 - 40) / 2 =
+   596px, and the token's comment carries the arithmetic that decides the address's ceiling.
+
+   Stacked, the address comes first because it is the subject. `order` rather than a second copy of the
+   markup, so the two elements exist once and the desktop and mobile arrangements cannot disagree. */
 export const StyledContactBandRow = styled.div`
   display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: end;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
   gap: ${tokens.space[6]} ${tokens.space[10]};
 
   @media (max-width: 767px) {
@@ -58,33 +77,44 @@ export const StyledContactBandRow = styled.div`
   }
 `;
 
-/* The band's own route to the contact page. A pill because every call to action on the site is one,
-   and a link that looks like one thing on this page and another on the next is not a call to action.
-   The arrow is a separate element rather than part of the label so it can be hidden from assistive
-   technology, leaving the name as "ir →". */
+/* The half that carries the question and the route to the contact page. */
+export const StyledContactBandActions = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: ${tokens.space[6]};
+`;
+
+/* The band's own route to the contact page, and the one thing in the band shaped like a control.
+   Black with white text and a white arrow, which is a request rather than a palette choice: on a white
+   band a white button disappears and a grey one reads as disabled.
+
+   The focus ring is white rather than inherited. --shadow-focus is drawn in the page's own colour, and
+   on a black surface that colour is the background, so inheriting it would leave this button with no
+   visible focus indicator at all — a WCAG 2.4.7 failure on the band's only control. Asserted rather
+   than assumed. */
 export const StyledContactBandCta = styled.a`
   display: inline-flex;
   align-items: center;
   gap: ${tokens.space[2]};
-  padding: ${tokens.space[2]} ${tokens.space[6]};
+  padding: ${tokens.space[3]} ${tokens.space[6]};
   font-size: var(--text-body);
   font-weight: ${tokens.fontWeights.semibold};
-  color: ${tokens.colors.textPrimary};
-  background-color: ${tokens.colors.bg};
+  color: ${tokens.colors.white};
+  background-color: ${tokens.colors.black};
   border-radius: ${tokens.radii.full};
-  box-shadow: var(--shadow-sm);
   text-decoration: none;
   white-space: nowrap;
-  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+  transition: transform var(--transition-fast), opacity var(--transition-fast);
 
   &:hover {
-    box-shadow: var(--shadow-card);
     transform: translateY(-1px);
+    opacity: 0.88;
   }
 
   &:focus-visible {
-    outline: none;
-    box-shadow: var(--shadow-focus);
+    outline: 2px solid ${tokens.colors.white};
+    outline-offset: 3px;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -146,19 +176,18 @@ export const StyledContactEmailArrow = styled.span`
   color: currentColor;
 `;
 
+/* The networks, alone. The divider above them and the owner's name beside them were both removed by
+   specs/021; what is left is a row of marks belonging to the address above it rather than a footer of
+   its own. */
 export const StyledContactBandFooter = styled.div`
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: ${tokens.space[4]};
   margin-top: ${tokens.space[10]};
-  padding-top: ${tokens.space[6]};
-  border-top: 1px solid var(--color-border);
 
   @media (max-width: 767px) {
     margin-top: ${tokens.space[8]};
-    padding-top: ${tokens.space[5]};
   }
 `;
 
@@ -207,9 +236,3 @@ export const StyledContactNetwork = styled.a`
   }
 `;
 
-export const StyledContactBandName = styled.p`
-  margin: 0;
-  font-size: var(--text-secondary);
-  font-weight: ${tokens.fontWeights.medium};
-  color: ${tokens.colors.textTertiary};
-`;

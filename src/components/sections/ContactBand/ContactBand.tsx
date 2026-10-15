@@ -4,6 +4,7 @@ import {
   StyledContactBandInner,
   StyledContactBandTitle,
   StyledContactBandRow,
+  StyledContactBandActions,
   StyledContactBandCta,
   StyledContactEmail,
   StyledContactEmailArrow,
@@ -11,7 +12,6 @@ import {
   StyledContactNetworks,
   StyledContactNetworkItem,
   StyledContactNetwork,
-  StyledContactBandName,
 } from './ContactBand.styles';
 import { useContactBand } from './useContactBand';
 import { Icon, type IconName } from '@/components/ui/Icon';
@@ -21,7 +21,6 @@ export interface ContactBandProps {
   /** Overridable so the component can be driven from a test fixture. */
   email?: string;
   redes?: ReturnType<typeof useContactBand>['redes'];
-  nombre?: string;
 }
 
 /**
@@ -35,26 +34,32 @@ export interface ContactBandProps {
  * The heading asks the question and the section keeps the name "Contacto" as its accessible name, so a
  * band reads as what it is while the page's outline keeps one heading per section.
  */
-export const ContactBand = ({ email, redes, nombre }: ContactBandProps) => {
+export const ContactBand = ({ email, redes }: ContactBandProps) => {
   const derived = useContactBand();
 
   const direccion = email ?? derived.email;
   const redesFinales = redes ?? derived.redes;
-  const nombreFinal = nombre ?? derived.nombre;
 
   return (
     <StyledContactBand id="contact-summary" aria-label="Contacto">
       <StyledContactBandInner>
-        <StyledContactBandTitle>¿Tienes un proyecto?</StyledContactBandTitle>
+        {/* Two equal columns. The question and the button share the left one; the address owns the
+            right one, because specs/021 measured that 40px plus a 28px arrow is 566px and does not
+            fit in half a 1232px row with a 40px gap at any larger size. Stacked, the grid puts the
+            address first and the reading order still starts with the question, which is the band's
+            only heading. */}
+        <StyledContactBandRow data-testid="contact-band-row">
+          <StyledContactBandActions>
+            <StyledContactBandTitle>¿Tienes un proyecto?</StyledContactBandTitle>
 
-        <StyledContactBandRow>
-          {/* The arrow is its own element so it can be hidden, leaving the accessible name as the
-              text rather than the text plus "flecha". Every other arrow in this repository follows
-              the same rule. */}
-          <StyledContactBandCta as={Link} to="/contact">
-            ir
-            <Icon name="arrowRight" size={20} aria-hidden="true" />
-          </StyledContactBandCta>
+            {/* The arrow is its own element so it can be hidden, leaving the accessible name as the
+                text rather than the text plus "flecha". Every other arrow in this repository follows
+                the same rule. */}
+            <StyledContactBandCta as={Link} to="/contact">
+              ir
+              <Icon name="arrowRight" size={20} aria-hidden="true" />
+            </StyledContactBandCta>
+          </StyledContactBandActions>
 
           {/* No target: a mail client is not something to open in a new tab, and a blank tab that
               never fills is the worst outcome this band could produce. The networks below do open
@@ -67,7 +72,7 @@ export const ContactBand = ({ email, redes, nombre }: ContactBandProps) => {
           </StyledContactEmail>
         </StyledContactBandRow>
 
-        <StyledContactBandFooter>
+        <StyledContactBandFooter data-testid="contact-networks-row">
           {/* The list carries the name rather than a div with a role, because this repository has
               twice nested a listitem inside another and twice been caught by axe. A ul with li
               children cannot be got wrong. */}
@@ -95,8 +100,6 @@ export const ContactBand = ({ email, redes, nombre }: ContactBandProps) => {
               ))}
             </StyledContactNetworks>
           )}
-
-          <StyledContactBandName>{nombreFinal}</StyledContactBandName>
         </StyledContactBandFooter>
       </StyledContactBandInner>
     </StyledContactBand>

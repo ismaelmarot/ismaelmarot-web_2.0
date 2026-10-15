@@ -11,10 +11,10 @@ describe('HomePage', () => {
       </MemoryRouter>
     );
 
-    /* Two on purpose: specs/020's band closes with the name, so the page opens with it and ends
-       with it. getAllBy where getBy was, and the count is the assertion — one would mean the band
-       lost its closing line and the test would not notice. */
-    expect(screen.getAllByText('Ismael Marot')).toHaveLength(2);
+    /* Once, in the Hero. specs/020's band also closed with the name, which specs/021 removed at the
+       maintainer's request, so this went from two back to one. getBy is right again and getAllBy
+       would have been the thing to fix. */
+    expect(screen.getByText('Ismael Marot')).toBeInTheDocument();
     expect(screen.getByText('Web Developer')).toBeInTheDocument();
   });
 

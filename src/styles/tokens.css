@@ -122,8 +122,27 @@
      above it assume short text: `--text-display-project` is 2rem at its floor and
      ismaelmarot@hotmail.com is twenty-four characters, which overflows a 390px phone at that size.
      Fluid rather than fixed for the same reason, so the address steps down instead of wrapping
-     mid-domain or clipping. Weight 600 so it reads as a thing to press rather than as body copy. */
-  --text-display-email: clamp(1.125rem, 3.4vw, 2.25rem);      /* Contact email address - weight 600 */
+     mid-domain or clipping. Weight 600 so it reads as a thing to press rather than as body copy.
+
+     The ceiling is 2.5rem and it is arithmetic, not taste. specs/021 gives the band two equal columns
+     inside a 1232px row with a 40px gap, which is 596px each. The address is its text plus a 28px
+     arrow plus a 12px gap, and the text measures 466px at 36px, 526px at 40px and 579px at 44px:
+
+     Measured on the rendered band, so these are the real widths with the letter-spacing this link
+     carries rather than an estimate:
+
+       36px -> 490 used of 596, fits
+       40px -> 548 used of 596, fits with 48px to spare
+       44px -> 599 used of 596, over by 3
+
+     The tightest case is not desktop. At 768px the column is 340px and the address uses 333 of it at
+     26px, leaving 7px — which is why the address is fluid and this ceiling only governs the widest
+     viewport.
+
+     So 40px is the largest this can be while the arrow still fits beside it, and the 30px margin is
+     also the tolerance for a slightly longer address. A longer address needs a smaller ceiling, not a
+     wider column. */
+  --text-display-email: clamp(1.125rem, 3.4vw, 2.5rem);       /* Contact email address - weight 600 */
   --text-card-body: 1.0625rem;                               /* Project description - weight 400 */
 
   /* Font Weights - Only 4 weights permitted */
