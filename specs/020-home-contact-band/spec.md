@@ -309,3 +309,39 @@ The alternative was keeping `'Contacto'` as the visible heading and demoting the
 which would have left the test untouched at the cost of a band whose heading does not say what the band
 is for. The band keeps `aria-label="Contacto"` either way, so the section's name is unchanged for anything
 navigating by region.
+### Amendment 1 - This specification said the address would be the largest thing in the band, and it shipped smaller than the question
+
+**Added by**: `specs/021-contact-band-proportions`, 2026-10-15, after the maintainer reviewed the
+deployed band.
+
+**The intent in this document was right and the implementation did not deliver it.** The Assumptions
+section says:
+
+> **The address is the call to action**, and it is therefore the largest thing in the band.
+
+Measured on the deployed build: the question rendered at **72px** and the address at **36px**. That is the
+inverse of what this specification required, and a reader who opens this file today would reasonably
+believe the hierarchy had been settled when it had been inverted.
+
+**Why it happened, because the reason generalises.** The address's size was chosen deliberately and with
+numbers: `--text-display-project` starts at 2rem and `ismaelmarot@hotmail.com` is twenty-four
+characters, so the token was written to fit a phone. The question's size was left on whatever token it
+already had. **Neither value was ever compared against the other**, so a deliberate, measured choice and an
+inherited default ended up side by side with the default two times the size of the choice.
+
+`specs/021` fixes it and measures both, and this amendment exists so that the sentence at the top of this
+section is not taken as a claim about what shipped. It describes the intent; the intent was not met until
+the following day.
+
+### Amendment 2 - What shipped in `specs/021`, so this document is not read as the band's current design
+
+**Added by**: `specs/021`, 2026-10-15.
+
+This document describes the band's structure, its markup and its accessible names, all of which are still
+true. Three things about its presentation are superseded and should not be read here:
+
+- **The question's size.** `--text-display-section`, 72px at desktop, became `--text-large-subtitle`,
+  28px, because the display in this band is the address.
+- **The name and the divider.** This document's layout shows the networks and the owner's name sharing a
+  bottom line under a rule. Both are gone. The networks alone remain.
+- **The colour.** Withdrawn in Amendment 1 here and not reinstated by `specs/021`.
