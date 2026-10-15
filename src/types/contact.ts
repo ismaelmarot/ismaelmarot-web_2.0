@@ -13,15 +13,23 @@ export type ContactType =
   | 'github'
   | 'linkedin'
   | 'twitter'
+  | 'facebook'
+  | 'instagram'
   | 'website'
   | 'other';
 
+/* `facebook` and `instagram` were added by specs/020 so that adding those two networks is a
+   configuration change rather than a code change. Neither has a URL yet, and a mark whose link
+   resolves to a profile that may not exist is a broken link, so neither is in `site-config.ts`. The
+   mappings below exist so that when the two entries arrive there is nothing left to write. */
 export function getContactTypeIcon(type: ContactType): string {
   const icons: Record<ContactType, string> = {
     email: 'mail',
     github: 'github',
     linkedin: 'linkedin',
     twitter: 'twitter',
+    facebook: 'facebook',
+    instagram: 'instagram',
     website: 'globe',
     other: 'link',
   };
@@ -35,6 +43,8 @@ export function getContactHref(method: ContactMethod): string {
     case 'github':
     case 'linkedin':
     case 'twitter':
+    case 'facebook':
+    case 'instagram':
     case 'website':
     case 'other':
       return method.value.startsWith('http') ? method.value : `https://${method.value}`;

@@ -86,6 +86,8 @@ export const tokens = {
     displayHero: 'var(--text-display-hero)',
     displaySection: 'var(--text-display-section)',
     displayProject: 'var(--text-display-project)',
+    // specs/020. The contact band's email, which is the band's subject rather than a heading.
+    displayEmail: 'var(--text-display-email)',
     largeSubtitle: 'var(--text-large-subtitle)',
     body: 'var(--text-body)',
     secondary: 'var(--text-secondary)',

@@ -117,6 +117,13 @@
      forcing the action onto its own line, and the body steps up one notch from
      --text-body because 16px reads small across an 800px card. */
   --text-card-title: clamp(1.75rem, 4vw, 3rem);              /* Project name - weight 600 */
+  /* Contact band: the email address, which is the band's subject and the largest thing on it.
+     Its own step because it is a fixed, known string rather than a heading, and the display steps
+     above it assume short text: `--text-display-project` is 2rem at its floor and
+     ismaelmarot@hotmail.com is twenty-four characters, which overflows a 390px phone at that size.
+     Fluid rather than fixed for the same reason, so the address steps down instead of wrapping
+     mid-domain or clipping. Weight 600 so it reads as a thing to press rather than as body copy. */
+  --text-display-email: clamp(1.125rem, 3.4vw, 2.25rem);      /* Contact email address - weight 600 */
   --text-card-body: 1.0625rem;                               /* Project description - weight 400 */
 
   /* Font Weights - Only 4 weights permitted */

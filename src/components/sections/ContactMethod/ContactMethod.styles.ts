@@ -40,6 +40,23 @@ const surfaces: Record<ContactType, RuleSet<object>> = {
       var(--brand-linkedin-to) 100%
     );
   `,
+  // facebook and instagram have no brand surface of their own here yet, for the same reason as
+  // the three below: a gradient that was picked before the network had a URL to point at would be a
+  // colour committed for a destination nobody has. They take the neutral violet until they do.
+  facebook: css`
+    background-image: linear-gradient(
+      155deg,
+      var(--brand-email-from) 0%,
+      var(--brand-email-to) 100%
+    );
+  `,
+  instagram: css`
+    background-image: linear-gradient(
+      155deg,
+      var(--brand-email-from) 0%,
+      var(--brand-email-to) 100%
+    );
+  `,
   // twitter, website and other have no brand surface of their own here, so they take the
   // neutral violet rather than inheriting the page background and reading as unstyled.
   twitter: css`

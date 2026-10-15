@@ -2,6 +2,7 @@ import { Hero } from '@/components/sections/Hero';
 import { SectionSummary } from '@/components/sections/SectionSummary';
 import { TechnologyMarquee } from '@/components/sections/TechnologyMarquee';
 import { ProjectIconStrip } from '@/components/sections/ProjectIconStrip';
+import { ContactBand } from '@/components/sections/ContactBand';
 import { siteConfig } from '@/data/site-config';
 import { StyledHomePage } from './Home.styles';
 
@@ -50,14 +51,12 @@ export const HomePage = () => {
         ctaHref="/about"
         background="muted"
       />
-      <SectionSummary
-        id="contact-summary"
-        title="Contacto"
-        description="¿Tienes un proyecto en mente o quieres que trabajemos juntos? Estoy a un mensaje de distancia."
-        ctaLabel="Contactar"
-        ctaHref="/contact"
-        background="default"
-      />
+      {/* The closing band is not a SectionSummary. specs/020: it carries the address as its
+          subject, at display size, as one clickable link with a diagonal arrow, and the shared
+          band has no slot for any of that. It keeps this band's id and its accessible name, which
+          the browser suite and the region outline both depend on, and it keeps the same shell
+          values, so the page's rhythm is unchanged. */}
+      <ContactBand />
     </StyledHomePage>
   );
 };

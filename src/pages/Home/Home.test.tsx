@@ -11,7 +11,10 @@ describe('HomePage', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Ismael Marot')).toBeInTheDocument();
+    /* Two on purpose: specs/020's band closes with the name, so the page opens with it and ends
+       with it. getAllBy where getBy was, and the count is the assertion — one would mean the band
+       lost its closing line and the test would not notice. */
+    expect(screen.getAllByText('Ismael Marot')).toHaveLength(2);
     expect(screen.getByText('Web Developer')).toBeInTheDocument();
   });
 
@@ -25,7 +28,11 @@ describe('HomePage', () => {
     expect(screen.getByText('Sobre mí')).toBeInTheDocument();
     expect(screen.getByText('Proyectos')).toBeInTheDocument();
     expect(screen.getByText('Tecnologías')).toBeInTheDocument();
-    expect(screen.getByText('Contacto')).toBeInTheDocument();
+
+    /* The contact band asks its question rather than saying its category, so "Contacto" is now the
+       section's accessible name and not text on the page. Asserted as the region, because that is
+       where the name moved to and a band that lost it would take its name out of the outline. */
+    expect(screen.getByRole('region', { name: 'Contacto' })).toBeInTheDocument();
   });
 
   // The order is deliberate: the work, then the tools, then the person, then how to reach them.
@@ -37,11 +44,15 @@ describe('HomePage', () => {
       </MemoryRouter>
     );
 
+    /* The last heading is now the question specs/020's band asks rather than the word "Contacto".
+       The section still names itself "Contacto" through its accessible label, so nothing navigating
+       by region lost its name; only the visible heading changed. The order is what this test is
+       for and it is unchanged. */
     expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
       'Proyectos',
       'Tecnologías',
       'Sobre mí',
-      'Contacto',
+      '¿Tienes un proyecto?',
     ]);
   });
 
@@ -81,7 +92,12 @@ describe('HomePage', () => {
     expect(screen.getByText('Conocé más')).toBeInTheDocument();
     expect(screen.getByText('Ver proyectos')).toBeInTheDocument();
     expect(screen.getByText('Ver tecnologías')).toBeInTheDocument();
-    // "Contactar" labels both the hero CTA and the contact summary CTA
-    expect(screen.getAllByText('Contactar')).toHaveLength(2);
+
+    /* "Contactar" used to label two things: the Hero's own call to action and the closing band's
+       pill. specs/020 replaced that pill with "ir →" and gave the band the address as its subject,
+       so "Contactar" is now the Hero's alone — and the band's route to the same page is the link the
+       Hero already had. Asserted once, because the count is what changed. */
+    expect(screen.getAllByText('Contactar')).toHaveLength(1);
+    expect(screen.getByText('ir')).toBeInTheDocument();
   });
 });
