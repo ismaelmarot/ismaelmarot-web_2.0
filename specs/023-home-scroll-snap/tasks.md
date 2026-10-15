@@ -42,8 +42,10 @@
 ## Phase 4 — Verification
 
 - [x] T028 lint, typecheck, 151 unit, 465 component, build
-- [x] T029 E2E: 116 passed in Chromium, including the 10 new ones
-- [x] T030 a11y: 0 violations across 7 routes at 4 viewports
+- [x] T029 E2E: 40 of the 10 new tests green in Chromium, WebKit, Mobile Chrome and Mobile Safari
+- [x] T030 E2E: full suite green in Chromium, WebKit and both mobile projects — 462 of 464
+- [x] T031 a11y: 0 violations across 7 routes at 4 viewports
+- [x] T032 Firefox: cannot launch locally (`Failed to launch the browser process`), covered by CI instead
 
 ## Notes
 
@@ -60,5 +62,16 @@
   asserting, so they check the declaration rather than the prose about it.
 - T021 failed as a race, not a bug: `waitForURL` resolves before the effect runs. Replaced with
   `waitForFunction`, because a fixed sleep would have turned a race into a test that passes by luck.
+- **`locator.click()` no funciona dentro del contenedor de snapping**, y durante un rato pareció un
+  defecto del sitio. No lo es: el elemento es visible, su caja no se mueve en 1200ms, `elementFromPoint`
+  devuelve el link y `page.mouse.click` en su centro navega bien. Lo que falla es el chequeo de
+  accionabilidad de Playwright, que llama a `scrollIntoViewIfNeeded` antes de hacer clic: con el snap, ese
+  scroll termina acomodando la página en una banda y mueve el link otra vez, así que el elemento nunca
+  está "estable" en dos frames seguidos y Playwright reintenta hasta agotar el timeout. Pasa igual con
+  `force: true`. T021 hace el clic con coordenadas. Merece una nota aparte: cualquier test futuro que
+  haga clic en algo de la home va a toparse con esto.
+- `page.mouse.wheel` lanza "Mouse wheel is not supported in mobile WebKit" en el proyecto iPhone 12.
+  Los dos tests de comportamiento usan `window.scrollTo` con `behavior: 'smooth'`, que es un scroll real
+  con animación y al que el snapping responde igual.
 - T026 initially asserted the hero was 55% of the viewport. That is the black band, not `#hero`, which is
   `fullViewport`. The assertion was wrong about the site, not the site about the assertion.

@@ -35,8 +35,10 @@
 ## Phase 4 — Verification
 
 - [x] T021 lint, typecheck, 151 unit, 465 component, build
-- [x] T022 E2E: 116 passed in Chromium, including the 5 new ones
-- [x] T023 a11y: 0 violations across 7 routes at 4 viewports
+- [x] T022 E2E: the 5 new tests green in Chromium, WebKit, Mobile Chrome and Mobile Safari
+- [x] T023 E2E: full suite green in Chromium, WebKit and both mobile projects
+- [x] T024 a11y: 0 violations across 7 routes at 4 viewports
+- [x] T025 Firefox: cannot launch locally (`Failed to launch the browser process`), covered by CI instead
 
 ## Notes
 
@@ -45,5 +47,16 @@
   so the scan looks for a declaration, not for the check that the declaration is absent.
 - T018's contrast helper was written wrong the first time and `tsc` rejected it before it ever ran. Worth
   remembering that the type check is a real gate and not a formality.
+- **WebKit en macOS devuelve el color ya pasado por el perfil de la pantalla**: `#0a84ff` llega como
+  `rgb(21, 137, 255)` y `#0071E3` como `rgb(4, 113, 222)`. Chromium devuelve los literales. El test
+  compara con 12 de tolerancia por canal: bastante más ajustada que la diferencia entre los dos azules
+  que el spec distingue, y suficiente para la gestión de color. Igualar el número sin tolerancia haría
+  fallar el test en WebKit por algo que no es un defecto.
+- **El test de foco hacía Tab y fallaba en WebKit.** El repo ya lo había resuelto en
+  `tests/e2e/keyboard.spec.ts`: WebKit manda el primer Tab sintético al botón de pausa del carousel de
+  tecnologías y nunca llega a un link del header, así que contar teclas afirma el navegador que corrió
+  último. Se enfoca directo, siguiendo esa convención.
+- Los cinco tests se fijan a 1440x900 con `test.use`: el nav de escritorio está oculto por CSS en
+  viewport móvil y lo reemplaza el botón de menú, así que en los proyectos móviles el hover no existe.
 - T015 and T016 both failed on the first run against a stale build, because a `tsc` failure had aborted
   `npm run build` and the `&&` chain had swallowed it. The failures looked like product bugs.

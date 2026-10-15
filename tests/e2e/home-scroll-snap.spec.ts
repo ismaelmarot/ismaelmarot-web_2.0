@@ -15,6 +15,44 @@ import type { Page } from '@playwright/test';
 
 const BANDAS = ['#hero', '#projects-summary', '#technologies-summary', '#about-summary', '#contact-summary'];
 
+/**
+ * Hace clic en un link del footer con el puntero real, en sus coordenadas.
+ *
+ * No es una comodidad ni un atajo. `locator.click()` falla en `/` y funciona en el resto de las rutas,
+ * y la causa es este spec: antes de hacer clic, Playwright llama a `scrollIntoViewIfNeeded`, y con el
+ * contenedor de snapping de specs/023 ese scroll termina de acomodar la página en una banda y mueve el
+ * link otra vez. Playwright espera que el elemento quede "estable" en dos frames seguidos, así que
+ * reintenta indefinidamente hasta agotar el timeout. Pasa también con `force: true`, porque el scroll
+ * previo ocurre igual.
+ *
+ * **No es un defecto del sitio**: el elemento es visible, su bounding box no se mueve durante 1200ms y
+ * `page.mouse.click` en su centro navega correctamente. Lo que no se puede es hacer que el chequeo de
+ * accionabilidad de unarnavegador_headless que se autoscrollea termine de asentarse, porque ahora hay
+ * un segundo agente —el snap— decidiendo dónde termina cada scroll.
+ *
+ * Por eso el clic va con coordenadas: es un clic de puntero de verdad sobre un elemento real, que además
+ * demuestra que el link es alcanzable. `dispatchEvent('click')` también funcionaría y probaría menos.
+ */
+const clickEnElPie = async (page: Page, href: string) => {
+  await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' }));
+  await page.waitForTimeout(500);
+  const box = await page.locator(`footer a[href="${href}"]`).boundingBox();
+  expect(box, `el link ${href} del footer tiene caja`).not.toBeNull();
+  await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+};
+
+/**
+ * Desplaza la página con comportamiento suave.
+ *
+ * `page.mouse.wheel` lanzaba "Mouse wheel is not supported in mobile WebKit" en el proyecto iPhone 12:
+ * es un dispositivo táctil y no hay rueda. `window.scrollTo` con `behavior: 'smooth'` produce un scroll
+ * real —con animación, no un salto— y el contenedor de snapping responde igual que a una rueda, porque
+ * el snapping se aplica a cualquier scroll que termine cerca de un punto, venga de donde venga.
+ */
+const desplazarA = async (page: Page, y: number) => {
+  await page.evaluate((top) => window.scrollTo({ top, behavior: 'smooth' }), y);
+};
+
 const snapType = (page: Page) =>
   page.evaluate(() => window.getComputedStyle(document.documentElement).getPropertyValue('scroll-snap-type'));
 
@@ -114,7 +152,10 @@ test.describe('snap de secciones en la home', () => {
     await page.waitForLoadState('networkidle');
     expect(await page.evaluate(() => document.documentElement.dataset.scrollSnap)).toBe('y');
 
-    await page.click('header nav a[href="/about"]');
+    // El nav del footer, no el del header: el del header está oculto por CSS en viewport móvil —el
+    // elemento existe pero Playwright no lo ve— y este test corre también en los tres proyectos de
+    // móvil. El del footer se ve en todos los tamaños.
+    await clickEnElPie(page, '/about');
     await page.waitForURL('**/about');
     // waitForURL resuelve antes de que corra el efecto del hook, así que se espera la condición y no un
     // tiempo fijo: dormir convierte una carrera en un test que pasa por suerte.
@@ -122,7 +163,7 @@ test.describe('snap de secciones en la home', () => {
     expect(await page.evaluate(() => document.documentElement.dataset.scrollSnap)).toBeUndefined();
     expect(await snapType(page)).toBe('none');
 
-    await page.click('header nav a[href="/"]');
+    await clickEnElPie(page, '/');
     await page.waitForURL((u) => u.pathname === '/');
     await page.waitForFunction(() => document.documentElement.dataset.scrollSnap === 'y');
     expect(await page.evaluate(() => document.documentElement.dataset.scrollSnap)).toBe('y');
@@ -153,7 +194,7 @@ test.describe('snap de secciones en la home', () => {
     );
 
     // A 30px de la frontera, dentro de la distancia de snapping pero no encima.
-    await page.mouse.wheel(0, objetivo.top! - padding - 30);
+    await desplazarA(page, objetivo.top! - padding - 30);
     await page.waitForTimeout(900);
 
     const dondeQuedo = await page.evaluate((id) => {
@@ -183,7 +224,7 @@ test.describe('snap de secciones en la home', () => {
     // A media altura de la banda. Con bandas de 100dvh, el medio de una está lo más lejos posible de
     // cualquier frontera: es el lugar donde `mandatory` no dejaría parar a nadie y `proximity` sí.
     const viewport = await page.evaluate(() => window.innerHeight);
-    await page.mouse.wheel(0, tercero.top! + viewport / 2);
+    await desplazarA(page, tercero.top! + viewport / 2);
     await page.waitForTimeout(1000);
 
     const arriba = await page.evaluate(
