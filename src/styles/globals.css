@@ -16,9 +16,30 @@ html {
   scroll-padding-top: 64px;
 }
 
+/* specs/023. The scroll container is <html>, so this is the one declaration that has to be scoped, and
+   the attribute is what scopes it: useScrollSnap sets it while the landing page is mounted and removes
+   it on unmount. Set globally it would reach every route, including /projects and its carousel.
+
+   `proximity`, not `mandatory`. The landing page's footer is 182px and is not a snap point, so under
+   `mandatory` a visitor who scrolls into it is pulled back to the last band. `proximity` also leaves a
+   hard flick, find-on-page and hash links alone.
+
+   `scroll-padding-top` above is what keeps a snapped band below the 52px header. The bands therefore do
+   NOT declare scroll-margin-top: the two would apply that offset twice. */
+html[data-scroll-snap='y'] {
+  scroll-snap-type: y proximity;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  /* Amendment 1 of specs/023. Snapping moves the viewport, which is movement, and a visitor who has asked
+     for reduced motion has not asked to be moved. Not requested by the maintainer and decided here
+     rather than left implicit — delete this block to put it back. */
+  html[data-scroll-snap='y'] {
+    scroll-snap-type: none;
   }
 }
 

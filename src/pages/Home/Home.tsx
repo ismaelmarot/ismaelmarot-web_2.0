@@ -4,9 +4,15 @@ import { TechnologyMarquee } from '@/components/sections/TechnologyMarquee';
 import { ProjectIconStrip } from '@/components/sections/ProjectIconStrip';
 import { ContactBand } from '@/components/sections/ContactBand';
 import { siteConfig } from '@/data/site-config';
+import { useScrollSnap } from '@/hooks/useScrollSnap';
 import { StyledHomePage } from './Home.styles';
 
 export const HomePage = () => {
+  /* specs/023. The only call to it: the scroll container is <html>, so the snap type has to be scoped to
+     the route, and this is the page that is the route. The five bands' `scroll-snap-align` is declared in
+     their own components and needs nothing here. */
+  useScrollSnap(true);
+
   return (
     <StyledHomePage>
       <Hero

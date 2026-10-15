@@ -170,7 +170,10 @@ describe('Header over a dark region', () => {
     // treatment is these overrides and nothing else.
     expect(css).toContain('--color-fg: #ffffff');
     expect(css).toContain('--color-text-secondary: #ffffff');
-    expect(css).toContain('--link-hover-decoration: underline');
+    // specs/022: the navigation's hover reads --color-accent, so the dark theme overrides that token
+    // rather than the underline variable it replaced. 5.76:1 on #000, which is AA; the stock #0071E3 is
+    // 4.47:1 and is not.
+    expect(css).toContain('--color-accent: #0a84ff');
   });
 
   it('stays dark while the region still reaches past the header, whatever the scroll offset', () => {
@@ -202,7 +205,7 @@ describe('Header over a dark region', () => {
     const css = cssOf(screen.getByRole('banner'));
     expect(css).toContain('background-color: var(--color-bg)');
     expect(css).toContain('border-bottom: 1px solid var(--color-border)');
-    expect(css).not.toContain('--link-hover-decoration');
+    expect(css).not.toContain('--color-accent:');
     expect(css).not.toContain('--color-fg: #ffffff');
   });
 

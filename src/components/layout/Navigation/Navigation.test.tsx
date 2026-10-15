@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { readFileSync, readdirSync } from 'node:fs';
 import { Navigation } from './Navigation';
+import { getCssForElement } from '@/test-utils/css';
 
 const mockItems = [
   { label: 'Home', href: '/' },
@@ -194,6 +196,61 @@ describe('Navigation', () => {
       // colour is covered by the browser check in specs/006-project-detail/tasks.md.
       expect(window.getComputedStyle(about).color).toBe('var(--color-accent-text)');
       expect(window.getComputedStyle(projects).color).not.toBe('var(--color-accent-text)');
+    });
+  });
+
+  // specs/022
+  describe('hover', () => {
+    const renderNav = () =>
+      render(
+        <MemoryRouter>
+          <Navigation items={mockItems} />
+        </MemoryRouter>
+      );
+
+    it('turns the accent and adds no underline', () => {
+      renderNav();
+      const css = getCssForElement(screen.getByRole('link', { name: /about/i }));
+      expect(css).toContain(':hover');
+      expect(css).toContain('color: var(--color-accent)');
+      // The underline is gone entirely rather than being switched off. A variable that resolved to its
+      // own default in every theme would be a variable with no reason to exist.
+      expect(css).not.toContain('link-hover-decoration');
+      expect(css).not.toContain('underline');
+    });
+
+    it('leaves nothing in the source that can turn a hovered link into an underlined one', () => {
+      // SC-007. The variable is gone from this component's hover, but it could still be reintroduced as
+      // a header override. Scanned across all of src rather than this one file, because the point is
+      // that no theme can bring the underline back by declaring it.
+      const offenders: string[] = [];
+      const walk = (dir: string) => {
+        for (const entry of readdirSync(dir, { withFileTypes: true })) {
+          const full = `${dir}/${entry.name}`;
+          if (entry.isDirectory()) walk(full);
+          else if (/\.(ts|tsx|css)$/.test(entry.name) && !/\.test\./.test(entry.name) && readFileSync(full, 'utf-8').includes('--link-hover-decoration')) {
+            offenders.push(full.replace(`${process.cwd()}/`, ''));
+          }
+        }
+      };
+      walk(`${process.cwd()}/src`);
+      expect(offenders).toEqual([]);
+    });
+
+    it('reads one token, so the dark theme can reach it without this component knowing', () => {
+      renderNav();
+      const css = getCssForElement(screen.getByRole('link', { name: /about/i }));
+      // --color-accent and not a literal: the header's dark theme overrides that token. A hex value
+      // here would be immune to it and would land 4.47:1 on black.
+      expect(css).toContain('var(--color-accent)');
+      expect(css).not.toMatch(/color:\s*#0-9a-f]{3,8}\s*;/i);
+    });
+
+    it('gives the resting link the same treatment it had before', () => {
+      renderNav();
+      const css = getCssForElement(screen.getByRole('link', { name: /about/i }));
+      expect(css).toContain('color: var(--color-text-secondary)');
+      expect(css).toContain('text-decoration: none');
     });
   });
 });

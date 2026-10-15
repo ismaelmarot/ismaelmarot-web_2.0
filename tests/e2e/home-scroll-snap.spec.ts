@@ -1,0 +1,258 @@
+import { test, expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
+
+/**
+ * specs/023-home-scroll-snap.
+ *
+ * `proximity` exposes no state. There is nothing to read that says "I snapped" — no class, no attribute,
+ * no event. So the only thing a test can check is the result: scroll, stop, and measure where the page
+ * came to rest. A test that asserted the CSS string would have been satisfied by a rule the browser then
+ * ignored, which is the same failure the hero-band tests were written to avoid.
+ *
+ * The measured cases are the two that tell `proximity` apart from `mandatory`: a slow stop near a band
+ * settles on it, and a hard flick across several bands is left alone.
+ */
+
+const BANDAS = ['#hero', '#projects-summary', '#technologies-summary', '#about-summary', '#contact-summary'];
+
+const snapType = (page: Page) =>
+  page.evaluate(() => window.getComputedStyle(document.documentElement).getPropertyValue('scroll-snap-type'));
+
+/**
+ * Chromium serializa `scroll-snap-type: y proximity` como `"y"` en el valor computado, porque
+ * `proximity` es la estrictez por defecto y se omite. El valor computado no distingue entonces
+ * `proximity` de `mandatory`, que es justo lo que esta prueba necesita distinguir; el valor
+ * especificado en la regla sí. Por eso se leen los dos.
+ */
+const snapRule = (page: Page) =>
+  page.evaluate(() => {
+    for (const sheet of Array.from(document.styleSheets)) {
+      let rules: CSSRuleList;
+      try {
+        rules = sheet.cssRules;
+      } catch {
+        continue;
+      }
+      for (const rule of Array.from(rules)) {
+        if (rule instanceof CSSMediaRule) {
+          const inner = Array.from(rule.cssRules).find(
+            (r) => r instanceof CSSStyleRule && r.style.getPropertyValue('scroll-snap-type')
+          );
+          if (inner instanceof CSSStyleRule) {
+            return { text: (inner as CSSStyleRule).cssText, media: rule.conditionText };
+          }
+        } else if (rule instanceof CSSStyleRule && rule.selectorText.includes('data-scroll-snap')) {
+          return { text: rule.cssText, media: null };
+        }
+      }
+    }
+    return null;
+  });
+
+const bandTops = (page: Page) =>
+  page.evaluate(
+    (selectors) =>
+      selectors.map((s) => {
+        const el = document.querySelector(s);
+        return { id: s, top: el ? el.getBoundingClientRect().top + window.scrollY : null };
+      }),
+    BANDAS
+  );
+
+test.describe('snap de secciones en la home', () => {
+  test('el tipo de snap está activo en / y es proximity, no mandatory', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    // Computado: el eje vertical está snapping. Chromium omite `proximity` por ser el default.
+    expect(await snapType(page)).toBe('y');
+
+    // La regla existe y no declara `mandatory`. La palabra `proximity` no se puede comprobar acá: el
+    // CSSOM de Chromium la omite igual que al valor computado, porque es la estrictez por defecto. Vive
+    // en el fuente, y el fuente se comprueba en src/styles/scrollSnap.test.ts. Lo que de verdad
+    // distingue una cosa de otra en el navegador es el test del flick, más abajo.
+    const regla = await snapRule(page);
+    expect(regla, 'existe una regla[data-scroll-snap]').not.toBeNull();
+    expect(regla!.text).toContain('scroll-snap-type');
+    expect(regla!.text).not.toContain('mandatory');
+  });
+
+  test('las cinco bandas son puntos de snap y el footer no', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const aligns = await page.evaluate((selectors) => {
+      const out: Record<string, string> = {};
+      for (const s of selectors) {
+        const el = document.querySelector(s);
+        out[s] = el ? window.getComputedStyle(el).getPropertyValue('scroll-snap-align') : 'MISSING';
+      }
+      const footer = document.querySelector('footer');
+      out['footer'] = footer ? window.getComputedStyle(footer).getPropertyValue('scroll-snap-align') : 'MISSING';
+      return out;
+    }, BANDAS);
+
+    for (const b of BANDAS) expect(aligns[b], `${b} es punto de snap`).toBe('start');
+    // FR-005. El footer tiene 182px y no es un punto de snap; con proximity el documento termina donde
+    // termina en lugar de devolver al visitante a la última banda.
+    expect(aligns['footer']).toBe('none');
+  });
+
+  test('no hay scroll en ninguna otra ruta', async ({ page }) => {
+    const rutas = ['/projects', '/about', '/technologies', '/contact', '/blog', '/blogging'];
+    for (const ruta of rutas) {
+      await page.goto(ruta);
+      await page.waitForLoadState('domcontentloaded');
+      // El atributo vive en <html>, así que una fuga silenciaría TODAS las rutas siguientes. Por eso se
+      // comprueba una por una y no sólo la primera.
+      expect(await snapType(page), `${ruta} no debe hacer snap`).toBe('none');
+    }
+  });
+
+  test('el atributo desaparece al navegar fuera y vuelve al volver', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    expect(await page.evaluate(() => document.documentElement.dataset.scrollSnap)).toBe('y');
+
+    await page.click('header nav a[href="/about"]');
+    await page.waitForURL('**/about');
+    // waitForURL resuelve antes de que corra el efecto del hook, así que se espera la condición y no un
+    // tiempo fijo: dormir convierte una carrera en un test que pasa por suerte.
+    await page.waitForFunction(() => document.documentElement.dataset.scrollSnap === undefined);
+    expect(await page.evaluate(() => document.documentElement.dataset.scrollSnap)).toBeUndefined();
+    expect(await snapType(page)).toBe('none');
+
+    await page.click('header nav a[href="/"]');
+    await page.waitForURL((u) => u.pathname === '/');
+    await page.waitForFunction(() => document.documentElement.dataset.scrollSnap === 'y');
+    expect(await page.evaluate(() => document.documentElement.dataset.scrollSnap)).toBe('y');
+    // `y` y no `y proximity`: Chromium omite la estrictez por defecto del valor computado.
+    expect(await snapType(page)).toBe('y');
+  });
+
+  test('con reduced motion no hay snap', async ({ page }) => {
+    // Amendment 1. No lo pidió el maintainer: se decidió acá y queda anotado para poder revertirlo.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    expect(await snapType(page)).toBe('none');
+    // El atributo sigue puesto: lo desactiva el media query, no el hook. Así una preferencia que cambia
+    // en caliente se resuelve sola sin remontar nada.
+    expect(await page.evaluate(() => document.documentElement.dataset.scrollSnap)).toBe('y');
+  });
+
+  test('un scroll lento cerca de una banda se acomoda sobre ella, debajo del header', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const tops = await bandTops(page);
+    const objetivo = tops.find((b) => b.id === '#technologies-summary')!;
+    expect(objetivo.top, '#technologies-summary está en la página').not.toBeNull();
+    const padding = await page.evaluate(
+      () => parseFloat(window.getComputedStyle(document.documentElement).scrollPaddingTop) || 0
+    );
+
+    // A 30px de la frontera, dentro de la distancia de snapping pero no encima.
+    await page.mouse.wheel(0, objetivo.top! - padding - 30);
+    await page.waitForTimeout(900);
+
+    const dondeQuedo = await page.evaluate((id) => {
+      const el = document.querySelector(id)!;
+      return { arriba: el.getBoundingClientRect().top, headerAbajo: document.querySelector('header')!.getBoundingClientRect().bottom };
+    }, '#technologies-summary');
+
+    // SC-007: a 2px, considerando el scroll-padding-top.
+    expect(Math.abs(dondeQuedo.arriba - padding)).toBeLessThanOrEqual(2);
+    // SC-009: el encabezado del header no tapa la banda.
+    expect(dondeQuedo.arriba).toBeGreaterThanOrEqual(dondeQuedo.headerAbajo - 1);
+  });
+
+  test('un flick fuerte atraviesa varias bandas y no es corregido', async ({ page }) => {
+    // SC-008, y la prueba que separa `proximity` de `mandatory`: con mandatory esto volvería a la banda
+    // más cercana. Con proximity el gesto manda.
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const tops = await bandTops(page);
+    const tercero = tops.find((b) => b.id === '#about-summary')!;
+    expect(tercero.top, '#about-summary está en la página').not.toBeNull();
+    const padding = await page.evaluate(
+      () => parseFloat(window.getComputedStyle(document.documentElement).scrollPaddingTop) || 0
+    );
+
+    // A media altura de la banda. Con bandas de 100dvh, el medio de una está lo más lejos posible de
+    // cualquier frontera: es el lugar donde `mandatory` no dejaría parar a nadie y `proximity` sí.
+    const viewport = await page.evaluate(() => window.innerHeight);
+    await page.mouse.wheel(0, tercero.top! + viewport / 2);
+    await page.waitForTimeout(1000);
+
+    const arriba = await page.evaluate(
+      (id) => document.querySelector(id)!.getBoundingClientRect().top,
+      '#about-summary'
+    );
+    // Quedó a media banda, no alineado arriba: la diferencia con el punto de reposo es de media pantalla.
+    expect(Math.abs(arriba + padding)).toBeGreaterThan(viewport * 0.3);
+  });
+
+  test('el footer es alcanzable y el documento termina ahí', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(900);
+
+    const pie = await page.evaluate(() => {
+      const footer = document.querySelector('footer')!;
+      const r = footer.getBoundingClientRect();
+      return {
+        arriba: r.top,
+        visible: r.top < window.innerHeight && r.bottom > 0,
+        scrollY: window.scrollY,
+        max: document.body.scrollHeight - window.innerHeight,
+      };
+    });
+
+    expect(pie.visible).toBe(true);
+    // Se llegó al final y no se fue rebotado hacia atrás.
+    expect(pie.scrollY).toBeGreaterThanOrEqual(pie.max - 2);
+  });
+
+  test('ninguna banda cambió de alto', async ({ page }) => {
+    // SC-010. Un snap mal hecho puede redimensionar la página sin que nada falle; se compara con las
+    // alturas que hero-band ya afirma.
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const alturas = await page.evaluate((selectors) => {
+      const alto = window.innerHeight;
+      const out: Record<string, number> = {};
+      for (const s of selectors) {
+        const el = document.querySelector(s)!;
+        out[s] = Math.round(el.getBoundingClientRect().height / alto) * 100;
+      }
+      return out;
+    }, BANDAS);
+
+    // Las cuatro de SectionSummary y el ContactBand son 100dvh. El Hero es 55dvh por diseño de specs/003.
+    expect(alturas['#projects-summary']).toBe(100);
+    expect(alturas['#technologies-summary']).toBe(100);
+    expect(alturas['#about-summary']).toBe(100);
+    expect(alturas['#contact-summary']).toBe(100);
+    // #hero también es 100dvh: `fullViewport` en la Section. El 55dvh es el StyledHeroBand, que es
+    // hermano de la sección y no el elemento que lleva id="hero".
+    expect(alturas['#hero']).toBe(100);
+  });
+
+  test('el carousel horizontal de /projects no cambió', async ({ page }) => {
+    await page.goto('/projects');
+    await page.waitForLoadState('networkidle');
+
+    const carouseles = await page.evaluate(() =>
+      [...document.querySelectorAll('[data-testid*="carousel"], .carousel, [class*="arousel"]')]
+        .map((el) => window.getComputedStyle(el).getPropertyValue('scroll-snap-type'))
+        .filter(Boolean)
+    );
+    // FR-011. Estos son contenedores propios con su propio eje; un tipo vertical en <html> no los toca.
+    for (const t of carouseles) expect(t).not.toContain('y ');
+  });
+});

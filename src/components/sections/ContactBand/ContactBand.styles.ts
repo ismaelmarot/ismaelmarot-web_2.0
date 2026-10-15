@@ -10,6 +10,8 @@ export const StyledContactBand = styled.section`
   padding-block: ${tokens.space[16]};
   min-height: 100vh; /* fallback for browsers without dynamic viewport units */
   min-height: 100dvh;
+  /* specs/023: a snap target. Landing page only. */
+  scroll-snap-align: start;
   display: grid;
   align-content: center;
   background-color: ${tokens.colors.bg};

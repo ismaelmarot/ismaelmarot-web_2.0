@@ -4,6 +4,10 @@ import { tokens } from '@/styles/tokens';
 export const StyledSectionSummary = styled.section<{ $background: 'default' | 'muted' }>`
   padding-block: ${tokens.space[16]};
   /* Full viewport height with the content centered, matching the Section primitive */
+  /* specs/023: a snap target. Inert everywhere except the landing page, which is the only place this
+     component renders, so no route check is needed. scroll-padding-top on <html> keeps the band below
+     the header; a scroll-margin-top here would apply that offset a second time. */
+  scroll-snap-align: start;
   min-height: 100vh; /* fallback for browsers without dynamic viewport units */
   min-height: 100dvh;
   display: grid;

@@ -40,6 +40,10 @@ export const StyledHeroBody = styled(Container)`
 `;
 
 export const StyledHeroSection = styled(Section)`
+  /* specs/023: the first snap target. On the section and not on the band below it, because
+     #hero is the element the header's hash links and find-on-page aim at, and a snap target that
+     is not the thing a link points at would settle in the wrong place. Landing page only. */
+  scroll-snap-align: start;
   padding-top: 0;
   padding-bottom: ${tokens.space[20]};
 

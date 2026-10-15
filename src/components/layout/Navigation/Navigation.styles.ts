@@ -60,12 +60,16 @@ export const StyledNavItem = styled.a<{ $variant?: 'header' | 'mobile' | 'footer
   transition: color ${tokens.transitions.fast};
 
   &:hover {
-    color: ${tokens.colors.textPrimary};
-    /* Defaults to none, so the light theme is untouched. The header sets it to underline only while
-       it is over a dark region, where every colour is white and the colour hover has nothing to
-       move to. */
-    text-decoration: var(--link-hover-decoration, none);
-    text-underline-offset: 4px;
+    /* The accent, in both themes, and never an underline.
+       specs/022. The hover used to be --color-text-primary, which the header's dark theme overrides to
+       white — so on the black band a hovered link went white on black and nothing moved. The underline
+       that covered for it was set by a variable in that same theme block, and it is gone.
+
+       The colour now moves in both themes, which is what makes the underline unnecessary rather than
+       merely unwanted. It moves to --color-accent, and the header's dark theme overrides that one token:
+       #0071E3 is 4.47:1 on black, which is short of AA, and #0A84FF is 3.65:1 on white, which is worse.
+       Two values, one behaviour, and both above 4.5:1 where they land. */
+    color: var(--color-accent);
   }
 
   ${({ $variant }) =>

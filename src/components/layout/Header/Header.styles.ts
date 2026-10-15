@@ -25,10 +25,17 @@ export const StyledHeader = styled.header<{
      stock values all fail: logo #1D1D1F is 1.25:1, navigation #6E6E73 is 4.14:1 and the GitHub CTA
      #0062C4 is 3.54:1.
 
-     --link-hover-decoration is the one new property: the existing hover moves a link from
-     --color-text-secondary to --color-text-primary, a subtle darkening that has nowhere to go when
-     both are white. Underline is the affordance that still works, and it defaults to none so the
-     light theme does not move by a pixel.
+     --color-accent is the other override that is not a colour swap, and it is there for the navigation's
+     hover. The hover used to move a link from --color-text-secondary to --color-text-primary, a subtle
+     darkening with nowhere to go when both are white, so the header also underlined it to have some
+     affordance. specs/022 removed both problems at once: the hover moved to --color-accent, which this
+     block now overrides so that the reaction is a change in both themes rather than none in one, and the
+     underline went with it, because a colour that moves does not need one.
+
+     Two values, not one, because arithmetic forbids a single one. Every accent in the system was tuned
+     against white: the stock --color-accent #0071E3 is 4.47:1 on black and misses AA by 0.03, and a blue
+     light enough to fix that is too light for white. #0A84FF is 5.76:1 here. The light theme is left
+     alone and keeps the accent it already had, which is 4.70:1 on white.
 
      The mobile menu is portaled to document.body, outside this subtree, so it keeps its white panel
      and dark text without any of this reaching it. */
@@ -43,11 +50,11 @@ export const StyledHeader = styled.header<{
       --color-fg-muted: #e8e8ed;
       --color-text-secondary: #ffffff;
       --color-text-primary: #ffffff;
+      --color-accent: #0a84ff;
       --color-accent-text: #ffffff;
       --color-accent-text-hover: #ffffff;
       --color-bg-muted: rgba(255, 255, 255, 0.14);
       --color-border: rgba(255, 255, 255, 0.24);
-      --link-hover-decoration: underline;
     `}
 
   ${({ $transparent, $isScrolled, $overDark }) =>
