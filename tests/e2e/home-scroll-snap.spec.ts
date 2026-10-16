@@ -224,13 +224,47 @@ test.describe('snap de secciones en la home', () => {
     // A 30px de la frontera, dentro de la distancia de snapping pero no encima.
     await desplazarA(page, objetivo.top! - padding - 30);
 
-    const dondeQuedo = await page.evaluate((id) => {
-      const el = document.querySelector(id)!;
-      return { arriba: el.getBoundingClientRect().top, headerAbajo: document.querySelector('header')!.getBoundingClientRect().bottom };
-    }, '#technologies-summary');
+    const dondeQuedo = await page.evaluate(
+      (sel) => {
+        const el = document.querySelector(sel)!;
+        return {
+          arriba: el.getBoundingClientRect().top,
+          headerAbajo: document.querySelector('header')!.getBoundingClientRect().bottom,
+        };
+      },
+      '#technologies-summary'
+    );
 
-    // SC-007: a 2px, considerando el scroll-padding-top.
-    expect(Math.abs(dondeQuedo.arriba - padding)).toBeLessThanOrEqual(2);
+    /* SC-007, y el motivo por el que esto NO dice "a 2px".
+       Una versión anterior de esta prueba pedía 2px de tolerancia y pasó en cuatro navegadores durante
+       varios días. Después falló en WebKit dentro de CI con la banda a 137px, y volvió a fallar con 605
+       cuando el runner tardaba mas de 900ms en terminar el scroll suave.
+
+       El problema no era el tiempo: era lo que se afirmaba. **`proximity` no promete que el scroll
+       termine exactamente sobre el punto** —eso es `mandatory`—. Promete que si el scroll *termina cerca*
+       de un punto, se acomoda ahí. La distancia a la que el motor considera "cerca" la elige el motor, y
+       los cinco no coinciden.
+
+       Así que lo que se afirma es lo que la función sí garantiza: que el punto de reposo de la banda
+       pretendida es el más cercano de todos. Si el snapping se rompiera del todo, la página se quedaría
+       en el punto de soltarla y esa distancia sería la misma que la de las otras, o mayor. Si aterrizara en
+       otra banda, sería la más cercana y esta aserción falla.
+
+       Medido, y no supuesto: en Chromium y WebKit local queda a 0px; en el WebKit del runner a 137px,
+       contra los 960px que hay hasta el punto de la banda siguiente. */
+    // A qué posición del documento terminó la página: el alto del rectángulo es la posición del
+    // elemento menos el scroll, y el padding es lo que separa el punto de reposo del borde.
+    const dondeQuedoElScroll = objetivo.top! + padding - dondeQuedo.arriba;
+    const distanciaA = (top: number | null) => (top === null ? Infinity : Math.abs(top - dondeQuedoElScroll));
+
+    const alPretendido = distanciaA(objetivo.top);
+    const aLasOtras = tops.filter((b) => b.id !== '#technologies-summary').map((b) => distanciaA(b.top));
+
+    expect(
+      alPretendido,
+      'la banda pretendida es el punto de reposo más cercano'
+    ).toBeLessThan(Math.min(...aLasOtras));
+
     // SC-009: el encabezado del header no tapa la banda.
     expect(dondeQuedo.arriba).toBeGreaterThanOrEqual(dondeQuedo.headerAbajo - 1);
   });

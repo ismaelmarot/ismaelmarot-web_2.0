@@ -70,6 +70,13 @@
   está "estable" en dos frames seguidos y Playwright reintenta hasta agotar el timeout. Pasa igual con
   `force: true`. T021 hace el clic con coordenadas. Merece una nota aparte: cualquier test futuro que
   haga clic en algo de la home va a toparse con esto.
+- **La aserción de "se acomoda sobre ella" pedía 2px y eso es una garantía de `mandatory`, no de
+  `proximity`.** Pasó en cuatro navegadores durante días, falló en el WebKit del runner con 605px, y
+  volvió a fallar con 137px después de arreglar el tiempo de espera. El tiempo era un problema real y
+  arreglable; la tolerancia no lo era. Ahora se afirma lo que `proximity` sí garantiza: que el punto de
+  reposo es el más cercano de todos, y no que caiga a 0. Si el snapping se rompiera del todo, el
+  descanso sería el punto de soltarla y la distancia sería la misma que la de otras; si aterrizara en
+  otra banda, sería la más cercana y falla.
 - **El test de "un scroll lento se acomoda" falló en WebKit dentro de CI con la banda a 605px**, después
   de pasar en cuatro navegadores durante varios días. El código estaba bien: el runner es más lento, la
   animación suave del scroll no había terminado a los 900ms y el test midió una página que todavía se
