@@ -6,6 +6,8 @@ export interface UseContactBandReturn {
   email: string;
   /** The networks, in display order, with anything that has no destination dropped. */
   redes: ContactMethod[];
+  /** specs/025: what follows the question. From the configuration so it is copy, not markup. */
+  tagline: string;
 }
 
 /**
@@ -32,5 +34,6 @@ export function useContactBand(): UseContactBandReturn {
   return {
     email: siteConfig.email,
     redes,
+    tagline: siteConfig.contactTagline,
   };
 }

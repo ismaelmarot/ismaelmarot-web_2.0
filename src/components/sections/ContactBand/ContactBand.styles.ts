@@ -21,7 +21,13 @@ export const StyledContactBand = styled.section`
   }
 `;
 
+/* A flex column because the band's own button is aligned with align-self, and align-self does nothing
+   in a block container. The row and the copy above it set their own widths, so making this a flex column
+   changes nothing about them. */
 export const StyledContactBandInner = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   max-width: ${tokens.containers.xl};
   width: 100%;
   margin-inline: auto;
@@ -58,20 +64,40 @@ export const StyledContactBandTitle = styled.h2`
   max-width: 18ch;
 `;
 
-/* Two columns above the fold and one below it. `align-items: end` puts the address's baseline and the
-   link's baseline near each other rather than centring two boxes of different heights against each
-   other, which is what a visitor comparing them actually sees. */
-/* Two equal columns, which is the requirement: the address has half the width to itself and the
-   question and the button share the other half. The gap is 40px, so each column is (1232 - 40) / 2 =
-   596px, and the token's comment carries the arithmetic that decides the address's ceiling.
+/* specs/025: what happens after the question. One step below the question and two below the address,
+   because it is neither of them: the question asks and this answers, and the address is the thing being
+   asked about. A paragraph and not a heading, so the band keeps exactly one level-two heading. */
+export const StyledContactBandDescription = styled.p`
+  margin: 0;
+  font-size: var(--text-secondary);
+  font-weight: ${tokens.fontWeights.normal};
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+  color: ${tokens.colors.textTertiary};
+  max-width: 46ch;
+`;
 
-   Stacked, the address comes first because it is the subject. `order` rather than a second copy of the
-   markup, so the two elements exist once and the desktop and mobile arrangements cannot disagree. */
+/* The top row: the networks on the left and the address on the right.
+   `auto 1fr`, and that is specs/025's central decision. `1fr 1fr` would split the row in half and hand
+   the address 596px at 1440 -- the 596px that specs/021 measured a 44px address against and found 3px
+   too wide. The token has since gone to 56px, which needs 711.
+
+   `auto 1fr` sizes the networks to what they are: four 44px marks and three gaps, about 230px. The
+   address then takes the rest -- roughly 960 at 1440 and 498 at 768, against the 711 and 393 that
+   --text-display-project needs. **The arrangement change is what made the size change possible**, and
+   not the other way round.
+
+   `align-items: center` because the network marks are 44px squares and the address is a line of text
+   whose height now depends on its size. Centring keeps them looking related at any of them. */
 export const StyledContactBandRow = styled.div`
+  /* specs/025: raised above the question by CSS so the reading order can stay the other way round.
+     Without it the drawing would need the markup reordered, and the page's outline would start with
+     four social links instead of with the question that says what the section is. */
+  order: -1;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: auto 1fr;
   align-items: center;
-  gap: ${tokens.space[6]} ${tokens.space[10]};
+  gap: ${tokens.space[6]} ${tokens.space[8]};
 
   @media (max-width: 767px) {
     grid-template-columns: 1fr;
@@ -79,12 +105,17 @@ export const StyledContactBandRow = styled.div`
   }
 `;
 
-/* The half that carries the question and the route to the contact page. */
-export const StyledContactBandActions = styled.div`
+/* The question and the sentence under it. A column, so the button can sit beneath both and still
+   align right, which is the arrangement the drawing specifies. */
+export const StyledContactBandCopy = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: ${tokens.space[6]};
+  gap: ${tokens.space[2]};
+  margin-top: ${tokens.space[10]};
+
+  @media (max-width: 767px) {
+    margin-top: ${tokens.space[8]};
+  }
 `;
 
 /* The band's own route to the contact page, and the one thing in the band shaped like a control.
@@ -98,7 +129,11 @@ export const StyledContactBandActions = styled.div`
 export const StyledContactBandCta = styled.a`
   display: inline-flex;
   align-items: center;
+  /* specs/025: aligned right, because the drawing indents it. align-self rather than
+     margin-left:auto so the rule reads as an alignment and reversing it is one declaration. */
+  align-self: flex-end;
   gap: ${tokens.space[2]};
+  margin-top: ${tokens.space[6]};
   padding: ${tokens.space[3]} ${tokens.space[6]};
   font-size: var(--text-body);
   font-weight: ${tokens.fontWeights.semibold};
@@ -112,6 +147,12 @@ export const StyledContactBandCta = styled.a`
   &:hover {
     transform: translateY(-1px);
     opacity: 0.88;
+  }
+
+  /* On a phone the band's copy fills the width, and a right-aligned pill sits at the far edge of a
+     thumb. Left there, where the text above it starts. */
+  @media (max-width: 767px) {
+    align-self: flex-start;
   }
 
   &:focus-visible {
@@ -178,21 +219,8 @@ export const StyledContactEmailArrow = styled.span`
   color: currentColor;
 `;
 
-/* The networks, alone. The divider above them and the owner's name beside them were both removed by
-   specs/021; what is left is a row of marks belonging to the address above it rather than a footer of
-   its own. */
-export const StyledContactBandFooter = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: ${tokens.space[4]};
-  margin-top: ${tokens.space[10]};
-
-  @media (max-width: 767px) {
-    margin-top: ${tokens.space[8]};
-  }
-`;
-
+/* The networks. They moved into the top row beside the address in specs/025, so this no longer carries
+   a margin of its own — the row owns the space now. */
 export const StyledContactNetworks = styled.ul`
   display: flex;
   align-items: center;

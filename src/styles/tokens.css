@@ -118,31 +118,31 @@
      --text-body because 16px reads small across an 800px card. */
   --text-card-title: clamp(1.75rem, 4vw, 3rem);              /* Project name - weight 600 */
   /* Contact band: the email address, which is the band's subject and the largest thing on it.
-     Its own step because it is a fixed, known string rather than a heading, and the display steps
-     above it assume short text: `--text-display-project` is 2rem at its floor and
-     ismaelmarot@hotmail.com is twenty-four characters, which overflows a 390px phone at that size.
-     Fluid rather than fixed for the same reason, so the address steps down instead of wrapping
-     mid-domain or clipping. Weight 600 so it reads as a thing to press rather than as body copy.
+     specs/025 set it to the same token the Hero's "Web Developer" phase uses, so the band ends the
+     page at the scale the page starts. Measured, because applying that token unchanged does not fit:
 
-     The ceiling is 2.5rem and it is arithmetic, not taste. specs/021 gives the band two equal columns
-     inside a 1232px row with a 40px gap, which is 596px each. The address is its text plus a 28px
-     arrow plus a 12px gap, and the text measures 466px at 36px, 526px at 40px and 579px at 44px:
+     ismaelmarot@hotmail.com in Inter 600 with the -0.01em this link carries, on the rendered page:
 
-     Measured on the rendered band, so these are the real widths with the letter-spacing this link
-     carries rather than an estimate:
+       20px -> 254     26px -> 330     40px -> 508
+       22px -> 279     28px -> 356     56px -> 711
+       24px -> 305     32px -> 406
 
-       36px -> 490 used of 596, fits
-       40px -> 548 used of 596, fits with 48px to spare
-       44px -> 599 used of 596, over by 3
+     --text-display-project is clamp(2rem, 4vw, 3.5rem): 56px at 1440, 31px at 768, and a 32px floor
+     below that. Above 768 it fits, because the requested layout gives the address a column rather than
+     half of one -- the four network marks are 44px each and need about 230, so `auto 1fr` leaves the
+     address roughly 960 at 1440 and 498 at 768, against the 711 and 393 the size needs. That is the
+     whole reason the arrangement change made the size change possible: specs/021 capped this at 40px
+     precisely because the address then shared a 596px column with the question, and 44px overflowed it
+     by 3.
 
-     The tightest case is not desktop. At 768px the column is 340px and the address uses 333 of it at
-     26px, leaving 7px — which is why the address is fluid and this ceiling only governs the widest
-     viewport.
+     Below 768 the column is the full width and there is nothing to widen. The mobile step is fluid
+     rather than fixed because two viewports have different room and the address has one length: a flat
+     26px fits 390 with 28px to spare and overflows 320 by 42. So 6.6vw gives 22px at 320 (279 used of
+     288) and 25.7px at 390 (326 of 358), and both fit on one line.
 
-     So 40px is the largest this can be while the arrow still fits beside it, and the 30px margin is
-     also the tolerance for a slightly longer address. A longer address needs a smaller ceiling, not a
-     wider column. */
-  --text-display-email: clamp(1.125rem, 3.4vw, 2.5rem);       /* Contact email address - weight 600 */
+     The ceiling now belongs to the Hero's token rather than to this one. A longer address needs a
+     smaller --text-display-project, not a wider column, and nothing detects the change. */
+  --text-display-email: var(--text-display-project);
   --text-card-body: 1.0625rem;                               /* Project description - weight 400 */
 
   /* Font Weights - Only 4 weights permitted */
@@ -228,6 +228,30 @@
   --container-lg: 1024px;
   --container-xl: 1280px;
   --container-2xl: 1536px;
+}
+
+/* specs/025 — the contact address on a narrow screen.
+   `--text-display-email` inherits the Hero's token above 768px, where the band gives the address a
+   column wide enough for it. Below 768 the column is the full width and nothing can be widened.
+
+   The limit is not the address on its own. The link holds the address, a 28px arrow and a 12px gap, and
+   all three have to fit. Measured on the rendered band, binary-searching the largest size that still
+   renders on one line:
+
+     320px -> 288 column -> 19.5px is the ceiling
+     360px -> 328 column -> 22.7px
+     390px -> 358 column -> 25px
+     430px -> 398 column -> 28.2px
+
+   Fluid rather than fixed because the column has fixed padding and the address has one length, so the
+   two do not scale together. 5.9vw gives 18.9px at 320, 23px at 390 and sits under every one of those
+   ceilings. The ceiling of 1.5rem is deliberate headroom: at 430 the real limit is 28.2 and this stops
+   at 24, because a token that exactly fills its column at one width is one width from wrapping at the
+   next. */
+@media (max-width: 767px) {
+  :root {
+    --text-display-email: clamp(1.125rem, 5.9vw, 1.5rem);
+  }
 }
 
 /* Reduced motion - zeros all transition/duration variables */

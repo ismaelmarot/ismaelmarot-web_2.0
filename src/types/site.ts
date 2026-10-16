@@ -14,6 +14,8 @@ export interface SiteConfig {
   tagline: string;
   aboutText: string;
   email: string;
+  /** specs/025: the sentence under the closing question. Copy, so it lives with the rest of it. */
+  contactTagline: string;
   githubUsername: string;
   socialLinks: ContactMethod[];
   seo: SEOConfig;

@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ContactBand } from './ContactBand';
@@ -58,6 +59,11 @@ describe('ContactBand', () => {
       // generated names, so anything asserted on a class would pass no matter what the CSS says. The
       // token is the assertion, because a literal would look identical at one viewport and not at the
       // other — which is the reason the token exists.
+      //
+      // specs/025 raised what that token resolves to and left this assertion untouched, which is the
+      // point of asserting a reference instead of a value. The token now reads
+      // `var(--text-display-project)` — the Hero's — with a step down below 768px. A test that had
+      // asserted `40px` would have needed rewriting; one that asserted the reference did not.
       expect(getCssForElement(direccion)).toContain('font-size: var(--text-display-email)');
     });
 
@@ -181,7 +187,11 @@ describe('ContactBand', () => {
       // Read from the injected stylesheet rather than guessed at: border-top is what the divider was,
       // and asserting on a class name would pass whatever the CSS says, because styled-components emits
       // generated names.
-      const css = getCssForElement(screen.getByTestId('contact-networks-row'));
+      //
+      // specs/025 took these marks out of a row of their own and into the top row beside the address,
+      // so the container they used to have is gone. The list is read directly: a divider could equally
+      // be drawn on it, and the assertion is about the absence of one rather than about a wrapper.
+      const css = getCssForElement(screen.getByRole('list', { name: 'Redes' }));
       expect(css).not.toContain('border-top');
     });
   });
@@ -222,14 +232,21 @@ describe('ContactBand', () => {
       );
     });
 
-    it('la fila usa dos columnas iguales en desktop y una sola en móvil', () => {
+    it('la fila usa `auto 1fr` en desktop y una sola columna en móvil', () => {
       renderBand();
 
       const css = getCssForElement(screen.getByTestId('contact-band-row'));
 
-      // The split is the requirement. 1fr 1fr rather than a fixed px, so it holds at any container.
-      expect(css).toContain('grid-template-columns: 1fr 1fr');
-      // And it collapses below 768px, where the address comes first because it is the subject.
+      // `auto 1fr`, and specs/025 changed this from `1fr 1fr` deliberately rather than for looks.
+      //
+      // Splitting the row in half gave the address 596px at 1440, which is the number specs/021 measured
+      // a 44px address against and found 3px too wide. Letting the networks take only what they need
+      // — four 44px marks and three gaps, about 230px — leaves the address roughly 960, and 56px needs
+      // 711. **The arrangement is what made the size possible**, so this assertion is load-bearing: a
+      // `1fr 1fr` here would pass every other test and put the address back over the edge.
+      expect(css).toContain('grid-template-columns: auto 1fr');
+      expect(css).not.toContain('grid-template-columns: 1fr 1fr');
+      // And it collapses below 768px, where the address takes the full width and steps its size down.
       expect(css).toContain('@media (max-width: 767px)');
     });
 
@@ -280,6 +297,76 @@ describe('ContactBand', () => {
 
       expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('¿Tienes un proyecto?');
       expect(screen.getAllByRole('heading')).toHaveLength(1);
+    });
+  });
+
+  describe('specs/025 - composicion', () => {
+    it('la frase sale de la configuracion y no del componente', () => {
+      renderBand();
+
+      expect(screen.getByTestId('contact-tagline')).toHaveTextContent(siteConfig.contactTagline);
+      // Y la props la puede pisar, igual que el mail, para montar la banda desde un fixture.
+      renderBand({ tagline: 'otra frase' });
+      expect(screen.getAllByTestId('contact-tagline')[1]).toHaveTextContent('otra frase');
+    });
+
+    it('la frase es un parrafo y no un encabezado', () => {
+      renderBand();
+
+      // La banda tiene una sola voz: si la frase fuera un h2 más, el esquema de la página ganaría una
+      // segunda pregunta y el contorno dejaría de decir qué es cada sección.
+      expect(screen.getByTestId('contact-tagline').tagName).toBe('P');
+      expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(1);
+    });
+
+    it('las redes van antes que el mail en el DOM', () => {
+      renderBand({ redes: [red()] });
+
+      // Por el orden en que getAllByRole los devuelve, que es el orden del documento. Es la forma que
+      // este repositorio usa para lo mismo en ProjectIconStrip, y la razón de no alcanzar el nodo:
+      // el orden que importa es el que ve un lector de pantalla, y Testing Library ya lo entrega.
+      //
+      // El nombre se lee de aria-label y no del texto porque las marcas son iconos: el texto está
+      // vacío y el nombre vive en el atributo, que es justo lo que un lector de pantalla anuncia.
+      const enlaces = screen.getAllByRole('link');
+      const indiceDe = (nombre: RegExp) =>
+        enlaces.findIndex((a) => nombre.test(a.getAttribute('aria-label') ?? a.textContent ?? ''));
+
+      const github = indiceDe(/GitHub/i);
+      const mail = indiceDe(/ismaelmarot@hotmail/);
+
+      expect(github, 'el fixture trae una red llamada GitHub').toBeGreaterThanOrEqual(0);
+      expect(mail, 'el mail está después de las redes en el DOM').toBeGreaterThan(github);
+    });
+
+    /* La afirmación completa — que el encabezado es el PRIMER elemento de la banda, antes que la fila
+       de arriba que `order` sube visualmente — vive en tests/e2e/contact-band-layout.spec.ts. Ahí se
+       mide sobre la página real, y acá la cuenta de encabezados de la banda ya sostiene lo que de
+       verdad importa para el contorno: que hay una sola voz y que pregunta. Reach for the node
+       directamente para leer siblings sería la forma de decirlo acá, y no compra nada que el E2E no
+       mida mejor. */
+
+    it('el boton esta alineado a la derecha y en movil a la izquierda', () => {
+      renderBand();
+
+      // align-self y no margin-left:auto, para que la regla se lea como una alineación y revertirla
+      // sea una declaración.
+      const boton = screen.getByRole('link', { name: 'ir' });
+      expect(getCssForElement(boton)).toContain('align-self: flex-end');
+      expect(getCssForElement(boton)).toContain('@media (max-width: 767px)');
+    });
+
+    it('el token del mail encadena al del Hero, que es lo que lo hace del mismo tamaño', () => {
+      // La cadena entera, leída del archivo de tokens y no del componente: el componente sólo dice
+      // `var(--text-display-email)` y no puede saber a qué apunta. Es el archivo el que dice que ese
+      // token es el del Hero, y esa es la mitad de la promesa que no se ve desde el componente.
+      const tokens = readFileSync(`${process.cwd()}/src/styles/tokens.css`, 'utf-8');
+      expect(tokens).toMatch(/--text-display-email:\s*var\(--text-display-project\)/);
+
+      // Y el paso móvil vive en el mismo archivo, no en una media query del componente: un tamaño
+      // repartido en dos sitios es un tamaño que la próxima vez queda cambiado por la mitad.
+      const movil = tokens.slice(tokens.indexOf('max-width: 767px'));
+      expect(movil).toMatch(/--text-display-email:\s*clamp\(/);
     });
   });
 });
