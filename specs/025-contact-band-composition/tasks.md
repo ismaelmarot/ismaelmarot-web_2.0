@@ -1,7 +1,7 @@
 # Tasks: The Contact Band's Composition
 
 **Input**: [spec.md](./spec.md) · **Plan**: [plan.md](./plan.md)
-**Status**: Implemented, verified except Firefox
+**Status**: Implemented, E2E red in CI on this commit
 
 ## Phase 1 — Measure before deciding
 
@@ -143,10 +143,45 @@
   the two revisions tested mean downgrading Playwright would not help either. This needs either a
   different machine or CI, where the build is known to run.
 
-  **Still open: the 139 Firefox tests have not been run against this amendment anywhere.** They need a
-  machine or CI run where Firefox starts. Amendment 4's changed assertion executes in that project, so
-  it is unverified there — including whether Firefox shows the scrollbar behaviour Amendment 4 measured
-  in WebKit, which is unknown precisely because the browser will not run.
+  **CI run 38918677044, 2026-10-16, on this commit.** Firefox runs there — `Running 695 tests` is
+  5 projects x 139 — and it passes: Firefox appears in no failure. So the 139 tests this task was opened
+  for have now executed. **The task is still not closed**, because the suite as a whole is red:
+
+  - 691 passed, 3 failed, 1 flaky. Lint, TypeCheck, Tests, Build and Accessibility all green.
+  - **The token at 768 is verified in CI.** `contact-band-layout.spec.ts:83`, "el mail mide lo mismo que
+    la fase del Hero", was failing in WebKit on the previous run of this branch and passes on this one.
+    That is the defect Amendment 4 was written for, caught by the assertion that now exists.
+  - **A new failure appeared here, and it is in this feature's own suite.**
+    `contact-band-layout.spec.ts:123`, tablet, "las redes quedan a la izquierda del mail" — expected
+    true, received false, at `if (vp.width >= 768)`. It passed on the three earlier runs of this branch.
+  - `hero-band.spec.ts:97`, "la banda mide 60% en 375x667" (expected 667, received 714), exhausted its
+    retries in chromium and Mobile Chrome and passed on retry in webkit — that last one being the single
+    flaky. **Pre-existing**: it fails on the previous run of this branch too.
+
+  **Cause, established.** The assertion branched on `vp.width`, the viewport Playwright was told to set.
+  The grid has two columns because `ContactBand.styles.ts:102` says so, and a media query is evaluated
+  against the width available to the layout, not against the viewport. macOS scrollbars take no width,
+  so at a 768 viewport `clientWidth` is 768, the rule does not match, the row is `212px 476px`, and the
+  assertion is true — the test passes here. Linux's classic scrollbar takes 15px, so `clientWidth`
+  becomes 753, the rule matches, the row collapses to one column, and the assertion is false. Measured
+  in both engines: the row has two columns if and only if `(max-width: 767px)` does not match. This is
+  the same scrollbar mechanism Amendment 4 measured, on the layout side instead of the type side.
+
+  **The layout is not at fault, and does not move.** Two columns need 212 + 32 + 476 = 720 and a 753
+  clientWidth leaves 705 after padding. Stacking there is required; forcing two columns would overflow
+  by 15px, which FR-004 forbids. `spec.md` records the reading of FR-005 that makes this consistent, and
+  the measured 1px of slack that the viewport reading would have cost.
+
+  **The fix, applied to the assertion rather than the layout.** `medir()` now reports
+  `anchoDisponible: document.documentElement.clientWidth`, and the assertion branches on
+  `m.anchoDisponible > 767` with an `else` that expects `false` — previously the stacked case asserted
+  nothing at all. On macOS `clientWidth` equals the viewport at all five widths, so the behaviour there
+  is unchanged at 1440, 1024 and 768 and two assertions are added at 390 and 320, where
+  `redesALaIzquierda` was measured false in both engines.
+
+  **Not yet confirmed.** macOS cannot reproduce the condition at all, so locally this change is
+  indistinguishable from the old one. Whether it fixes the Linux failure is verified by CI running
+  WebKit, and CI has not run this change. T031 stays open on that account.
 - [x] T032 Run the accessibility audit against the shipped implementation: `npm run test:a11y`, zero
   axe violations across the seven routes at the four viewports. T030 is the record of the earlier run.
   <!-- Run 2026-10-16 against the shipped token: 0 violations on all 28 audits — 7 routes
@@ -190,13 +225,27 @@
 
 ## What is still open against this amendment
 
-**The 139 Firefox E2E tests.** Firefox does not start on this machine — `Could not find profile
-folder` — which is pre-existing and recorded in `specs/018/tasks.md:120`. T031 therefore cannot pass
-here, and Amendment 4's changed assertion executes in that project. It needs a run where Firefox
-starts, which is what CI provides.
+**T031 — the E2E suite is red in CI on this commit.** CI run 38918677044: 691 passed, 3 failed,
+1 flaky. Lint, TypeCheck, Tests, Build and Accessibility are green.
 
-Everything else re-verified 2026-10-16: SC-011's five checks, SC-012's accessibility audit, and the
-E2E suite in chromium, webkit, Mobile Chrome and Mobile Safari.
+Firefox is no longer part of what is open. It runs in CI — 695 tests is 5 projects of 139 — and it
+passes. The 139 tests this file originally listed as unrun have now run.
+
+Two things keep the feature from being closed:
+
+1. `contact-band-layout.spec.ts:123`, tablet, "las redes quedan a la izquierda del mail", failing in
+   WebKit on Linux CI. The cause is established: the assertion branched on the viewport while the grid
+   branches on the width available to the layout, and at a 768 viewport those are 768 and 753. The
+   assertion is corrected in the working tree and the layout is untouched, but **the correction cannot
+   be confirmed locally** — macOS has no classic scrollbars, so the old and the new assertion behave
+   identically there. CI has to run WebKit for this to close.
+2. `hero-band.spec.ts:97`, "la banda mide 60% en 375x667" (expected 667, received 714), failing in
+   chromium, Mobile Chrome and webkit. **Pre-existing** — it fails on the previous run too, and it is
+   not this feature's suite.
+
+Re-verified 2026-10-16: SC-011's five checks, SC-012's accessibility audit, the E2E suite in
+chromium, webkit, Mobile Chrome and Mobile Safari locally, and — in CI — the address's size against
+the Hero's at 768 in all five projects, where the same assertion failed in WebKit before this commit.
 
 ## Notes
 

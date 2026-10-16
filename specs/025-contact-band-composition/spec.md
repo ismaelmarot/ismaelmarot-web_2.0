@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-16
 
-**Status**: Implemented, verified except Firefox
+**Status**: Implemented, E2E red in CI on this commit
 
 **Input**: A maintainer report on the landing page's closing band: *"mi email debe tener un tamaño como el
 de la fase 'web developer' del comienzo. y este formato: (iconos media) ismaelmarot@hotmail.com > /
@@ -405,23 +405,28 @@ breakpoint exists to disagree with:
   The full E2E suite passes on the shipped token in chromium, webkit, Mobile Chrome and Mobile Safari.
   The accessibility audit reports 0 violations across all 28 audits — 7 routes at 4 viewports — with
   every route carrying its expected `h1`.
-- *Not checked.* **The 139 Firefox E2E tests have not been run against this amendment anywhere.**
-  Firefox does not launch headless on the machine this was written on. The error is
-  `browserType.launch: Failed to launch the browser process` → `Could not find profile folder` →
-  exitCode 1, and the message misleads: it is not about the profile path. A `-profile` pointing at a
-  directory that exists fails the same way, and the binary answers `--version` normally. Any headless
-  mode fails, by flag or by `MOZ_HEADLESS`, with or without `-profile` — 0 of 3 trials in each
-  configuration — while the same binary without headless starts 3 of 3. Re-downloading the browser
-  changed nothing, so it is not a corrupt install, and Playwright's expected revision is the one
-  installed. **The system Firefox 126.0, on this same machine with the same flags, runs headless 3 of
-  3**, so the environment is not the obstacle; Playwright's Firefox build is. The newest build it
-  ships, 157.0, also fails. This is recorded as an environment defect rather than a product or test
-  one, and it is why T029's record names four projects rather than five.
-
-  It is the same error already recorded in `specs/018/tasks.md:120` and in `specs/014` Amendment 2,
-  so it predates this feature. Amendment 4's changed assertion executes in that project, so it is
-  unverified there — including whether Firefox shows the scrollbar behaviour measured in WebKit above,
-  which is unknown precisely because the browser will not run.
+- *Checked since, in CI.* **Firefox ran on this commit.** CI run 38918677044 reports `Running 695
+  tests`, which is five projects of 139, and Firefox appears in no failure — so the 139 tests that
+  could not run locally did run, and passed. The size assertion at 768 passes in all five projects,
+  including the WebKit case that failed on the previous run of this branch: that is this amendment's
+  defect, caught by the assertion that now exists.
+- *Not clean.* CI's E2E job is **red on this commit**: 691 passed, 3 failed, 1 flaky. Of the three that
+  exhausted their retries, two are `hero-band.spec.ts:97` ("la banda mide 60% en 375x667", expected
+  667, received 714) in chromium and Mobile Chrome, and the third is this feature's own suite:
+  `contact-band-layout.spec.ts:123`, tablet, "las redes quedan a la izquierda del mail" — expected
+  true, received false. The one flaky is the same hero-band test in webkit, which passed on retry. The
+  hero-band failures are **pre-existing** — they fail on the previous run of this branch too. It asks whether the row has two grid columns at 768, which
+  `ContactBand.styles.ts:102` decides with `max-width: 767px`. On macOS at a 768 viewport
+  `clientWidth` is 768, the rule does not match, and the test passes; on Linux CI the classic scrollbar
+  consumes width, the rule matches, the row collapses to one column and the assertion is false. It is
+  the scrollbar mechanism above, on the layout side rather than the type side. Whether this amendment
+  caused it is not established — macOS cannot reproduce the condition, and the assertion passed on the
+  three earlier runs of this branch.
+- *Not run locally, now run in CI.* Firefox cannot start headless on the machine this was written on:
+  `browserType.launch` → `Could not find profile folder` → exitCode 1, and the message misleads, since
+  the profile path is not the cause. Any headless configuration fails 0 of 3 while the same binary
+  without headless starts 3 of 3, re-downloading changes nothing, and the system Firefox 126.0 runs
+  headless 3 of 3 on the same machine. CI runs Firefox, and that is where this was closed.
 
 **What each test covers.** `ContactBand.test.tsx` asserts there is exactly one declaration of the
 token, which holds the mechanism in every engine and without launching a browser. The E2E measures the
@@ -434,6 +439,37 @@ outcome — no wrap, no overflow, the address's size against the Hero's at five 
 at 768 it would also have failed on the two-rule token, since that engine sees 760 and steps the address
 down while the Hero does not. It fails in one project of five, though, and would have passed in the
 other four, so the component assertion is the one that holds in every engine.
+
+## What "768px" means in FR-005, and the conflict that reading creates
+
+FR-005 reads "The networks and the address MUST share one row **above 768px**", and the acceptance
+scenarios repeat it as "Given the band **above 768px**". Neither says whether 768 is the viewport or
+the width the layout actually gets, and on a platform with classic scrollbars those are not the same
+number: at a 768 viewport, macOS gives the layout 768 and Linux gives it 753.
+
+**The requirement is read here as the width available to the layout**, because that is the only reading
+that can hold at the same time as FR-004. Read as the viewport, it is unsatisfiable next to FR-004:
+
+| At a 768 viewport on a classic-scrollbar platform | |
+|---|---|
+| available width | 753 − 48 of `padding-inline` = **705** |
+| what two columns need | 212 of networks + 32 of separation (`space[8]`) + 476 of address = **720** |
+| | **short by 15** |
+
+Two columns at that width overflow, and FR-004 forbids the address overflowing its column. So the
+viewport reading makes FR-005 and FR-004 contradictory at exactly one width, and the layout is right to
+stack there.
+
+**The cost of insisting on the viewport reading is measured, not hypothetical.** Making 705 fit two
+columns means dropping the separation from `space[8]` (32) to `space[4]` (16), which gives 704 against
+705 available — **1px of slack**. `tokens.css` already rejected exactly that trade once, for the
+mobile step: a layout that fills its column to the pixel at one width is one pixel from failing at the
+next. So the grid's breakpoint stays where it is, and the E2E assertion was corrected rather than the
+layout.
+
+**Nothing here rewrites the requirement.** FR-005 and its scenarios are left as written. What this
+section settles is the reading, and it is recorded here because the ambiguity is what let a test
+assert on the viewport while the CSS branched on something else.
 
 ### Requirements superseded by this amendment
 

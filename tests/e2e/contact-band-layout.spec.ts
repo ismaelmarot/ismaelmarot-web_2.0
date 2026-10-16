@@ -40,6 +40,7 @@ interface Medida {
   redesALaIzquierda: boolean;
   botonALaDerecha: boolean;
   ordenVertical: number[];
+  anchoDisponible: number;
 }
 
 async function medir(page: Page): Promise<Medida> {
@@ -71,6 +72,11 @@ async function medir(page: Page): Promise<Medida> {
       // 2px of slack for sub-pixel layout; the button hugs the container's right edge.
       botonALaDerecha: caja(banda).right - caja(boton).right < 120,
       ordenVertical: [caja(redes ?? mail).top, caja(mail).top, caja(encabezado).top, caja(frase).top, caja(boton).top].map(Math.round),
+      // The width a media query sees, which is not the width Playwright was asked for. On a platform
+      // with classic scrollbars the two differ, and at 768 that difference is enough to flip a
+      // breakpoint. Everything the CSS branches on branches on this, so this is what the assertions
+      // have to branch on too.
+      anchoDisponible: document.documentElement.clientWidth,
     };
   });
 }
@@ -143,7 +149,22 @@ test.describe('la banda de contacto', () => {
         // El token ya no tiene breakpoint, así que este archivo no puede comprobar su forma: que el mail y el
         // Hero midan lo mismo lo garantiza el techo compartido en `tokens.css`, y lo que ata esa forma
         // al archivo es `ContactBand.test.tsx`, que exige una sola declaración del token.
-        if (vp.width >= 768) expect(m.redesALaIzquierda).toBe(true);
+        //
+        // Y el umbral de ESTE aserto no es el viewport. Es `anchoDisponible`, que es lo que ve una
+        // media query. En macOS las barras de desplazamiento no ocupan ancho, así que con viewport 768
+        // el ancho disponible también es 768 y las dos cosas coinciden; en Linux la barra es clásica y
+        // se come unos 15px, de modo que con viewport 768 el ancho disponible es 753, la regla de
+        // `ContactBand.styles.ts:102` sí dispara y la fila se apila. Medido en ambos motores: la fila
+        // tiene dos columnas si y sólo si `(max-width: 767px)` no matchea.
+        //
+        // Preguntar por `vp.width` era preguntarle al número equivocado, y fallaba sólo donde el
+        // aserto no podía verlo. Y apilarse a 753 no es un defecto: dos columnas piden 212 de redes
+        // + 32 de separación + 476 del mail = 720, y a 705 disponibles no caben.
+        if (m.anchoDisponible > 767) {
+          expect(m.redesALaIzquierda, 'con dos columnas, las redes quedan a la izquierda del mail').toBe(true);
+        } else {
+          expect(m.redesALaIzquierda, 'apiladas, las redes no pueden quedar a la izquierda').toBe(false);
+        }
       });
     });
   }

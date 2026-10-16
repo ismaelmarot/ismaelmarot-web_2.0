@@ -138,27 +138,52 @@ Run 2026-10-16, against the built `dist/`, after Amendment 4:
 |---|---|
 | lint · typecheck · build | pass |
 | 151 unit · 470 component · 29 ContactBand | pass |
-| E2E chromium · webkit · Mobile Chrome · Mobile Safari | 139/139 each |
-| E2E firefox | **0/139 — the browser will not start headless here** |
+| E2E chromium · webkit · Mobile Chrome · Mobile Safari | 139/139 each, locally |
+| E2E firefox | **0/139 locally — the browser will not start headless here** |
 | a11y, 7 routes × 4 viewports | 0 violations |
+
+**CI run 38918677044, on this commit.** Lint, TypeCheck, Tests, Build and Accessibility green. E2E
+**red**: `Running 695 tests using 1 worker`, 691 passed, 3 failed, 1 flaky.
+
+| | |
+|---|---|
+| Firefox | **ran, and passed.** 695 is 5 projects x 139, and Firefox is in no failure. The 139 tests this plan could not run locally are accounted for |
+| The address vs the Hero at 768 | **passes in all five projects.** The same assertion failed in WebKit on the previous run of this branch — the defect this plan's token change removes |
+| `hero-band.spec.ts:97`, 60% at 375x667 (expected 667, received 714) | fails in chromium and Mobile Chrome; flaky in webkit. **Pre-existing** — fails on the previous run too |
+| `contact-band-layout.spec.ts:123`, tablet, networks left of the address | **fails in webkit, and this is in the feature's own suite.** Expected true, received false. Corrected in the working tree — the assertion was branching on the viewport instead of the width the CSS breakpoint sees — but unconfirmed, since CI has not run the correction |
 
 Two figures this plan and the specification state were re-measured rather than derived: the Hero's
 token resolves to 32.00px at 768 in both Chromium and WebKit, not the 31px the document originally
 carried, and the address is 23 characters rather than twenty-four. The address→Hero equality boundary
 is 542.37px, measured at 31.98px / 32.00px differing and 32.00px / 32.00px equal one pixel apart.
 
-The Firefox gap is not a product or test defect. `browserType.launch` fails with
-`Could not find profile folder`, and that message misleads: the profile path is not the problem. The
-binary answers `--version`, a `-profile` pointing at a directory that exists fails identically, and
-every headless configuration — by flag or by `MOZ_HEADLESS`, with and without `-profile` — fails 0 of 3
-while the same binary without headless starts 3 of 3. Re-downloading the browser changed nothing, and
-Playwright's expected revision is the one installed. **The system Firefox 126.0, on this same machine
-with the same flags, runs headless 3 of 3.** So the environment supports headless Firefox and
-Playwright's build does not — and neither does the newest build it ships, Firefox 157.0. It is the same
-error `specs/018/tasks.md:120` already records, so it predates this feature. CI runs Firefox and is
-where this closes; it cannot be closed from the project side, since changing the Playwright
-configuration to dodge a build that will not launch would be adjusting the test setup rather than
-fixing anything.
+**The Firefox gap was local, and CI closed it.** Locally the browser will not start headless, and the
+message it gives names the profile folder when the profile is not the cause: the binary answers
+`--version`, an existing `-profile` directory fails identically, every headless configuration fails 0
+of 3 while the same binary without headless starts 3 of 3, re-downloading changes nothing, and the
+system Firefox 126.0 runs headless 3 of 3 on the same machine. CI runs Firefox and it passed.
+
+**What is still open is this feature's own assertion in WebKit.** `redesALaIzquierda` asserted at 768
+that the row has two grid columns, and `ContactBand.styles.ts:102` decides that with
+`max-width: 767px`. macOS reports `clientWidth` 768 at that viewport, the rule does not match, and the
+test passes. Linux CI's classic scrollbar consumes width, so the rule matches, the row collapses, and
+the assertion is false.
+
+**The cause is the test asking for the wrong number.** The assertion branched on `vp.width`, the
+viewport Playwright was told to set, while the CSS branches on the width a media query sees. They are
+equal on macOS and differ by 15px on Linux, which is why this passed locally and failed in CI — and it
+is the same scrollbar mechanism as the type-side finding above, on the layout side.
+
+**The layout does not move.** Two columns need 212 + 32 + 476 = 720 and a 753 clientWidth leaves 705
+after padding, so stacking at that width is required rather than a defect. Forcing two columns would
+overflow by 15px, which FR-004 forbids, and the only way to make it fit is to drop the separation from
+32px to 16px for 1px of slack — a trade `tokens.css` already rejected once for the mobile step. So the
+grid keeps its breakpoint and `medir()` now reports `anchoDisponible`, which the assertion branches on,
+with an `else` that asserts the stacked case rather than nothing.
+
+**This cannot be confirmed locally.** macOS has no classic scrollbar, so the old and the new assertion
+behave identically there: the change is verified not to regress, not verified to fix CI. WebKit on Linux
+is the only place it can be confirmed, and CI has not run it.
 
 ## Decisions in this plan that no longer describe the code
 
