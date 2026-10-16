@@ -35,7 +35,7 @@ const BANDAS = ['#hero', '#projects-summary', '#technologies-summary', '#about-s
  */
 const clickEnElPie = async (page: Page, href: string) => {
   await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' }));
-  await page.waitForTimeout(500);
+  await esperarQueSeAsiente(page);
   const box = await page.locator(`footer a[href="${href}"]`).boundingBox();
   expect(box, `el link ${href} del footer tiene caja`).not.toBeNull();
   await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
@@ -51,6 +51,34 @@ const clickEnElPie = async (page: Page, href: string) => {
  */
 const desplazarA = async (page: Page, y: number) => {
   await page.evaluate((top) => window.scrollTo({ top, behavior: 'smooth' }), y);
+  await esperarQueSeAsiente(page);
+};
+
+/**
+ * Espera a que `scrollY` deje de cambiar, en vez de esperar una cantidad fija de milisegundos.
+ *
+ * El primer versión de estos tests usaba `waitForTimeout(900)` y pasó en cuatro navegadores durante
+ * varios días, y después falló en WebKit dentro de CI con la banda a 605px de donde debía: el runner es
+ * más lento, la animación suave del scroll no había terminado, y el test midió una página que todavía
+ * se movía. El código estaba bien; la suposición sobre cuánto tarda en asentarse, no.
+ *
+ * `proximity` no tiene estado que consultar, así que el único indicador de que terminó es que la
+ * posición dejó de cambiar. Se lee hasta que se repite, con un techo generoso: si nunca se asienta, el
+ * timeout de Playwright corta y la aserción falla con el valor real, que es más útil que un fallo de
+ * "no se alcanzó a estabilizar".
+ */
+const esperarQueSeAsiente = async (page: Page,	maximo = 5000) => {
+  const inicio = Date.now();
+  let anterior = await page.evaluate(() => window.scrollY);
+  let estable = 0;
+
+  while (Date.now() - inicio < maximo) {
+    await page.waitForTimeout(100);
+    const actual = await page.evaluate(() => window.scrollY);
+    estable = actual === anterior ? estable + 1 : 0;
+    anterior = actual;
+    if (estable >= 3) return;
+  }
 };
 
 const snapType = (page: Page) =>
@@ -195,7 +223,6 @@ test.describe('snap de secciones en la home', () => {
 
     // A 30px de la frontera, dentro de la distancia de snapping pero no encima.
     await desplazarA(page, objetivo.top! - padding - 30);
-    await page.waitForTimeout(900);
 
     const dondeQuedo = await page.evaluate((id) => {
       const el = document.querySelector(id)!;
@@ -225,7 +252,6 @@ test.describe('snap de secciones en la home', () => {
     // cualquier frontera: es el lugar donde `mandatory` no dejaría parar a nadie y `proximity` sí.
     const viewport = await page.evaluate(() => window.innerHeight);
     await desplazarA(page, tercero.top! + viewport / 2);
-    await page.waitForTimeout(1000);
 
     const arriba = await page.evaluate(
       (id) => document.querySelector(id)!.getBoundingClientRect().top,
@@ -240,7 +266,7 @@ test.describe('snap de secciones en la home', () => {
     await page.waitForLoadState('networkidle');
 
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.waitForTimeout(900);
+    await esperarQueSeAsiente(page);
 
     const pie = await page.evaluate(() => {
       const footer = document.querySelector('footer')!;

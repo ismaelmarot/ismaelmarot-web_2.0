@@ -70,6 +70,12 @@
   está "estable" en dos frames seguidos y Playwright reintenta hasta agotar el timeout. Pasa igual con
   `force: true`. T021 hace el clic con coordenadas. Merece una nota aparte: cualquier test futuro que
   haga clic en algo de la home va a toparse con esto.
+- **El test de "un scroll lento se acomoda" falló en WebKit dentro de CI con la banda a 605px**, después
+  de pasar en cuatro navegadores durante varios días. El código estaba bien: el runner es más lento, la
+  animación suave del scroll no había terminado a los 900ms y el test midió una página que todavía se
+  movía. Ahora los tres tests que miden una posición esperan a que `scrollY` deje de cambiar en vez de
+  dormir una cantidad fija. La lección general: en un test que mide dónde quedó algo después de una
+  animación, un timeout es una apuesta sobre la velocidad de la máquina.
 - `page.mouse.wheel` lanza "Mouse wheel is not supported in mobile WebKit" en el proyecto iPhone 12.
   Los dos tests de comportamiento usan `window.scrollTo` con `behavior: 'smooth'`, que es un scroll real
   con animación y al que el snapping responde igual.
