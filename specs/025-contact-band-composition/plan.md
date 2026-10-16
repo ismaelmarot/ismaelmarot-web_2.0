@@ -25,10 +25,10 @@ it, and a sentence appears under the question.
 |---|---|
 | I. Component-First | No new component. The band already owns every piece it renders. |
 | II. Type Safety | `contactTagline: string` on `SiteConfig`, like `title` and `tagline`. |
-| III. Testing | The E2E measures the rendered width. A stylesheet assertion would pass on a value that overflows. |
+| III. Testing | The E2E measures the rendered width. A stylesheet assertion would pass on a value that overflows — and the component test does assert the stylesheet, because it is the only assertion that can tell this token from the one it replaced. See Testing below. |
 | IV. A11y & Performance | **The substance is a11y**: the heading stays first in the DOM, so the page's outline survives the rearrangement. |
 | V. Design Principles | The band ends the page the way the Hero starts it. |
-| VI. YAGNI | One media query, on the token, not on the component. |
+| VI. YAGNI | No breakpoint on the token at all, and none of its own in the component. |
 | Styling | Two grid declarations changed in one file. |
 | Path Aliases | Unchanged. |
 | Dependencies | `package.json` untouched. |
@@ -46,11 +46,15 @@ half a row — 596px — because it shared with the question, and that is why `s
 and recorded that 44px overflowed by 3. The requested arrangement puts four 44px network marks beside it,
 so `auto 1fr` leaves roughly 960px. At 960, 56px needs 711 and fits with room.
 
-**Below 768px the column is the full width and there is nothing to widen**, so the size has to step down.
-The step is `clamp(1.375rem, 6.6vw, 1.625rem)`: 22px at 320, 25.7px at 390.
+**Below the crossover the column is the full width and there is nothing to widen**, so the size has to
+step down. It does so through the ramp rather than through a breakpoint: `--text-display-email` is
+`clamp(1.125rem, 5.9vw, var(--text-display-project))`, which gives 23.0px at 390 and 18.9px at 320.
 
-**One token carries both.** The component does not grow a media query of its own, so there is one place
-where the address's size is decided (FR-003).
+**One declaration carries all three.** The component grows no media query of its own, and neither does
+the token: the ceiling is the Hero's token, so above the crossover the two are the same size by
+construction rather than by a breakpoint that has to be kept in agreement (FR-003). This replaces the
+original plan's `@media (max-width: 767px)` step of `clamp(1.375rem, 6.6vw, 1.625rem)`; see `spec.md`
+Amendment 4.
 
 ## Where `order` earns its keep
 
@@ -81,10 +85,16 @@ recorded in Amendment 2 of the spec instead of in a stylesheet where it would ha
 **`--text-display-email` has exactly one consumer**: `ContactBand.styles.ts`. Changing its value moves
 nothing else.
 
-**And the two tests that assert `font-size: var(--text-display-email)` stay green without being touched**,
-because they assert that the size comes from a token rather than what the token says. That is the right
-abstraction and it survived the change; had they asserted the literal number, this feature would have
-needed two rewrites instead of none.
+**And the two tests that assert `font-size: var(--text-display-email)` stayed green while the ceiling
+moved**, because they asserted that the size comes from a token rather than what the token says. That
+was true of the change this plan originally described.
+
+**It stopped being true of the change that replaced it.** `ContactBand.test.tsx` now pins the literal
+clamp and asserts there is exactly one declaration of the token, so it did need rewriting. The reason
+is in `spec.md` Amendment 4: whether the two rules and one token can be told apart at all depends on
+the browser. In WebKit at 768 the scrollbar leaves the media query 760 and the E2E fails on 24px
+against 32px; in Chromium it sees 768 and the E2E would have passed. An assertion that only one engine
+can catch is not the one to hold the shape, and to hold the shape it has to name it.
 
 ## Testing
 
@@ -95,18 +105,72 @@ the DOM; the button is right-aligned; the description uses `--text-secondary`.
 fits its column and renders on one line at five viewports; the networks sit left of the address and both
 sit above the question.
 
-**The E2E is the feature's real check.** Everything about this is widths, and a stylesheet assertion
-would pass on a value that overflows.
+**The E2E is the feature's real check on the outcome.** Everything about this is widths, and a
+stylesheet assertion would pass on a value that overflows.
+
+**It is only partly a check on the mechanism.** In WebKit at 768 it does catch the two-rule token,
+because that engine's scrollbar makes the media query fire at 760. In the other four projects it would
+not have. The component test is what holds the mechanism everywhere. The grid still has a breakpoint
+of its own, at `ContactBand.styles.ts:102`, and `redesALaIzquierda` asserts against that one — a
+different number from the 600 the size assertion uses, on purpose.
+`spec.md` has the full account of all three: the 542.37px crossover that is derived arithmetic, the
+600 that is chosen 58px above it so the assertion cannot break when a constant is retuned, and the
+768 that belongs to the grid.
 
 ## What this plan does not do
 
 **It does not let the address wrap.** Every number above exists so that it does not have to. A wrapped
 email address mid-domain is worse than a slightly smaller one.
 
-**It does not detect a longer address.** The ceiling is arithmetic for twenty-four specific characters.
+**It does not detect a longer address.** The ceiling is arithmetic for twenty-three specific characters.
 Changing the address silently invalidates it and nothing will report that.
 
 **It does not touch the four other display tokens**, two of which other sections read.
 
 **It does not change the band's height**, and the existing assertion that it is `100dvh` is untouched and
 must keep passing.
+
+## What was verified against the shipped token
+
+Run 2026-10-16, against the built `dist/`, after Amendment 4:
+
+| Check | Result |
+|---|---|
+| lint · typecheck · build | pass |
+| 151 unit · 470 component · 29 ContactBand | pass |
+| E2E chromium · webkit · Mobile Chrome · Mobile Safari | 139/139 each |
+| E2E firefox | **0/139 — the browser will not start headless here** |
+| a11y, 7 routes × 4 viewports | 0 violations |
+
+Two figures this plan and the specification state were re-measured rather than derived: the Hero's
+token resolves to 32.00px at 768 in both Chromium and WebKit, not the 31px the document originally
+carried, and the address is 23 characters rather than twenty-four. The address→Hero equality boundary
+is 542.37px, measured at 31.98px / 32.00px differing and 32.00px / 32.00px equal one pixel apart.
+
+The Firefox gap is not a product or test defect. `browserType.launch` fails with
+`Could not find profile folder`, and that message misleads: the profile path is not the problem. The
+binary answers `--version`, a `-profile` pointing at a directory that exists fails identically, and
+every headless configuration — by flag or by `MOZ_HEADLESS`, with and without `-profile` — fails 0 of 3
+while the same binary without headless starts 3 of 3. Re-downloading the browser changed nothing, and
+Playwright's expected revision is the one installed. **The system Firefox 126.0, on this same machine
+with the same flags, runs headless 3 of 3.** So the environment supports headless Firefox and
+Playwright's build does not — and neither does the newest build it ships, Firefox 157.0. It is the same
+error `specs/018/tasks.md:120` already records, so it predates this feature. CI runs Firefox and is
+where this closes; it cannot be closed from the project side, since changing the Playwright
+configuration to dodge a build that will not launch would be adjusting the test setup rather than
+fixing anything.
+
+## Decisions in this plan that no longer describe the code
+
+Recorded rather than deleted, because the reasoning they hold is still true and only the numbers moved.
+See `spec.md` Amendment 4 for the measurements behind each.
+
+- **The mobile step was a media query.** `clamp(1.375rem, 6.6vw, 1.625rem)` under
+  `@media (max-width: 767px)`. Replaced by the ramp of a single `clamp`, which needs no breakpoint. The
+  reasoning that survives is the one about two viewports having different room and the address having
+  one length; the numbers do not.
+- **The component tests would not have needed rewriting.** True of the ceiling change, not of the
+  change that replaced it.
+- **The mobile step's own arithmetic.** `1.375rem` is 22px and `6.6vw` is 25.7px at those viewports —
+  these are the clamp's output, not measurements, and both numbers sit above the ceilings the rendered
+  band actually has (19.5px at 320, 25px at 390). That gap is why the step was replaced.

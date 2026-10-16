@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-16
 
-**Status**: Implemented
+**Status**: Implemented, verified except Firefox
 
 **Input**: A maintainer report on the landing page's closing band: *"mi email debe tener un tamaño como el
 de la fase 'web developer' del comienzo. y este formato: (iconos media) ismaelmarot@hotmail.com > /
@@ -40,20 +40,20 @@ heading and the page's outline does not gain a second voice.
 
 ## The arithmetic, and why the ceiling moved rather than the column
 
-The address is a fixed, known string: twenty-four characters. Measured on the rendered page in Inter at
+The address is a fixed, known string: twenty-three characters. Measured on the rendered page in Inter at
 weight 600 with the `-0.01em` tracking this link carries:
 
 | px | 20 | 22 | 24 | 26 | 28 | 32 | 40 | 56 |
 |---|---|---|---|---|---|---|---|---|
 | width | 254 | 279 | 305 | 330 | 356 | **406** | 508 | **711** |
 
-**`--text-display-project` is `clamp(2rem, 4vw, 3.5rem)`: 56px at 1440, 31px at 768, and a floor of 32px
-below that.** Applying it unchanged fails at every viewport the band is tested at:
+**`--text-display-project` is `clamp(2rem, 4vw, 3.5rem)`: 56px at 1440, 32px at 768, and the same 32px
+floor below that.** Applying it unchanged fails at every viewport the band is tested at:
 
 | viewport | available | size | needs | |
 |---|---|---|---|---|
 | 1440 | ~960 | 56 | 711 | fits |
-| 768 | ~498 | 31 | 393 | fits |
+| 768 | ~498 | 32 | 406 | fits |
 | 390 | 358 | 32 | 406 | **over by 48** |
 | 320 | 288 | 32 | 406 | **over by 118** |
 
@@ -63,16 +63,20 @@ the networks are four 44px marks that need about 230px, so `auto 1fr` leaves the
 That is enough for 56px with room to spare, and it is why the requested layout makes the request
 possible at all.
 
-**Below 768px the column is the full width and the size has to step down**, because there is no column
-to widen. The step is `clamp(1.375rem, 6.6vw, 1.625rem)`:
+**Below the crossover the column is the full width and there is nothing to widen**, so the size has to step down. It
+does so through the ramp of a single declaration, `clamp(1.125rem, 5.9vw, var(--text-display-project))`:
 
 | viewport | available | size | needs | |
 |---|---|---|---|---|
-| 390 | 358 | 25.7 | 326 | fits, 32 spare |
-| 320 | 288 | 22 | 279 | fits, 9 spare |
+| 390 | 358 | 23.0 | 292 | fits |
+| 320 | 288 | 18.9 | 240 | fits |
 
-**A fixed 26px was the first answer and it was wrong**: it fits 390 with 28px to spare and overflows 320
-by 42px. The step is fluid because the two viewports have different room and the address has one length.
+**The arithmetic below is Amendment 1's and it does not hold.** This section originally put the step at
+`clamp(1.375rem, 6.6vw, 1.625rem)` and concluded "both fit" from a table that measured the address text
+alone. The link also holds a 28px arrow and a 12px gap, so the real ceilings are 25px at 390 and 19.5px
+at 320 — and both of those are *below* what that clamp produces. Amendment 1's conclusion was wrong for
+the same reason its 26px predecessor was: it read a probe, not the rendered band. Amendment 4 replaces
+the step; the measured ceilings are recorded in Amendment 2's replacement test and in `tasks.md`.
 
 ## What the hierarchy is, and why it got smaller rather than larger
 
@@ -186,7 +190,12 @@ A maintainer wants different copy under the question.
 
 - **FR-001**: The address MUST render at `--text-display-project` from 768px up, the same token the
   Hero's "Web Developer" line uses.
-- **FR-002**: Below 768px the address MUST render at `clamp(1.375rem, 6.6vw, 1.625rem)`.
+- **FR-002**: The address MUST step down below the width at which the Hero's token stops fitting the
+  column, and MUST do so without a breakpoint: `--text-display-email` is
+  `clamp(1.125rem, 5.9vw, var(--text-display-project))`, whose ceiling is the Hero's own token.
+  Above the ramp's crossover — somewhere near 542px — that ceiling makes the two the same size by
+  construction; below it the ramp governs. The previous requirement — `clamp(1.375rem, 6.6vw,
+  1.625rem)` under a `@media (max-width: 767px)` rule — is superseded and recorded in Amendment 4.
 - **FR-003**: `--text-display-email` MUST be the only size the address reads, so the component does not
   carry a media query of its own.
 - **FR-004**: The address MUST NOT wrap and MUST NOT overflow its column at 1440, 1024, 768, 390 or 320.
@@ -235,7 +244,9 @@ A maintainer wants different copy under the question.
   `h2`.
 - **SC-007**: The sentence's text equals `siteConfig.contactTagline`.
 - **SC-008**: `--text-display-email` is not referenced by any file other than `tokens.ts`,
-  `ContactBand.styles.ts` and `ContactBand.test.tsx`.
+  `tokens.css`, `ContactBand.styles.ts` and `ContactBand.test.tsx`. It originally named three files;
+  `tokens.css` is the fourth, and the criterion has to mean "no other file", since the file that
+  declares the token necessarily references it.
 - **SC-009**: `--text-display-project`, `--text-display-section`, `--text-display-hero` and
   `--text-large-subtitle` are byte-identical to their values before this feature.
 - **SC-010**: The band's rendered height is unchanged at every viewport, which the existing
@@ -253,13 +264,53 @@ value that overflows.
 measured table and then a comment. This one records a test that fails when the number is wrong, which is
 the part that survives.
 
-**SC-009 is checked by reading the diff of `tokens.css`**, not by a test, and the reason is in Amendment 2.
+**SC-009 is checked by reading the diff of `tokens.css`**, not by a test, and the reason is in Amendment 4.
+
+## The analytical 600 in the E2E, and the three numbers that are not the same
+
+The suite's size assertion branches at `600`. Nothing in the CSS branches there, so the number is
+analytical rather than a breakpoint, and it deserves a sentence because two other numbers in this
+feature look like it and are not it.
+
+**What the 600 is.** `--text-display-email` is `clamp(1.125rem, 5.9vw, var(--text-display-project))`
+and the Hero's token is `clamp(2rem, 4vw, 3.5rem)`, which resolves to its 32px floor below 800px. Above
+the width where `5.9vw` reaches that 32px floor, the ramp stops governing, the ceiling takes over, and
+the two are then the same token and cannot differ. That width is `32 / 0.059`, **542.37px**.
+
+**Measured, in Chromium and in WebKit, on the shipped token:** at 542 the two are 31.98px and 32.00px
+and differ; at 543 both are 32.00px and are equal; they stay equal at every width above.
+
+**So the 600 is a deliberate round number 58px above a measured crossover, chosen on purpose:**
+
+1. The crossover is derived from two constants' arithmetic. Pinning the assertion exactly to it would
+   make it brittle: change `5.9vw` to `6vw` and 542.37 becomes 533.33, and a test sitting on the old
+   value would start failing for a reason no reader could see.
+2. A round number survives that edit. 600 is not a claim about where the crossover is; it is a claim
+   about which side of it the assertion is on.
+3. The margin is what makes the assertion safe rather than lucky. The property being asserted is "above
+   the crossover they cannot differ", and 600 is comfortably inside that region — so the test asserts a
+   property of the construction rather than a coincidence of two numbers.
+
+**The three numbers, which are not interchangeable:**
+
+| Number | What it is | Where it lives | What changing it does |
+|---|---|---|---|
+| **542.37px** | Where `5.9vw` reaches the Hero's 32px floor. Derived; written nowhere | arithmetic only | nothing breaks, the boundary moves |
+| **600px** | The E2E's branch. Round, 58px above the boundary, deliberately not on it | `contact-band-layout.spec.ts` | the assertion starts testing the wrong side |
+| **767/768px** | The grid's real breakpoint, `auto 1fr` → `1fr` | `ContactBand.styles.ts:102` | the networks stop sharing a row with the address |
+
+**The 768 in `redesALaIzquierda` is the third one and has nothing to do with the first two.** It measures
+that two grid columns exist, so its threshold has to be the grid's own breakpoint. Between 600 and 768
+the size assertion is on the "equal" side and the layout assertion is on the "stacked" side, and both
+are right at once: the type matches the Hero's because they are the same token, while the row is stacked
+because the grid says so.
 
 ## Assumptions
 
 - **"El mismo tamaño que la fase web developer" means the same token, not the same pixels.** Both read
-  `--text-display-project` above 768px. Below that the token's own 32px floor does not fit, and the step
-  down is the only way to keep the promise the rest of the time.
+  `--text-display-project` above the ramp's crossover, which is near 542px and not the 768 this
+  document originally named. Below it the token's own 32px floor does not fit, and the ramp is the
+  only way to keep the promise the rest of the time. Amendment 4.
 - **The button is aligned right because the drawing shows it indented.** It is the most ambiguous mark in
   the drawing and one declaration to change.
 - **The sentence is content, not markup.** `siteConfig` already holds the name, the title, the tagline,
@@ -278,6 +329,11 @@ The mobile step was first planned as a flat 26px, on the reasoning that it fits 
 **It overflows 320 by 42px**: the address measures 330 at 26px against 288 available. The two viewports
 have different room and the address has one length, so the step has to be fluid:
 `clamp(1.375rem, 6.6vw, 1.625rem)` gives 22px at 320 and 25.7px at 390, and both fit.
+
+**Amendment 1's conclusion is wrong and is corrected here rather than left standing.** Those two numbers
+exceed the ceilings measured on the rendered band — 19.5px at 320 and 25px at 390 — by 2.5px and 0.7px, because
+they came from the probe described above and the probe does not include the arrow and the gap. The step
+that actually fits is the one in Amendment 4.
 
 Recorded because the failure mode is invisible on a phone-sized preview and because "it fit at 390" is
 exactly the reasoning that produced it.
@@ -308,3 +364,101 @@ The maintainer was offered three size pairs for the question and the new sentenc
 hierarchy the three bands above already use. The reason not to take it is `specs/021`'s: the display in
 this band is an email address, and a 28px question beside a 56px address makes two things compete for
 the same role.
+
+### Amendment 4 - The mobile step stopped being a breakpoint
+
+**Added by**: during implementation, 2026-10-16.
+
+**The requirement it replaces.** FR-002 read "Below 768px the address MUST render at
+`clamp(1.375rem, 6.6vw, 1.625rem)`", implemented as a rule reading `var(--text-display-project)` plus a
+`@media (max-width: 767px)` override setting the same token to `clamp(1.125rem, 5.9vw, 1.5rem)` below
+768.
+
+**The reason it was replaced, and the reason it is measured.** A breakpoint that has to agree with
+another component's token is a second rule about size: 767 and 768 are the same width written twice,
+and nothing keeps them from drifting apart the next time either one is edited. On top of that, the
+breakpoint's behaviour depended on whether the browser had a scrollbar. Measured at a 768 viewport,
+on the two-rule token:
+
+| | `clientWidth` | `(max-width: 767px)` | address | Hero |
+|---|---|---|---|---|
+| Chromium | 768 | false | 32px | 32px |
+| WebKit | **760** | **true** | **24px** | **32px** |
+
+The scrollbar takes 8px in WebKit, so the rule matches at 760 and the address steps down while the
+Hero's own token, which has no such rule, does not. The two part company at exactly the width where
+the feature's promise is that they are the same. Chromium hides this; WebKit does not, and CI runs
+WebKit — so the E2E does catch it, at the 768 tablet case, in that project only.
+
+The replacement puts the Hero's token in the ceiling position, so the two cannot differ and no
+breakpoint exists to disagree with:
+
+    --text-display-email: clamp(1.125rem, 5.9vw, var(--text-display-project));
+
+**Evidence checked, and evidence not checked.**
+
+- *Checked.* `clamp(1.125rem, 5.9vw, var(--text-display-project))` yields the Hero's size at 1440,
+  1024 and 768, and one step below it at 390 (23.0px) and 320 (18.9px), inside SC-004. The ramp
+  crosses the Hero's 32px floor at about 542px, measured between 542 and 543 in both engines. The
+  Hero's token resolves to 32.00px at 768 in both, not the 31px this document originally carried.
+  Lint, typecheck, 151 unit, 470 component, the 29 ContactBand component tests and the build pass.
+  The full E2E suite passes on the shipped token in chromium, webkit, Mobile Chrome and Mobile Safari.
+  The accessibility audit reports 0 violations across all 28 audits — 7 routes at 4 viewports — with
+  every route carrying its expected `h1`.
+- *Not checked.* **The 139 Firefox E2E tests have not been run against this amendment anywhere.**
+  Firefox does not launch headless on the machine this was written on. The error is
+  `browserType.launch: Failed to launch the browser process` → `Could not find profile folder` →
+  exitCode 1, and the message misleads: it is not about the profile path. A `-profile` pointing at a
+  directory that exists fails the same way, and the binary answers `--version` normally. Any headless
+  mode fails, by flag or by `MOZ_HEADLESS`, with or without `-profile` — 0 of 3 trials in each
+  configuration — while the same binary without headless starts 3 of 3. Re-downloading the browser
+  changed nothing, so it is not a corrupt install, and Playwright's expected revision is the one
+  installed. **The system Firefox 126.0, on this same machine with the same flags, runs headless 3 of
+  3**, so the environment is not the obstacle; Playwright's Firefox build is. The newest build it
+  ships, 157.0, also fails. This is recorded as an environment defect rather than a product or test
+  one, and it is why T029's record names four projects rather than five.
+
+  It is the same error already recorded in `specs/018/tasks.md:120` and in `specs/014` Amendment 2,
+  so it predates this feature. Amendment 4's changed assertion executes in that project, so it is
+  unverified there — including whether Firefox shows the scrollbar behaviour measured in WebKit above,
+  which is unknown precisely because the browser will not run.
+
+**What each test covers.** `ContactBand.test.tsx` asserts there is exactly one declaration of the
+token, which holds the mechanism in every engine and without launching a browser. The E2E measures the
+outcome and, in WebKit at 768, would also have failed on the two-rule token — but it does so in one
+project of five, and would have passed in the other four.
+
+**What each test now covers.** `ContactBand.test.tsx` asserts there is exactly one declaration of the
+token, which holds the mechanism in every engine and without launching a browser. The E2E measures the
+outcome — no wrap, no overflow, the address's size against the Hero's at five viewports — and in WebKit
+at 768 it would also have failed on the two-rule token, since that engine sees 760 and steps the address
+down while the Hero does not. It fails in one project of five, though, and would have passed in the
+other four, so the component assertion is the one that holds in every engine.
+
+### Requirements superseded by this amendment
+
+- **FR-002** is superseded, as rewritten in place above. The clamp it named no longer exists anywhere
+  in the repository.
+
+### Requirements strengthened by this amendment
+
+- **FR-003** is strengthened, not superseded. It read "`--text-display-email` MUST be the only size the
+  address reads, so the component does not carry a media query of its own". The component still
+  carries none, and the token itself no longer carries one either.
+
+### Requirements that stand unchanged
+
+- **FR-001 and FR-004 through FR-016** stand unchanged, with FR-002 superseded and FR-003
+  strengthened.
+- **SC-004** stands unchanged. It reads "at most 23px at 320 and at most 26px at 390"; the ramp gives
+  18.9px and 23.0px, inside both.
+- **SC-008** stands unchanged in intent, and was re-checked for this amendment: the token is still
+  referenced by only those files. It names three and there are four -- `tokens.css` is the fourth, and
+  the criterion already had to mean "no other file", since the file that declares the token has to
+  reference it. Nothing new is referenced.
+- **FR-014** stands unchanged. `--text-display-hero`, `--text-display-section`,
+  `--text-display-project` and `--text-large-subtitle` are byte-identical to their values before this
+  feature.
+- **SC-011** was re-run in full against this amendment and passes; its five checks are recorded above.
+- **SC-012** was re-run against this amendment: `npm run test:a11y` reports 0 violations across 28
+  audits, every route carrying the `h1` the audit expects, so no route was silently skipped.
