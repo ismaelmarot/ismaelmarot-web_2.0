@@ -288,14 +288,26 @@ npx vite-bundle-analyzer dist
 
 **Prerequisites**: Repository pushed to GitHub with Actions enabled
 
+> **Corrected by specs/024-deployment-path.** This scenario previously said to push to `main`, watch the
+> workflow and verify a `deploy` job. **There is no `deploy` job and pushing to `main` does not deploy.**
+> The deployment workflow lives in the other repository, `ismaelmarot/ismaelmarot.github.io`, and builds
+> this repository's `main` from there. The operating procedure -- the command, and the four checks that
+> tell a fresh deployment from a stale one -- is in
+> [specs/024-deployment-path/quickstart.md](../../024-deployment-path/quickstart.md).
+>
+> **Code reaches the site between zero and four hours after being merged**, on the destination's cron.
+> The cron exists to refresh the contribution calendar, not to ship code.
+
 **Steps**:
-1. Push to `main` branch
-2. Watch GitHub Actions workflow
-3. Verify `deploy` job completes
-4. Visit deployed URL (`https://ismaelmarot.github.io` or custom domain)
+1. Push to `main` and let CI run: `Lint` → `TypeCheck` → `Tests` → `Build`, then `E2E Tests` and `Accessibility`
+2. Deploy on demand: `gh workflow run deploy.yml --repo ismaelmarot/ismaelmarot.github.io`
+3. Verify the run succeeds **and** that the published asset contains the change
+4. Visit deployed URL (`https://ismaelmarot.github.io`)
 
 **Expected Outcomes**:
-- ✅ Workflow: `lint` → `typecheck` → `test` → `build` → `deploy` all pass
+- ✅ CI: `Lint` → `TypeCheck` → `Tests` → `Build` → `E2E Tests` → `Accessibility` all pass
+- ✅ The deploy run in the destination repository succeeds
+- ✅ The published bundle contains the change -- a green run alone does not establish this
 - ✅ Site accessible at Pages URL
 - ✅ All scenarios 1-7 work on deployed site
 - ✅ HTTPS enforced
@@ -345,24 +357,24 @@ npx vite-bundle-analyzer dist
 ## CI/CD Validation (GitHub Actions)
 
 ```yaml
-# .github/workflows/ci.yml triggers on push/PR
+# .github/workflows/ci.yml triggers on push/PR. These are the six job names it declares.
 jobs:
-  lint:        # ESLint + Prettier
-  typecheck:   # tsc --noEmit
-  test:        # Vitest (unit + component)
-  test-e2e:    # Playwright (chromium, firefox, webkit)
-  test-a11y:   # axe-core on built site
-  build:       # Vite production build
-  deploy:      # GitHub Pages (main branch only)
+  Lint:         # ESLint
+  TypeCheck:    # tsc --noEmit
+  Tests:        # Vitest (unit + component)
+  Build:        # tsc && vite build; also uploads dist/ as an artifact
+  E2E Tests:    # Playwright across 5 projects, against the artifact
+  Accessibility:# axe-core on the built site, through Playwright
 ```
 
-**Required Status Checks** (branch protection):
-- `lint`
-- `typecheck`
-- `test`
-- `test-e2e`
-- `test-a11y`
-- `build`
+**There is no `deploy` job in this repository**, and there is no `deploy` npm script in `package.json`.
+Deployment is a workflow in `ismaelmarot/ismaelmarot.github.io`. See
+[specs/024-deployment-path](../../024-deployment-path/spec.md).
+
+**There is no branch protection on `main`.** This block previously listed required status checks, which
+implied protection exists; `gh api repos/ismaelmarot/ismaelmarot-web_2.0/branches/main/protection`
+returns "Branch not protected". **This matters because the deployment workflow checks out `ref: main`** --
+nothing stands between a push to a failing state and the next deployment. Check CI before deploying.
 
 ---
 
