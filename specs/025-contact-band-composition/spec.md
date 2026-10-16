@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-16
 
-**Status**: Implemented, E2E red in CI on this commit
+**Status**: Implemented, verified in all five browsers; E2E red on specs outside this feature
 
 **Input**: A maintainer report on the landing page's closing band: *"mi email debe tener un tamaño como el
 de la fase 'web developer' del comienzo. y este formato: (iconos media) ismaelmarot@hotmail.com > /
@@ -405,23 +405,22 @@ breakpoint exists to disagree with:
   The full E2E suite passes on the shipped token in chromium, webkit, Mobile Chrome and Mobile Safari.
   The accessibility audit reports 0 violations across all 28 audits — 7 routes at 4 viewports — with
   every route carrying its expected `h1`.
-- *Checked since, in CI.* **Firefox ran on this commit.** CI run 38918677044 reports `Running 695
+- *Checked since, in CI.* **Firefox ran in CI.** Run 38918677044, on commit 1c13f9d, reports `Running 695
   tests`, which is five projects of 139, and Firefox appears in no failure — so the 139 tests that
   could not run locally did run, and passed. The size assertion at 768 passes in all five projects,
   including the WebKit case that failed on the previous run of this branch: that is this amendment's
   defect, caught by the assertion that now exists.
-- *Not clean.* CI's E2E job is **red on this commit**: 691 passed, 3 failed, 1 flaky. Of the three that
-  exhausted their retries, two are `hero-band.spec.ts:97` ("la banda mide 60% en 375x667", expected
-  667, received 714) in chromium and Mobile Chrome, and the third is this feature's own suite:
-  `contact-band-layout.spec.ts:123`, tablet, "las redes quedan a la izquierda del mail" — expected
-  true, received false. The one flaky is the same hero-band test in webkit, which passed on retry. The
-  hero-band failures are **pre-existing** — they fail on the previous run of this branch too. It asks whether the row has two grid columns at 768, which
-  `ContactBand.styles.ts:102` decides with `max-width: 767px`. On macOS at a 768 viewport
-  `clientWidth` is 768, the rule does not match, and the test passes; on Linux CI the classic scrollbar
-  consumes width, the rule matches, the row collapses to one column and the assertion is false. It is
-  the scrollbar mechanism above, on the layout side rather than the type side. Whether this amendment
-  caused it is not established — macOS cannot reproduce the condition, and the assertion passed on the
-  three earlier runs of this branch.
+- *Not clean, and not in this feature.* CI run 38930550851 on commit 1f57526 reports `Running 695
+  tests using 1 worker`, 688 passed, 6 failed, 1 flaky. **`contact-band-layout.spec.ts` is in neither
+  the failures nor the flaky list**, so all 23 of its tests pass in all five projects, Firefox
+  included: the tablet case that was failing now passes, and the assertion's stacked branch — which had
+  never executed before — runs and passes in WebKit on Linux.
+  The 6 failures and the 1 flaky are all in `hero-band.spec.ts`, `keyboard.spec.ts` and
+  `project-icon-strip.spec.ts`. Most are **pre-existing**: `hero-band.spec.ts:97`, `:185` and
+  `project-icon-strip.spec.ts:292` all fail at `b57fff7`, before this feature's commits.
+  `hero-band.spec.ts:112` has no history of failing and is recorded here as observed rather than
+  explained away — it is a different section, a different spec file and the same `dist/`, so this commit
+  cannot have caused it, but calling it pre-existing would go past the evidence.
 - *Not run locally, now run in CI.* Firefox cannot start headless on the machine this was written on:
   `browserType.launch` → `Could not find profile folder` → exitCode 1, and the message misleads, since
   the profile path is not the cause. Any headless configuration fails 0 of 3 while the same binary

@@ -142,15 +142,20 @@ Run 2026-10-16, against the built `dist/`, after Amendment 4:
 | E2E firefox | **0/139 locally — the browser will not start headless here** |
 | a11y, 7 routes × 4 viewports | 0 violations |
 
-**CI run 38918677044, on this commit.** Lint, TypeCheck, Tests, Build and Accessibility green. E2E
-**red**: `Running 695 tests using 1 worker`, 691 passed, 3 failed, 1 flaky.
+**CI run 38930550851, on commit 1f57526.** Lint, TypeCheck, Tests, Build and Accessibility green. E2E
+**red**: `Running 695 tests using 1 worker`, 688 passed, 6 failed, 1 flaky — every one of them outside
+this feature's suite.
 
 | | |
 |---|---|
 | Firefox | **ran, and passed.** 695 is 5 projects x 139, and Firefox is in no failure. The 139 tests this plan could not run locally are accounted for |
 | The address vs the Hero at 768 | **passes in all five projects.** The same assertion failed in WebKit on the previous run of this branch — the defect this plan's token change removes |
-| `hero-band.spec.ts:97`, 60% at 375x667 (expected 667, received 714) | fails in chromium and Mobile Chrome; flaky in webkit. **Pre-existing** — fails on the previous run too |
-| `contact-band-layout.spec.ts:123`, tablet, networks left of the address | **fails in webkit, and this is in the feature's own suite.** Expected true, received false. Corrected in the working tree — the assertion was branching on the viewport instead of the width the CSS breakpoint sees — but unconfirmed, since CI has not run the correction |
+| `contact-band-layout.spec.ts:123`, tablet, networks left of the address | **passes.** The assertion was branching on the viewport instead of the width the CSS breakpoint sees; corrected, and confirmed by this run |
+| `contact-band-layout.spec.ts`, whole file | **23/23 in all five projects**, absent from the failures and the flaky list. The stacked branch added by the correction runs for the first time here, in WebKit on Linux, and passes |
+| `hero-band.spec.ts:97`, 60% at 375x667 (expected 667, received 714) | fails in chromium, Mobile Chrome and webkit. **Pre-existing** — it also fails at `b57fff7` and at `1c13f9d` |
+| `hero-band.spec.ts:185`, `project-icon-strip.spec.ts:292` | **pre-existing** — both fail at `b57fff7`, though neither failed at `1c13f9d` |
+| `hero-band.spec.ts:112`, 55% at 768x1024 (expected 563, received 614) | **no history of failing.** Recorded as observed, not as pre-existing |
+| `keyboard.spec.ts:37` | the single flaky; passed on retry |
 
 Two figures this plan and the specification state were re-measured rather than derived: the Hero's
 token resolves to 32.00px at 768 in both Chromium and WebKit, not the 31px the document originally
@@ -181,9 +186,9 @@ overflow by 15px, which FR-004 forbids, and the only way to make it fit is to dr
 grid keeps its breakpoint and `medir()` now reports `anchoDisponible`, which the assertion branches on,
 with an `else` that asserts the stacked case rather than nothing.
 
-**This cannot be confirmed locally.** macOS has no classic scrollbar, so the old and the new assertion
-behave identically there: the change is verified not to regress, not verified to fix CI. WebKit on Linux
-is the only place it can be confirmed, and CI has not run it.
+**This could not be confirmed locally.** macOS has no classic scrollbar, so the old and the new assertion
+behave identically there: the change was verified not to regress, not verified to fix CI. WebKit on
+Linux is the only place it can be confirmed, and run 38930550851 is where it was.
 
 ## Decisions in this plan that no longer describe the code
 

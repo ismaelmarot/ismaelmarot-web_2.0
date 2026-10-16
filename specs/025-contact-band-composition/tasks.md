@@ -1,7 +1,7 @@
 # Tasks: The Contact Band's Composition
 
 **Input**: [spec.md](./spec.md) · **Plan**: [plan.md](./plan.md)
-**Status**: Implemented, E2E red in CI on this commit
+**Status**: Implemented, verified in all five browsers; E2E red on specs outside this feature
 
 ## Phase 1 — Measure before deciding
 
@@ -93,7 +93,7 @@
 
 ## Phase 7 — Re-verify against Amendment 4
 
-- [ ] T031 Run the full E2E suite against the shipped token, in all five configured projects —
+- [x] T031 Run the full E2E suite against the shipped token, in all five configured projects —
   chromium, firefox, webkit, Mobile Chrome and Mobile Safari — not just `contact-band-layout.spec.ts`.
   Amendment 4 moved the size assertion's crossover from 768 to 600 and made it `toBe` rather than
   `toBeCloseTo`, and every project executes it. T029 is the record of the earlier run, not of this one,
@@ -143,9 +143,10 @@
   the two revisions tested mean downgrading Playwright would not help either. This needs either a
   different machine or CI, where the build is known to run.
 
-  **CI run 38918677044, 2026-10-16, on this commit.** Firefox runs there — `Running 695 tests` is
-  5 projects x 139 — and it passes: Firefox appears in no failure. So the 139 tests this task was opened
-  for have now executed. **The task is still not closed**, because the suite as a whole is red:
+  **CI run 38918677044, 2026-10-16, on commit 1c13f9d** — superseded by run 38930550851 below, which is
+  the one this task closes on. Firefox runs there — `Running 695 tests` is 5 projects x 139 — and it
+  passes: Firefox appears in no failure. So the 139 tests this task was opened for had executed by
+  then, but the suite as a whole was red:
 
   - 691 passed, 3 failed, 1 flaky. Lint, TypeCheck, Tests, Build and Accessibility all green.
   - **The token at 768 is verified in CI.** `contact-band-layout.spec.ts:83`, "el mail mide lo mismo que
@@ -179,9 +180,23 @@
   is unchanged at 1440, 1024 and 768 and two assertions are added at 390 and 320, where
   `redesALaIzquierda` was measured false in both engines.
 
-  **Not yet confirmed.** macOS cannot reproduce the condition at all, so locally this change is
-  indistinguishable from the old one. Whether it fixes the Linux failure is verified by CI running
-  WebKit, and CI has not run this change. T031 stays open on that account.
+  **Confirmed by CI, run 38930550851 on commit 1f57526.** `Running 695 tests using 1 worker` — five
+  projects of 139 — with 688 passed, 6 failed, 1 flaky. Lint, TypeCheck, Tests, Build and Accessibility
+  are green.
+
+  - `contact-band-layout.spec.ts` appears in **neither the failures nor the flaky list**, so all 23 of
+    its tests pass in all five projects, Firefox included.
+  - `[webkit] › tablet › las redes quedan a la izquierda del mail` — the failure this task's second
+    half was opened for — now passes. It was absent from the failure list of run 38918677044 and is
+    absent from this one.
+  - **The `else` branch ran for the first time.** On Linux at a 768 viewport the width available is
+    753, the grid collapses, and the assertion now takes the stacked branch and expects `false` rather
+    than asserting nothing. That path had never executed before this commit, and it passes.
+  - The size assertion at 768 passes in all five projects.
+  - Firefox's 139 tests pass. The 139 this file originally listed as unrun locally have now run.
+
+  **What is still red is not this feature's suite.** All 6 failures and the 1 flaky are in
+  `hero-band.spec.ts`, `keyboard.spec.ts` and `project-icon-strip.spec.ts`. See below.
 - [x] T032 Run the accessibility audit against the shipped implementation: `npm run test:a11y`, zero
   axe violations across the seven routes at the four viewports. T030 is the record of the earlier run.
   <!-- Run 2026-10-16 against the shipped token: 0 violations on all 28 audits — 7 routes
@@ -225,27 +240,35 @@
 
 ## What is still open against this amendment
 
-**T031 — the E2E suite is red in CI on this commit.** CI run 38918677044: 691 passed, 3 failed,
-1 flaky. Lint, TypeCheck, Tests, Build and Accessibility are green.
+**Nothing in this feature.** T031 is closed: run 38930550851 on commit 1f57526 ran 695 tests across all
+five projects, `contact-band-layout.spec.ts` passes in every one of them, and the 139 Firefox tests this
+file originally listed as unrun have run and passed.
 
-Firefox is no longer part of what is open. It runs in CI — 695 tests is 5 projects of 139 — and it
-passes. The 139 tests this file originally listed as unrun have now run.
+### What is red in CI, and why it is not this feature
 
-Two things keep the feature from being closed:
+The E2E job is still red: 688 passed, 6 failed, 1 flaky. Every one of those is outside this feature's
+suite, and this commit could not have introduced any of them: it changed one spec file of this feature
+and three Markdown artifacts, and no CSS, no component, no data and no Playwright configuration. The only
+other change between the two runs is that this branch gained the `anchoDisponible` fix, which is confined
+to `contact-band-layout.spec.ts`.
 
-1. `contact-band-layout.spec.ts:123`, tablet, "las redes quedan a la izquierda del mail", failing in
-   WebKit on Linux CI. The cause is established: the assertion branched on the viewport while the grid
-   branches on the width available to the layout, and at a 768 viewport those are 768 and 753. The
-   assertion is corrected in the working tree and the layout is untouched, but **the correction cannot
-   be confirmed locally** — macOS has no classic scrollbars, so the old and the new assertion behave
-   identically there. CI has to run WebKit for this to close.
-2. `hero-band.spec.ts:97`, "la banda mide 60% en 375x667" (expected 667, received 714), failing in
-   chromium, Mobile Chrome and webkit. **Pre-existing** — it fails on the previous run too, and it is
-   not this feature's suite.
+| Test | Where | History |
+|---|---|---|
+| `hero-band.spec.ts:97`, 60% at 375x667 (expected 667, received 714) | chromium, Mobile Chrome, webkit | fails at `b57fff7` and at `1c13f9d` — **pre-existing** |
+| `hero-band.spec.ts:185`, block centred at 768x1024 | webkit | fails at `b57fff7` — **pre-existing**, absent at `1c13f9d` |
+| `project-icon-strip.spec.ts:292`, SC-015 frame count (expected 6, received 1) | webkit | fails at `b57fff7` — **pre-existing**, absent at `1c13f9d` |
+| `keyboard.spec.ts:37`, header links | webkit | the single flaky; passed on retry |
+| `hero-band.spec.ts:112`, band 55% at 768x1024 (expected 563, received 614) | webkit | **not seen failing before this commit** |
 
-Re-verified 2026-10-16: SC-011's five checks, SC-012's accessibility audit, the E2E suite in
-chromium, webkit, Mobile Chrome and Mobile Safari locally, and — in CI — the address's size against
-the Hero's at 768 in all five projects, where the same assertion failed in WebKit before this commit.
+The last row is stated as observed rather than explained away. It cannot be caused by this commit — the
+Hero band is a different section, a different spec file, and the same `dist/` — but it also has no
+history of failing, so calling it pre-existing would be a claim this record does not support. It and the
+other WebKit failures are all measurements at 768 in an engine whose scrollbar takes width, the same
+family as the problem this feature had; whether that is the cause is not established, and it belongs to
+the Hero band's own specifications rather than this one.
+
+Re-verified 2026-10-16: SC-011's five checks, SC-012's accessibility audit, the address's size against
+the Hero's at 768 in all five projects, and the band's layout in all five, including Firefox.
 
 ## Notes
 
