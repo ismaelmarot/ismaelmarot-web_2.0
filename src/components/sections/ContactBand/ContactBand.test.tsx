@@ -361,12 +361,32 @@ describe('ContactBand', () => {
       // `var(--text-display-email)` y no puede saber a qué apunta. Es el archivo el que dice que ese
       // token es el del Hero, y esa es la mitad de la promesa que no se ve desde el componente.
       const tokens = readFileSync(`${process.cwd()}/src/styles/tokens.css`, 'utf-8');
-      expect(tokens).toMatch(/--text-display-email:\s*var\(--text-display-project\)/);
+      const declaracion = tokens.match(/--text-display-email:\s*([^;]+);/);
+      expect(declaracion, 'el token existe').not.toBeNull();
+      expect(declaracion![1].trim()).toBe('clamp(1.125rem, 5.9vw, var(--text-display-project))');
 
-      // Y el paso móvil vive en el mismo archivo, no en una media query del componente: un tamaño
-      // repartido en dos sitios es un tamaño que la próxima vez queda cambiado por la mitad.
-      const movil = tokens.slice(tokens.indexOf('max-width: 767px'));
-      expect(movil).toMatch(/--text-display-email:\s*clamp\(/);
+      /* El techo es el token del Hero y no un número, y eso es lo que hace que los dos no puedan
+         separarse. El argumento es estructural y no depende de que el fallo que lo motivaba llegara
+         a ocurrir: un breakpoint que tiene que coincidir con el token de otro componente es una
+         segunda regla sobre el tamaño. 767 y 768 son el mismo ancho escrito dos veces, y nada los
+         mantiene juntos cuando uno de los dos se edite.
+
+         Y el fallo sí ocurría, medido. A viewport 768, Chromium da clientWidth 768 y
+         `(max-width: 767px)` no matchea: el mail se queda en los 32px del Hero. En WebKit la barra de
+         desplazamiento se come 8px y clientWidth da 760, así que la regla SÍ matchea, el mail cae a
+         24px y el Hero sigue en 32. Los dos se separan justo en el ancho donde la promesa del
+         proyecto es que son iguales. Chromium lo esconde, WebKit no, y CI corre WebKit.
+
+         Y el piso y la rampa viven en la misma declaración. Un tamaño repartido entre una regla y una
+         media query es un tamaño que la próxima vez queda cambiado por la mitad, y además aquí no hace
+         falta: el techo se cruza solo alrededor de los 540px. */
+      expect(declaracion![1]).toContain('5.9vw');
+      expect(declaracion![1]).toContain('1.125rem');
+      /* El E2E sí distingue las dos versiones, pero sólo en un motor: en WebKit a 768 el caso tablet
+         mide 24px contra 32px y revienta. Ésta sigue siendo la aserción que ata el mecanismo, porque
+         funciona en cualquier motor y sin lanzar un navegador. */
+      const reglasDelMail = [...tokens.matchAll(/--text-display-email:\s*([^;]+);/g)];
+      expect(reglasDelMail).toHaveLength(1);
     });
   });
 });

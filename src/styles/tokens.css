@@ -119,30 +119,61 @@
   --text-card-title: clamp(1.75rem, 4vw, 3rem);              /* Project name - weight 600 */
   /* Contact band: the email address, which is the band's subject and the largest thing on it.
      specs/025 set it to the same token the Hero's "Web Developer" phase uses, so the band ends the
-     page at the scale the page starts. Measured, because applying that token unchanged does not fit:
+     page at the scale the page starts.
 
-     ismaelmarot@hotmail.com in Inter 600 with the -0.01em this link carries, on the rendered page:
+     It is written as one clamp and not as two rules with a breakpoint between them, and that is the
+     part worth reading.
 
-       20px -> 254     26px -> 330     40px -> 508
-       22px -> 279     28px -> 356     56px -> 711
-       24px -> 305     32px -> 406
+     THE REASON. An earlier version kept the Hero's token above 768 and stepped down below it with a
+     `@media (max-width: 767px)` rule. Two reasons to drop that rule, and the second is measured.
 
-     --text-display-project is clamp(2rem, 4vw, 3.5rem): 56px at 1440, 31px at 768, and a 32px floor
-     below that. Above 768 it fits, because the requested layout gives the address a column rather than
-     half of one -- the four network marks are 44px each and need about 230, so `auto 1fr` leaves the
-     address roughly 960 at 1440 and 498 at 768, against the 711 and 393 the size needs. That is the
-     whole reason the arrangement change made the size change possible: specs/021 capped this at 40px
-     precisely because the address then shared a 596px column with the question, and 44px overflowed it
-     by 3.
+     The structural one: a breakpoint that has to agree with another component's token is a second
+     rule about size. 767 and 768 are the same width written down twice, and nothing keeps them from
+     drifting apart the next time either one is edited.
 
-     Below 768 the column is the full width and there is nothing to widen. The mobile step is fluid
-     rather than fixed because two viewports have different room and the address has one length: a flat
-     26px fits 390 with 28px to spare and overflows 320 by 42. So 6.6vw gives 22px at 320 (279 used of
-     288) and 25.7px at 390 (326 of 358), and both fit on one line.
+     The measured one: in WebKit the rule fires early. Measured at a 768 viewport, Chromium reports
+     clientWidth 768 and `(max-width: 767px)` does not match, so the address holds the Hero's 32px. In
+     WebKit the scrollbar takes 8px and clientWidth reports 760, so the rule DOES match, the address
+     drops to 24px, and the Hero stays at 32px -- the two part company at exactly the width where the
+     feature's promise is that they are the same. Chromium hides this; WebKit does not, and CI runs
+     WebKit.
 
-     The ceiling now belongs to the Hero's token rather than to this one. A longer address needs a
-     smaller --text-display-project, not a wider column, and nothing detects the change. */
-  --text-display-email: var(--text-display-project);
+     So the old rule held the promise in one engine and broke it in the other, and nothing in the
+     stylesheet recorded which one you were in. A breakpoint whose behaviour depends on whether the
+     browser has a scrollbar is not a breakpoint, it is a coin.
+
+     The construction that replaces the breakpoint:
+
+       the ceiling is  var(--text-display-project) -- the Hero's own clamp, so the two cannot differ
+       the floor is    1.125rem, below which the address would stop being a display
+       the ramp is     5.9vw, which crosses under the ceiling somewhere around 540px and takes over
+                       below that
+
+     Above the crossover the address IS the Hero's size, by construction rather than by coincidence.
+     Below it the ramp governs, and the ramp is there only because a narrow column cannot hold the
+     address.
+
+     Measured on the rendered band. The limit is not the address on its own: the link also holds a 28px
+     arrow and a 12px gap, and all three have to fit. Binary-searching the largest size that still
+     renders on one line:
+
+       320px -> 288 column -> 19.5px is the ceiling
+       360px -> 328 column -> 22.7px
+       390px -> 358 column -> 25px
+       430px -> 398 column -> 28.2px
+
+     5.9vw gives 18.9px at 320 and 23px at 390, under both. A flat 26px was the first answer and it was
+     wrong at 320 by 42px while looking comfortable at 390.
+
+     specs/021's ceiling of 40px and its table are gone, and they were right at the time: the address
+     then shared a 596px column with the question and 44px overflowed by 3. The arrangement is what
+     removed that constraint -- the four network marks need about 230px, so `auto 1fr` leaves the
+     address roughly 960 at 1440 and 498 at 768, against the 711 and 393 that 56px and 31px need.
+
+     The ceiling now belongs to the Hero's token. A longer address needs a smaller
+     --text-display-project or a wider column, and nothing detects the change. */
+
+  --text-display-email: clamp(1.125rem, 5.9vw, var(--text-display-project));
   --text-card-body: 1.0625rem;                               /* Project description - weight 400 */
 
   /* Font Weights - Only 4 weights permitted */
@@ -228,30 +259,6 @@
   --container-lg: 1024px;
   --container-xl: 1280px;
   --container-2xl: 1536px;
-}
-
-/* specs/025 — the contact address on a narrow screen.
-   `--text-display-email` inherits the Hero's token above 768px, where the band gives the address a
-   column wide enough for it. Below 768 the column is the full width and nothing can be widened.
-
-   The limit is not the address on its own. The link holds the address, a 28px arrow and a 12px gap, and
-   all three have to fit. Measured on the rendered band, binary-searching the largest size that still
-   renders on one line:
-
-     320px -> 288 column -> 19.5px is the ceiling
-     360px -> 328 column -> 22.7px
-     390px -> 358 column -> 25px
-     430px -> 398 column -> 28.2px
-
-   Fluid rather than fixed because the column has fixed padding and the address has one length, so the
-   two do not scale together. 5.9vw gives 18.9px at 320, 23px at 390 and sits under every one of those
-   ceilings. The ceiling of 1.5rem is deliberate headroom: at 430 the real limit is 28.2 and this stops
-   at 24, because a token that exactly fills its column at one width is one width from wrapping at the
-   next. */
-@media (max-width: 767px) {
-  :root {
-    --text-display-email: clamp(1.125rem, 5.9vw, 1.5rem);
-  }
 }
 
 /* Reduced motion - zeros all transition/duration variables */

@@ -86,12 +86,15 @@ test.describe('la banda de contacto', () => {
         const m = await medir(page);
 
         const px = (v: string) => parseFloat(v);
-        if (vp.width >= 768) {
-          // El pedido, literal: la misma fase. El token es el mismo, no dos tokens que coinciden hoy.
-          expect(px(m.mailFuente)).toBeCloseTo(px(m.heroFuente), 1);
+        /* El corte está en 600, no en 768, y no es un número que alguien eligió: es donde la rampa del
+           token se cruza con el techo que le pone el Hero. Por encima de ahí los dos son el mismo
+           token y no pueden diferir. Por debajo la rampa manda, porque la columna es el ancho entero y
+           el piso del Hero pide 406px, que un teléfono no tiene. */
+        if (vp.width >= 600) {
+          // El pedido, literal: la misma fase. Igual, no "cerca": es el mismo token.
+          expect(px(m.mailFuente)).toBe(px(m.heroFuente));
         } else {
-          // Debajo de 768 la columna es el ancho entero y el piso del token del Hero pide 406px, que
-          // un teléfono no tiene. Un escalón menos, y nunca mayor que el del Hero.
+          // Un escalón menos, y nunca mayor que el del Hero.
           expect(px(m.mailFuente)).toBeLessThan(px(m.heroFuente));
           // Con un techo medido: 25px es lo que entra en 358px de columna junto a la flecha de 28.
           expect(px(m.mailFuente)).toBeLessThanOrEqual(25);
@@ -124,6 +127,22 @@ test.describe('la banda de contacto', () => {
 
         // En móvil la fila se apila y las redes quedan encima, no al lado. Que se apilen es lo
         // correcto; lo que no puede pasar es que se solapen.
+        //
+        // El 767/768 de acá NO es el mismo número que el 600 del aserto de tamaño, y no es casual que
+        // este archivo tenga los dos. Son dos mecanismos distintos:
+        //
+        //   - el tamaño no tiene breakpoint. Es un clamp continuo cuyo techo es el token del Hero, y
+        //     el 600 es un corte analítico elegido por debajo del cruce real (~542px), para no
+        //     depender de calcular ese cruce exacto.
+        //   - la disposición sí tiene breakpoint: `ContactBand.styles.ts:98` pone `grid-template-columns:
+        //     auto 1fr` y `:102` lo pasa a `1fr` bajo 767px. `redesALaIzquierda` mide literalmente que
+        //     la fila tiene dos columnas, así que su umbral tiene que ser ese breakpoint y no otro.
+        //     Unificarlo con el 600 haría pedir dos columnas entre 600 y 767, donde el grid ya colapsó
+        //     a una, y el aserto fallaría.
+        //
+        // El token ya no tiene breakpoint, así que este archivo no puede comprobar su forma: que el mail y el
+        // Hero midan lo mismo lo garantiza el techo compartido en `tokens.css`, y lo que ata esa forma
+        // al archivo es `ContactBand.test.tsx`, que exige una sola declaración del token.
         if (vp.width >= 768) expect(m.redesALaIzquierda).toBe(true);
       });
     });
