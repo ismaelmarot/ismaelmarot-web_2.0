@@ -35,7 +35,7 @@ export const StyledContactBandInner = styled.div`
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: ${tokens.space[16]};
+  gap: ${tokens.space[40]};
   max-width: ${tokens.containers.xl};
   width: 100%;
   margin-inline: auto;

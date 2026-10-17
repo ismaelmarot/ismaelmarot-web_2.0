@@ -76,7 +76,9 @@ export const tokens = {
     16: 'var(--space-16)',
     20: 'var(--space-20)',
     24: 'var(--space-24)',
-  },
+    32: 'var(--space-32)',
+    40: 'var(--space-40)',
+  }, 
   fonts: {
     sans: 'var(--font-sans)',
     mono: 'var(--font-mono)',

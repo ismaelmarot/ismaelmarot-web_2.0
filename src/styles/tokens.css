@@ -98,6 +98,10 @@
   --space-16: 4rem;     /* 64px */
   --space-20: 5rem;     /* 80px */
   --space-24: 6rem;     /* 96px */
+  --space-32: 10rem;     /* 128px */
+  --space-40: 20rem;     /* 192px */
+
+
 
   /* Typography - Inter font family */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
