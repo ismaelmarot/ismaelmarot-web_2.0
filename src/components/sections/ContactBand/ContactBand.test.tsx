@@ -363,9 +363,12 @@ describe('ContactBand', () => {
       // El testid del contenedor existe porque `no-node-access` prohíbe alcanzar un padre a través de
       // un hijo, y la fila ya lo practica: un nodo estructural sin rol se nombra para la prueba, no
       // para el lector de pantalla.
-      expect(getCssForElement(screen.getByTestId('contact-band-inner'))).toContain(
-        `gap: ${tokens.space[12]}`
-      );
+      //
+      // specs/029 raised the step the air lives on: la referencia es el token, y la ausencia del token
+      // anterior en la MISMA declaración es lo que evita que una banda desfasada pase por nueva.
+      const interna = getCssForElement(screen.getByTestId('contact-band-inner'));
+      expect(interna).toContain(`gap: ${tokens.space[16]}`);
+      expect(interna).toMatch(/gap:\s*var\(--space-16\)/);
     });
 
     it('las redes van antes que el mail en el DOM', () => {

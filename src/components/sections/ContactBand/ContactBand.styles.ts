@@ -26,14 +26,16 @@ export const StyledContactBand = styled.section`
    changes nothing about them.
 
    The gap is the only air between the copy block and the row — the copy carries no margin, which is what
-   specs/025 recorded and specs/028 leaves as the arrangement's decision rather than a child's exception.
-   space[12] is the next step up the scale from the 40px the band carried through specs/027, and the E2E
-   measures the button-to-row distance so a margin smuggled in anywhere fails it. */
+   specs/025 recorded and specs/028/029 leave as the arrangement's decision rather than a child's
+   exception. specs/029 puts the air on space[16], the token the band's own padding-block spends, so the
+   inner air and the outer one read as the same rhythm — generous space between groups, not one more
+   number on the page. The E2E measures the button-to-row distance, so a margin smuggled in anywhere
+   fails it. */
 export const StyledContactBandInner = styled.div`
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: ${tokens.space[12]};
+  gap: ${tokens.space[16]};
   max-width: ${tokens.containers.xl};
   width: 100%;
   margin-inline: auto;

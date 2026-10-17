@@ -138,17 +138,22 @@ test.describe('la banda de contacto', () => {
         expect(parseFloat(m.preguntaFuente)).toBeGreaterThan(parseFloat(m.fraseFuente));
       });
 
-      test('el aire entre el bloque y la fila mide el escalón que specs/028 pide', async ({ page }) => {
+      test('el aire entre el bloque y la fila mide el escalón que specs/029 pide', async ({ page }) => {
         await page.goto('/');
         await page.waitForLoadState('networkidle');
         const m = await medir(page);
 
-        // 48px is the step the band owns between its last copy element and the row — `space[12]` on the
-        // parent's gap, up from the 40px the band carried through specs/027. One pixel of slack covers
-        // the roundoff in the measurement; the distance is what a margin smuggled in anywhere would
-        // spoil, which is why it is measured and not read off a stylesheet.
-        expect(m.distanciaBotonFila, 'la fila respira un escalón más').toBeGreaterThan(40);
-        expect(Math.abs(m.distanciaBotonFila - 48), '48px, espacio-aguja').toBeLessThanOrEqual(1);
+        // 64px is the step the band owns between its last copy element and the row — `space[16]` on the
+        // parent's gap, up from the 48px the band carried through specs/028 and the 40px it carried
+        // through specs/027. One pixel of slack covers the roundoff in the measurement; the distance
+        // is what a margin smuggled in anywhere would spoil, which is why it is measured and not read
+        // off a stylesheet.
+        //
+        // Two thresholds rather than one literal: greater than 40 would green-light the band as it
+        // currently ships, and 64 alone would be satisfied by a coincidental sum of margins. Together
+        // they hold both FR-002 of specs/029 and the gap's ownership.
+        expect(m.distanciaBotonFila, 'la fila respira más que el paso de specs/027').toBeGreaterThan(40);
+        expect(Math.abs(m.distanciaBotonFila - 64), '64px, espacio-aguja').toBeLessThanOrEqual(1);
       });
 
       test('el mail no parte ni desborda su columna', async ({ page }) => {
