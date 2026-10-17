@@ -28,6 +28,7 @@ export const StyledContactBandInner = styled.div`
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  gap: ${tokens.space[10]};
   max-width: ${tokens.containers.xl};
   width: 100%;
   margin-inline: auto;
@@ -38,30 +39,21 @@ export const StyledContactBandInner = styled.div`
   }
 `;
 
-/* The question is the band's heading, and it is the largest text in it. The address is a link rather
-   than a heading, so the band keeps exactly one level-two heading and the page's outline does not
-   gain a second top-level voice. */
-/* Subordinate to the address at every viewport, and not a display size.
+/* The question is the band's heading and its subject, so it is the largest text in it and the only
+   element at the section-title scale. The address is a link rather than a heading, so the band keeps
+   exactly one level-two heading and the page's outline does not gain a second top-level voice.
 
-   specs/020 shipped this heading at --text-display-section, 72px at desktop, against an address of
-   36px. specs/021 moved it down, but to --text-large-subtitle, whose floor of 20px is ABOVE the
-   address's own floor of 18px — so the band still rendered the question larger than the address on a
-   phone, and on a 320px screen the question was the thing that read as the subject. Measured, not
-   assumed: 20px against 18px at both 390 and 320.
-
-   --text-body is 16px and its floor is below the address's, which is what FR-001 asks for. It is the
-   least interesting token on the scale and that is the point: this heading is deliberately not a
-   display, because the display in this band is an email address. The ratio is 0.4 at desktop and 0.89
-   on a 320px screen, and the second number is honest — at 288px of column there is no room for a
-   difference and pretending otherwise would mean a question too small to read. */
+   specs/027 inverts the hierarchy specs/025 settled. specs/025 moved the question down to --text-body
+   because the address was the display; the request now makes the question the display, so it reads
+   --text-display-section, the token the "Sobre mí" heading already uses. The address keeps its own
+   token, whose ceiling is one step below, so the two cannot compete. */
 export const StyledContactBandTitle = styled.h2`
   margin: 0;
-  font-size: var(--text-body);
-  font-weight: ${tokens.fontWeights.semibold};
-  line-height: 1.3;
+  font-size: var(--text-display-section);
+  font-weight: ${tokens.fontWeights.bold};
+  line-height: 1.05;
   letter-spacing: -0.01em;
-  color: ${tokens.colors.textTertiary};
-  max-width: 18ch;
+  color: ${tokens.colors.textPrimary};
 `;
 
 /* specs/025: what happens after the question. One step below the question and two below the address,
@@ -69,12 +61,12 @@ export const StyledContactBandTitle = styled.h2`
    asked about. A paragraph and not a heading, so the band keeps exactly one level-two heading. */
 export const StyledContactBandDescription = styled.p`
   margin: 0;
-  font-size: var(--text-secondary);
+  font-size: var(--text-body);
   font-weight: ${tokens.fontWeights.normal};
-  line-height: 1.4;
+  line-height: 1.625;
   letter-spacing: -0.005em;
-  color: ${tokens.colors.textTertiary};
-  max-width: 46ch;
+  color: ${tokens.colors.textSecondary};
+  max-width: 60ch;
 `;
 
 /* The top row: the networks on the left and the address on the right.
@@ -90,10 +82,6 @@ export const StyledContactBandDescription = styled.p`
    `align-items: center` because the network marks are 44px squares and the address is a line of text
    whose height now depends on its size. Centring keeps them looking related at any of them. */
 export const StyledContactBandRow = styled.div`
-  /* specs/025: raised above the question by CSS so the reading order can stay the other way round.
-     Without it the drawing would need the markup reordered, and the page's outline would start with
-     four social links instead of with the question that says what the section is. */
-  order: -1;
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
@@ -105,17 +93,14 @@ export const StyledContactBandRow = styled.div`
   }
 `;
 
-/* The question and the sentence under it. A column, so the button can sit beneath both and still
-   align right, which is the arrangement the drawing specifies. */
+/* The question, the sentence and the call to action. A column aligned to the start, so the button sits
+    beneath the sentence at the left margin rather than at the far edge of the band. The band's own
+    spacing between this block and the row below lives on the parent's gap. */
 export const StyledContactBandCopy = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${tokens.space[2]};
-  margin-top: ${tokens.space[10]};
-
-  @media (max-width: 767px) {
-    margin-top: ${tokens.space[8]};
-  }
+  align-items: flex-start;
+  gap: ${tokens.space[3]};
 `;
 
 /* The band's own route to the contact page, and the one thing in the band shaped like a control.
@@ -129,11 +114,11 @@ export const StyledContactBandCopy = styled.div`
 export const StyledContactBandCta = styled.a`
   display: inline-flex;
   align-items: center;
-  /* specs/025: aligned right, because the drawing indents it. align-self rather than
-     margin-left:auto so the rule reads as an alignment and reversing it is one declaration. */
-  align-self: flex-end;
+  /* Left-aligned beneath the sentence, inside the copy block. align-self rather than margin-left:auto
+     so the rule reads as an alignment and reversing it is one declaration. */
+  align-self: flex-start;
   gap: ${tokens.space[2]};
-  margin-top: ${tokens.space[6]};
+  margin-top: ${tokens.space[2]};
   padding: ${tokens.space[3]} ${tokens.space[6]};
   font-size: var(--text-body);
   font-weight: ${tokens.fontWeights.semibold};
@@ -147,12 +132,6 @@ export const StyledContactBandCta = styled.a`
   &:hover {
     transform: translateY(-1px);
     opacity: 0.88;
-  }
-
-  /* On a phone the band's copy fills the width, and a right-aligned pill sits at the far edge of a
-     thumb. Left there, where the text above it starts. */
-  @media (max-width: 767px) {
-    align-self: flex-start;
   }
 
   &:focus-visible {
@@ -178,6 +157,10 @@ export const StyledContactBandCta = styled.a`
 export const StyledContactEmail = styled.a`
   display: inline-flex;
   align-items: baseline;
+  /* Flush right within the row's second column, which is what "bien a la derecha" asks for. On a
+     phone the row collapses to one column and the address returns to the start, because a
+     right-aligned address at the end of a stacked column reads as a mistake. */
+  justify-self: end;
   gap: ${tokens.space[3]};
   min-width: 0;
   font-size: var(--text-display-email);
@@ -201,6 +184,10 @@ export const StyledContactEmail = styled.a`
     outline: none;
     border-radius: ${tokens.radii.sm};
     box-shadow: var(--shadow-focus);
+  }
+
+  @media (max-width: 767px) {
+    justify-self: start;
   }
 
   @media (prefers-reduced-motion: reduce) {

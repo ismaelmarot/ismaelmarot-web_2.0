@@ -89,10 +89,16 @@ export const StyledNavItem = styled.a<{ $variant?: 'header' | 'mobile' | 'footer
       &:nth-child(4) { animation-delay: 180ms; }
       &:nth-child(5) { animation-delay: 240ms; }
 
-      &:hover {
-        color: ${tokens.colors.accent};
-      }
-    `}
+/* specs/026: touch and keyboard get the same accent the mouse already had. :active is what a
+           finger produces — on a touch screen there is no hover to wait for — and :focus-visible is the
+           keyboard arriving at an item that was never pointed at. Both resolve through
+           var(--color-accent), so the portal-free navigation here follows the menu's theme too. */
+        &:hover,
+        &:active,
+        &:focus-visible {
+          color: ${tokens.colors.accent};
+        }
+      `}
 
   /* NavLink marks the item that resolves to the current URL with .active and sets
      aria-current="page". Styling that class keeps the current section in sync with the

@@ -25,10 +25,13 @@ export interface MobileMenuProps extends HTMLAttributes<HTMLDivElement> {
   onClose: () => void;
   items: NavItem[];
   cta?: NavItem;
+  /** The header's dark treatment. The menu is portaled to document.body, so it cannot inherit the
+   * header's custom properties and has to be told which theme it is under. */
+  overDark: boolean;
 }
 
 export const MobileMenu = forwardRef<HTMLDivElement, MobileMenuProps>(
-  ({ isOpen, onClose, items, cta, className, ...props }, ref) => {
+  ({ isOpen, onClose, items, cta, overDark, className, ...props }, ref) => {
     useMobileMenu(isOpen, onClose);
     const hasCta = Boolean(cta);
 
@@ -40,13 +43,20 @@ export const MobileMenu = forwardRef<HTMLDivElement, MobileMenuProps>(
         <StyledMobileMenu
           ref={ref}
           $open={isOpen}
+          $overDark={overDark}
           id="mobile-menu"
           className={className}
           data-open={isOpen.toString()}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Mobile menu"
-          {...props}
+role="dialog"
+            aria-modal="true"
+            aria-label="Mobile menu"
+            /* specs/026, SC-005. Sin esto, useMobileMenu.ts:15 llama focus() sobre el panel y no hace
+               nada: un elemento sin tabindex no es enfocable por script. El foco se quedaba en el
+               botón del header, que queda detrás del overlay, y el primer Tab se salía del menú en
+               lugar de entrar por el botón de cerrar. -1 lo hace enfocable por script sin agregarlo al
+               orden de tabulación, que es exactamente lo que un contenedor de diálogo necesita. */
+            tabIndex={-1}
+            {...props}
         >
           <StyledHeader>
             <StyledCloseButton onClick={onClose} aria-label="Close menu" type="button">

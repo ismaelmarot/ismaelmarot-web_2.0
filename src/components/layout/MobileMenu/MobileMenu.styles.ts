@@ -1,5 +1,6 @@
 import styled, { css } from 'styled-components';
 import { tokens } from '@/styles/tokens';
+import { darkSurface } from '@/styles/theme';
 
 export const StyledOverlay = styled.div<{ $visible: boolean }>`
   position: fixed;
@@ -11,11 +12,18 @@ export const StyledOverlay = styled.div<{ $visible: boolean }>`
   transition: opacity 200ms ease-out, visibility 200ms ease-out;
 `;
 
-export const StyledMobileMenu = styled.div<{ $open: boolean }>`
+export const StyledMobileMenu = styled.div<{ $open: boolean; $overDark: boolean }>`
   position: fixed;
   inset: 0;
   width: 100%;
   max-width: none;
+  /* specs/026: the panel takes the theme it sits under. The fragment carries the dark palette, and
+     --color-background in it is what turns the line below black without this declaration changing.
+     The menu is portaled to document.body, so it cannot inherit the header's overrides and is told
+     the theme instead. Everything inside inherits from here, which is why the navigation items and the
+     close button recolour without knowing anything about it. */
+  ${({ $overDark }) => $overDark && darkSurface}
+
   background-color: ${tokens.colors.background};
   border-left: none;
   box-shadow: none;
@@ -33,8 +41,12 @@ export const StyledMobileMenu = styled.div<{ $open: boolean }>`
       backdrop-filter: blur(0px);
 
       @keyframes menuSolidify {
+        /* specs/026: from transparent, not from a translucent white. The old start was
+           rgba(255, 255, 255, 0.55), which on a black panel is exactly the flash this feature removes,
+           and lowering the alpha of a var() would need color-mix() or a new token. Transparent is
+           correct in both themes because there is no colour left in it that can be wrong. */
         from {
-          background-color: rgba(255, 255, 255, 0.55);
+          background-color: transparent;
           backdrop-filter: blur(18px);
         }
         to {
@@ -111,9 +123,14 @@ export const StyledNavItem = styled.a`
     }
   }
 
-  &:hover {
-    color: ${tokens.colors.accent};
-  }
+/* specs/026: the same three states the navigation list has, so the call to action does not answer
+     to a finger or the keyboard differently from the items above it. The outline below stays, because
+     for a keyboard the ring is the part that survives a colour that has already moved. */
+    &:hover,
+    &:active,
+    &:focus-visible {
+      color: ${tokens.colors.accent};
+    }
 
   &:focus-visible {
     outline: 2px solid ${tokens.colors.focus};

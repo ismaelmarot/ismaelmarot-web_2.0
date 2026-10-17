@@ -33,10 +33,12 @@ describe('ContactBand', () => {
     );
 
   describe('US1 - escribir desde la landing', () => {
-    it('muestra la dirección como un único enlace mailto', () => {
+    it('muestra la dirección visible como un único enlace mailto', () => {
       renderBand();
 
-      const enlace = screen.getByRole('link', { name: 'ismaelmarot@hotmail.com' });
+      // specs/027: the visible text and the destination are two values. The link's accessible name is
+      // the address the band shows, and the href is the address it writes to.
+      const enlace = screen.getByRole('link', { name: 'ismaelmarot@contacto.com' });
       expect(enlace).toHaveAttribute('href', 'mailto:ismaelmarot@hotmail.com');
     });
 
@@ -45,15 +47,31 @@ describe('ContactBand', () => {
 
       // A new tab that never fills is the worst outcome this band could produce. Asserted because it
       // is a one-attribute decision that a later "make all links open in a tab" sweep would reverse.
-      expect(screen.getByRole('link', { name: 'ismaelmarot@hotmail.com' })).not.toHaveAttribute(
+      expect(screen.getByRole('link', { name: 'ismaelmarot@contacto.com' })).not.toHaveAttribute(
         'target'
+      );
+    });
+
+    it('el texto visible y el destino son dos valores independientes', () => {
+      renderBand();
+
+      // The split is the feature: the band shows one address and writes to another. Overriding the
+      // display address changes only the text, and the href stays the configured destination.
+      expect(screen.getByRole('link', { name: 'ismaelmarot@contacto.com' })).toHaveTextContent(
+        'ismaelmarot@contacto.com'
+      );
+
+      renderBand({ displayEmail: 'otra@contacto.com' });
+      expect(screen.getByRole('link', { name: 'otra@contacto.com' })).toHaveAttribute(
+        'href',
+        'mailto:ismaelmarot@hotmail.com'
       );
     });
 
     it('es el texto más grande de la banda, y su tamaño viene de un token', () => {
       renderBand();
 
-      const direccion = screen.getByRole('link', { name: 'ismaelmarot@hotmail.com' });
+      const direccion = screen.getByRole('link', { name: 'ismaelmarot@contacto.com' });
 
       // Read from the injected stylesheet rather than from the class name: styled-components emits
       // generated names, so anything asserted on a class would pass no matter what the CSS says. The
@@ -67,15 +85,15 @@ describe('ContactBand', () => {
       expect(getCssForElement(direccion)).toContain('font-size: var(--text-display-email)');
     });
 
-    it('la pregunta ya no usa un tamaño display, porque el display es el mail', () => {
+    it('la pregunta usa el tamaño de título de sección, porque es el display', () => {
       renderBand();
 
-      // specs/020 shipped this heading at --text-display-section, 72px, against an address of 36px.
-      // specs/021 moved it to --text-large-subtitle so the address is the largest thing in the band,
-      // which is what 020 said it wanted and did not deliver.
+      // specs/027 inverts the band's hierarchy: the question is the subject and the address is one
+      // display step below it. specs/025 had moved the question down to --text-body because the
+      // address was the display; that argument no longer holds now that the question is.
       const css = getCssForElement(screen.getByRole('heading', { level: 2 }));
-      expect(css).toContain('font-size: var(--text-body)');
-      expect(css).not.toContain('--text-display-section');
+      expect(css).toContain('font-size: var(--text-display-section)');
+      expect(css).not.toContain('var(--text-body)');
       // --text-large-subtitle was the first answer and it was wrong: its 20px floor is above the
       // address's 18px floor, so the band still showed the question larger than the address on a
       // phone. Asserting the absence keeps the token that inverts from coming back.
@@ -99,8 +117,8 @@ describe('ContactBand', () => {
 
       // The visible text is the accessible name. A band that announced "Email: ismaelmarot@..." on a
       // link that already reads the address is a band that says the same thing twice.
-      expect(screen.getByRole('link', { name: 'ismaelmarot@hotmail.com' })).toHaveTextContent(
-        'ismaelmarot@hotmail.com'
+      expect(screen.getByRole('link', { name: 'ismaelmarot@contacto.com' })).toHaveTextContent(
+        'ismaelmarot@contacto.com'
       );
     });
   });
@@ -221,13 +239,13 @@ describe('ContactBand', () => {
       expect(css).not.toContain('var(--shadow-focus)');
     });
 
-    it('el techo del token del mail es 2.5rem', () => {
+    it('el mail usa su propio token, cuyo techo es un escalón menos que la pregunta', () => {
       renderBand();
 
-      // The ceiling is arithmetic: 40px of text plus a 28px arrow plus a 12px gap is 566px, inside the
-      // 596px half column. 44px would be 619px. Asserted on the token because the token is what every
-      // viewport resolves against.
-      expect(getCssForElement(screen.getByRole('link', { name: 'ismaelmarot@hotmail.com' }))).toContain(
+      // specs/027 keeps the address on `--text-display-email`, whose ceiling is `--text-display-project`,
+      // so the address is one display step below the question and can never outgrow it. The assertion is
+      // on the reference rather than the value, so retuning the token does not rewrite this test.
+      expect(getCssForElement(screen.getByRole('link', { name: 'ismaelmarot@contacto.com' }))).toContain(
         'font-size: var(--text-display-email)'
       );
     });
@@ -333,7 +351,7 @@ describe('ContactBand', () => {
         enlaces.findIndex((a) => nombre.test(a.getAttribute('aria-label') ?? a.textContent ?? ''));
 
       const github = indiceDe(/GitHub/i);
-      const mail = indiceDe(/ismaelmarot@hotmail/);
+      const mail = indiceDe(/ismaelmarot@contacto/);
 
       expect(github, 'el fixture trae una red llamada GitHub').toBeGreaterThanOrEqual(0);
       expect(mail, 'el mail está después de las redes en el DOM').toBeGreaterThan(github);
@@ -346,14 +364,26 @@ describe('ContactBand', () => {
        directamente para leer siblings sería la forma de decirlo acá, y no compra nada que el E2E no
        mida mejor. */
 
-    it('el boton esta alineado a la derecha y en movil a la izquierda', () => {
+    it('el boton esta alineado a la izquierda, en escritorio y en movil', () => {
       renderBand();
 
       // align-self y no margin-left:auto, para que la regla se lea como una alineación y revertirla
-      // sea una declaración.
+      // sea una declaración. specs/027 left-aligns it beneath the sentence, so there is no media query
+      // that moves it: a left column of question, sentence and button is the arrangement.
       const boton = screen.getByRole('link', { name: 'ir' });
-      expect(getCssForElement(boton)).toContain('align-self: flex-end');
-      expect(getCssForElement(boton)).toContain('@media (max-width: 767px)');
+      expect(getCssForElement(boton)).toContain('align-self: flex-start');
+      expect(getCssForElement(boton)).not.toContain('@media (max-width: 767px)');
+    });
+
+    it('el mail esta alineado a la derecha en escritorio y a la izquierda en movil', () => {
+      renderBand();
+
+      const css = getCssForElement(screen.getByRole('link', { name: 'ismaelmarot@contacto.com' }));
+
+      // justify-self es la única declaración que lo pone en el borde derecho de la columna que la fila
+      // le deja, y la media query lo devuelve al inicio cuando la fila se apila en una columna.
+      expect(css).toContain('justify-self: end');
+      expect(css).toContain('justify-self: start');
     });
 
     it('el token del mail encadena al del Hero, que es lo que lo hace del mismo tamaño', () => {
@@ -363,7 +393,7 @@ describe('ContactBand', () => {
       const tokens = readFileSync(`${process.cwd()}/src/styles/tokens.css`, 'utf-8');
       const declaracion = tokens.match(/--text-display-email:\s*([^;]+);/);
       expect(declaracion, 'el token existe').not.toBeNull();
-      expect(declaracion![1].trim()).toBe('clamp(1.125rem, 5.9vw, var(--text-display-project))');
+      expect(declaracion![1].trim()).toBe('clamp(1.125rem, 5.6vw, var(--text-display-project))');
 
       /* El techo es el token del Hero y no un número, y eso es lo que hace que los dos no puedan
          separarse. El argumento es estructural y no depende de que el fallo que lo motivaba llegara
@@ -380,7 +410,7 @@ describe('ContactBand', () => {
          Y el piso y la rampa viven en la misma declaración. Un tamaño repartido entre una regla y una
          media query es un tamaño que la próxima vez queda cambiado por la mitad, y además aquí no hace
          falta: el techo se cruza solo alrededor de los 540px. */
-      expect(declaracion![1]).toContain('5.9vw');
+      expect(declaracion![1]).toContain('5.6vw');
       expect(declaracion![1]).toContain('1.125rem');
       /* El E2E sí distingue las dos versiones, pero sólo en un motor: en WebKit a 768 el caso tablet
          mide 24px contra 32px y revienta. Ésta sigue siendo la aserción que ata el mecanismo, porque

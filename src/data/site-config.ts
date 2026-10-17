@@ -6,6 +6,11 @@ export const siteConfig: SiteConfig = {
   tagline: 'Building accessible, performant web experiences with modern technologies.',
   aboutText: `I'm a web developer passionate about creating clean, accessible, and performant web applications. With experience across the full stack, I specialize in React, TypeScript, and modern web technologies. When I'm not coding, you'll find me exploring new frameworks, contributing to open source, or sharing knowledge through technical writing.`,
   email: 'ismaelmarot@hotmail.com',
+  /* specs/027. The address the band shows, and not the address it writes to: `email` above stays the
+     mailto destination. The two are independent so the visible text can read as a contact alias while
+     the link still opens the real inbox. Only the band reads this; the footer and the contact page
+     read the `email` entry of `socialLinks`. */
+  contactDisplayEmail: 'ismaelmarot@contacto.com',
   /* specs/025. Copy rather than markup: the closing band asks the question and this says what
      happens next, so it belongs beside the tagline and the about text and not in the component. */
   contactTagline: 'Hablemos y pongamos manos a la obra',

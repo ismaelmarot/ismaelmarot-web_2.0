@@ -2,24 +2,16 @@ import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
 /**
- * specs/025-contact-band-composition.
+ * specs/027-contact-band-hierarchy.
  *
- * This file replaces a table. `specs/021` recorded why the address's ceiling was 40px with a measured
- * table — 36px → 490 used of 596, 40px → 548, 44px → 599 and over by 3 — and a comment explaining it.
- * The token has since moved to the Hero's size, so that arithmetic described an arrangement that no
- * longer exists.
+ * This file replaces the `specs/025` arrangement with the `specs/027` one. The band's subject moved from
+ * the address to the question, so the assertions that held the address against the Hero's "Web Developer"
+ * line now hold the question against the "Sobre mí" section title, and the row that `specs/025` raised to
+ * the top with `order` is now the last thing in the band.
  *
  * **A table is a record of one measurement on one day. This is the same knowledge with something that
  * fails.** Every assertion here measures the rendered page, because the whole feature is a claim about
- * widths and a stylesheet assertion would pass on a value that overflows.
- *
- * The two that matter most:
- *
- *   - the address renders at the same size as the Hero's "Web Developer" line, which is the request
- *   - the address never wraps and never overflows its column, which is what the size has to be paid for
- *
- * The second is the one that will fail if someone raises the token again without redoing the
- * arithmetic, which is exactly what happened while writing this.
+ * sizes and widths and a stylesheet assertion would pass on a value that overflows.
  */
 
 const ANCHOS = [
@@ -31,15 +23,17 @@ const ANCHOS = [
 ];
 
 interface Medida {
+  preguntaFuente: string;
+  tituloFuente: string;
   mailFuente: string;
-  heroFuente: string;
   lineas: number;
   desborda: boolean;
-  filaArribaDelEncabezado: boolean;
+  ordenVertical: number[];
+  filaAbajoDelEncabezado: boolean;
   encabezadoPrimero: boolean;
   redesALaIzquierda: boolean;
-  botonALaDerecha: boolean;
-  ordenVertical: number[];
+  mailALaDerecha: boolean;
+  botonALaIzquierda: boolean;
   anchoDisponible: number;
 }
 
@@ -53,25 +47,34 @@ async function medir(page: Page): Promise<Medida> {
     const frase = q('[data-testid="contact-tagline"]');
     const boton = q('a[href="/contact"]');
     const redes = fila.querySelector('ul');
-    const hero = document.querySelector('[data-testid="hero-band"] p') as HTMLElement;
+    const titulo = document.querySelector('#about-summary h2') as HTMLElement;
 
     const caja = (e: Element) => e.getBoundingClientRect();
     const altoLinea = parseFloat(getComputedStyle(mail).lineHeight);
     const primero = banda.querySelector('h2, p, a, ul');
 
     return {
+      preguntaFuente: getComputedStyle(encabezado).fontSize,
+      tituloFuente: getComputedStyle(titulo).fontSize,
       mailFuente: getComputedStyle(mail).fontSize,
-      heroFuente: getComputedStyle(hero).fontSize,
       lineas: Math.round(caja(mail).height / altoLinea),
       // scrollWidth exceeds clientWidth when the flex line cannot hold the address, the arrow and the
       // gap together. This is the assertion specs/021's table could not make.
       desborda: mail.scrollWidth > mail.clientWidth + 1,
-      filaArribaDelEncabezado: caja(fila).top < caja(encabezado).top,
+      // The whole arrangement is one claim: question, sentence, call to action, row, top to bottom.
+      ordenVertical: [
+        caja(encabezado).top,
+        caja(frase).top,
+        caja(boton).top,
+        caja(fila).top,
+      ].map(Math.round),
+      filaAbajoDelEncabezado: caja(fila).top > caja(encabezado).top,
       encabezadoPrimero: primero?.tagName === 'H2',
       redesALaIzquierda: redes ? caja(redes).right < caja(mail).left : false,
-      // 2px of slack for sub-pixel layout; the button hugs the container's right edge.
-      botonALaDerecha: caja(banda).right - caja(boton).right < 120,
-      ordenVertical: [caja(redes ?? mail).top, caja(mail).top, caja(encabezado).top, caja(frase).top, caja(boton).top].map(Math.round),
+      // 2px of slack for sub-pixel layout; the address hugs the row's right edge.
+      mailALaDerecha: caja(fila).right - caja(mail).right < 4,
+      // The call to action is left-aligned, so it sits at the band's own padding edge.
+      botonALaIzquierda: caja(boton).left - caja(banda).left < 60,
       // The width a media query sees, which is not the width Playwright was asked for. On a platform
       // with classic scrollbars the two differ, and at 768 that difference is enough to flip a
       // breakpoint. Everything the CSS branches on branches on this, so this is what the assertions
@@ -86,25 +89,25 @@ test.describe('la banda de contacto', () => {
     test.describe(vp.nombre, () => {
       test.use({ viewport: { width: vp.width, height: vp.height } });
 
-      test('el mail mide lo mismo que la fase del Hero, o un escalón menos en móvil', async ({ page }) => {
+      test('la pregunta mide lo mismo que el título Sobre mí', async ({ page }) => {
         await page.goto('/');
         await page.waitForLoadState('networkidle');
         const m = await medir(page);
 
-        const px = (v: string) => parseFloat(v);
-        /* El corte está en 600, no en 768, y no es un número que alguien eligió: es donde la rampa del
-           token se cruza con el techo que le pone el Hero. Por encima de ahí los dos son el mismo
-           token y no pueden diferir. Por debajo la rampa manda, porque la columna es el ancho entero y
-           el piso del Hero pide 406px, que un teléfono no tiene. */
-        if (vp.width >= 600) {
-          // El pedido, literal: la misma fase. Igual, no "cerca": es el mismo token.
-          expect(px(m.mailFuente)).toBe(px(m.heroFuente));
-        } else {
-          // Un escalón menos, y nunca mayor que el del Hero.
-          expect(px(m.mailFuente)).toBeLessThan(px(m.heroFuente));
-          // Con un techo medido: 25px es lo que entra en 358px de columna junto a la flecha de 28.
-          expect(px(m.mailFuente)).toBeLessThanOrEqual(25);
-        }
+        // The request, literally: the question reads at the section-title scale, the token the
+        // "Sobre mí" heading already uses. Measured on the rendered page, not read from a stylesheet.
+        expect(parseFloat(m.preguntaFuente)).toBe(parseFloat(m.tituloFuente));
+      });
+
+      test('el mail es un escalón menos que la pregunta', async ({ page }) => {
+        await page.goto('/');
+        await page.waitForLoadState('networkidle');
+        const m = await medir(page);
+
+        // specs/027 moved the display from the address to the question. The address keeps its own
+        // token, whose ceiling is the token one step below the section title, so the two cannot be
+        // equal and the address can never outgrow the question.
+        expect(parseFloat(m.mailFuente)).toBeLessThan(parseFloat(m.preguntaFuente));
       });
 
       test('el mail no parte ni desborda su columna', async ({ page }) => {
@@ -116,14 +119,19 @@ test.describe('la banda de contacto', () => {
         expect(m.desborda, 'el mail no desborda su columna').toBe(false);
       });
 
-      test('la fila de arriba trae redes y mail, y la pregunta va debajo', async ({ page }) => {
+      test('la pregunta va arriba, la fila abajo, y el encabezado es lo primero', async ({ page }) => {
         await page.goto('/');
         await page.waitForLoadState('networkidle');
         const m = await medir(page);
 
-        expect(m.filaArribaDelEncabezado).toBe(true);
+        expect(m.filaAbajoDelEncabezado).toBe(true);
         // Y el orden de lectura no da la vuelta: el encabezado sigue siendo lo primero del DOM.
         expect(m.encabezadoPrimero).toBe(true);
+        // Y el dibujo es una pila: pregunta, frase, botón, fila.
+        const orden = m.ordenVertical;
+        expect(orden[0]).toBeLessThan(orden[1]);
+        expect(orden[1]).toBeLessThan(orden[2]);
+        expect(orden[2]).toBeLessThan(orden[3]);
       });
 
       test('las redes quedan a la izquierda del mail, en la misma fila', async ({ page }) => {
@@ -134,32 +142,11 @@ test.describe('la banda de contacto', () => {
         // En móvil la fila se apila y las redes quedan encima, no al lado. Que se apilen es lo
         // correcto; lo que no puede pasar es que se solapen.
         //
-        // El 767/768 de acá NO es el mismo número que el 600 del aserto de tamaño, y no es casual que
-        // este archivo tenga los dos. Son dos mecanismos distintos:
-        //
-        //   - el tamaño no tiene breakpoint. Es un clamp continuo cuyo techo es el token del Hero, y
-        //     el 600 es un corte analítico elegido por debajo del cruce real (~542px), para no
-        //     depender de calcular ese cruce exacto.
-        //   - la disposición sí tiene breakpoint: `ContactBand.styles.ts:98` pone `grid-template-columns:
-        //     auto 1fr` y `:102` lo pasa a `1fr` bajo 767px. `redesALaIzquierda` mide literalmente que
-        //     la fila tiene dos columnas, así que su umbral tiene que ser ese breakpoint y no otro.
-        //     Unificarlo con el 600 haría pedir dos columnas entre 600 y 767, donde el grid ya colapsó
-        //     a una, y el aserto fallaría.
-        //
-        // El token ya no tiene breakpoint, así que este archivo no puede comprobar su forma: que el mail y el
-        // Hero midan lo mismo lo garantiza el techo compartido en `tokens.css`, y lo que ata esa forma
-        // al archivo es `ContactBand.test.tsx`, que exige una sola declaración del token.
-        //
-        // Y el umbral de ESTE aserto no es el viewport. Es `anchoDisponible`, que es lo que ve una
-        // media query. En macOS las barras de desplazamiento no ocupan ancho, así que con viewport 768
-        // el ancho disponible también es 768 y las dos cosas coinciden; en Linux la barra es clásica y
-        // se come unos 15px, de modo que con viewport 768 el ancho disponible es 753, la regla de
-        // `ContactBand.styles.ts:102` sí dispara y la fila se apila. Medido en ambos motores: la fila
-        // tiene dos columnas si y sólo si `(max-width: 767px)` no matchea.
-        //
-        // Preguntar por `vp.width` era preguntarle al número equivocado, y fallaba sólo donde el
-        // aserto no podía verlo. Y apilarse a 753 no es un defecto: dos columnas piden 212 de redes
-        // + 32 de separación + 476 del mail = 720, y a 705 disponibles no caben.
+        // El umbral es `anchoDisponible`, que es lo que ve una media query. En macOS las barras de
+        // desplazamiento no ocupan ancho, así que con viewport 768 el ancho disponible también es 768
+        // y las dos cosas coinciden; en Linux la barra es clásica y se come unos 15px, de modo que con
+        // viewport 768 el ancho disponible es 753, la regla de `ContactBand.styles.ts` sí dispara y la
+        // fila se apila. Preguntar por `vp.width` era preguntarle al número equivocado.
         if (m.anchoDisponible > 767) {
           expect(m.redesALaIzquierda, 'con dos columnas, las redes quedan a la izquierda del mail').toBe(true);
         } else {
@@ -169,19 +156,31 @@ test.describe('la banda de contacto', () => {
     });
   }
 
-  test('el botón está a la derecha en escritorio y a la izquierda en móvil', async ({ page }) => {
+  test('el mail está a la derecha en escritorio y a la izquierda en móvil', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
     await page.waitForLoadState('networkidle');
-    expect((await medir(page)).botonALaDerecha).toBe(true);
+    expect((await medir(page)).mailALaDerecha).toBe(true);
 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForLoadState('domcontentloaded');
-    expect((await medir(page)).botonALaDerecha).toBe(false);
+    expect((await medir(page)).mailALaDerecha).toBe(false);
+  });
+
+  test('el botón está a la izquierda en escritorio y en móvil', async ({ page }) => {
+    for (const vp of [
+      { width: 1440, height: 900 },
+      { width: 390, height: 844 },
+    ]) {
+      await page.setViewportSize(vp);
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
+      expect((await medir(page)).botonALaIzquierda).toBe(true);
+    }
   });
 
   test('la banda sigue siendo del alto de una pantalla', async ({ page }) => {
-    // specs/025 mueve cosas dentro de la banda. Esto es lo que comprueba que no la movió de alto, y
+    // specs/027 mueve cosas dentro de la banda. Esto es lo que comprueba que no la movió de alto, y
     // es el mismo criterio que home-scroll-snap ya afirma.
     for (const vp of ANCHOS) {
       await page.setViewportSize({ width: vp.width, height: vp.height });
@@ -205,7 +204,7 @@ test.describe('la banda de contacto', () => {
     await expect(banda.getByRole('heading', { level: 2 })).toHaveText('¿Tienes un proyecto?');
     expect(await banda.getByRole('heading').all(), 'una sola voz en la banda').toHaveLength(1);
 
-    // Y la frase nueva no es un encabezado, que es lo que mantiene esa cuenta en uno.
+    // Y la frase no es un encabezado, que es lo que mantiene esa cuenta en uno.
     await expect(banda.getByTestId('contact-tagline')).toHaveText(/./);
     expect(await banda.getByRole('heading', { level: 2 }).count()).toBe(1);
   });

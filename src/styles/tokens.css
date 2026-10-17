@@ -144,10 +144,10 @@
 
      The construction that replaces the breakpoint:
 
-       the ceiling is  var(--text-display-project) -- the Hero's own clamp, so the two cannot differ
-       the floor is    1.125rem, below which the address would stop being a display
-       the ramp is     5.9vw, which crosses under the ceiling somewhere around 540px and takes over
-                       below that
+        the ceiling is  var(--text-display-project) -- the Hero's own clamp, so the two cannot differ
+        the floor is    1.125rem, below which the address would stop being a display
+        the ramp is     5.6vw, which crosses under the ceiling somewhere around 571px and takes over
+                        below that
 
      Above the crossover the address IS the Hero's size, by construction rather than by coincidence.
      Below it the ramp governs, and the ramp is there only because a narrow column cannot hold the
@@ -162,18 +162,24 @@
        390px -> 358 column -> 25px
        430px -> 398 column -> 28.2px
 
-     5.9vw gives 18.9px at 320 and 23px at 390, under both. A flat 26px was the first answer and it was
-     wrong at 320 by 42px while looking comfortable at 390.
+      5.6vw gives 17.9px at 320 and 21.8px at 390, under both. A flat 26px was the first answer and it
+      was wrong at 320 by 42px while looking comfortable at 390.
+
+      specs/027 lengthened the address by one character, `ismaelmarot@hotmail.com` to
+      `ismaelmarot@contacto.com`, and the ramp was retuned from 5.9vw to 5.6vw to pay for it. The
+      ceilings above were measured for the twenty-three-character address; the twenty-four-character one
+      is about four percent wider, which is the whole of the change.
 
      specs/021's ceiling of 40px and its table are gone, and they were right at the time: the address
      then shared a 596px column with the question and 44px overflowed by 3. The arrangement is what
      removed that constraint -- the four network marks need about 230px, so `auto 1fr` leaves the
      address roughly 960 at 1440 and 498 at 768, against the 711 and 393 that 56px and 31px need.
 
-     The ceiling now belongs to the Hero's token. A longer address needs a smaller
-     --text-display-project or a wider column, and nothing detects the change. */
+      The ceiling now belongs to the Hero's token. A longer address needs a smaller
+      --text-display-project or a wider column, and nothing detects the change; specs/027 paid for one
+      more character by retuning the ramp rather than the ceiling. */
 
-  --text-display-email: clamp(1.125rem, 5.9vw, var(--text-display-project));
+  --text-display-email: clamp(1.125rem, 5.6vw, var(--text-display-project));
   --text-card-body: 1.0625rem;                               /* Project description - weight 400 */
 
   /* Font Weights - Only 4 weights permitted */

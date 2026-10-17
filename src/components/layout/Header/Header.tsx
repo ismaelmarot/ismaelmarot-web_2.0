@@ -91,6 +91,7 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
             onClose={closeMenu}
             items={navigation}
             cta={cta}
+            overDark={overDark}
           />,
           document.body
         )}

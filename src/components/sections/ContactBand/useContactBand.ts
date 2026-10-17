@@ -2,8 +2,11 @@ import { siteConfig } from '@/data/site-config';
 import type { ContactMethod } from '@/types/contact';
 
 export interface UseContactBandReturn {
-  /** The configured address, with no `mailto:` on it. */
+  /** The configured address, with no `mailto:` on it. This is where the link writes to. */
   email: string;
+  /** specs/027: the address the band shows. Independent of `email`, because the visible text and the
+      destination are two values and the request splits them. */
+  displayEmail: string;
   /** The networks, in display order, with anything that has no destination dropped. */
   redes: ContactMethod[];
   /** specs/025: what follows the question. From the configuration so it is copy, not markup. */
@@ -33,6 +36,7 @@ export function useContactBand(): UseContactBandReturn {
 
   return {
     email: siteConfig.email,
+    displayEmail: siteConfig.contactDisplayEmail,
     redes,
     tagline: siteConfig.contactTagline,
   };
