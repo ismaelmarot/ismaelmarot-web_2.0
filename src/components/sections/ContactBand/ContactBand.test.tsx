@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { ContactBand } from './ContactBand';
 import { siteConfig } from '@/data/site-config';
 import { getCssForElement } from '@/test-utils/css';
+import { tokens } from '@/styles/tokens';
 import type { ContactMethod } from '@/types/contact';
 
 const red = (over: Partial<ContactMethod> = {}): ContactMethod => ({
@@ -33,6 +34,18 @@ describe('ContactBand', () => {
     );
 
   describe('US1 - escribir desde la landing', () => {
+    it('la frase lee con su acento, y lo lleva la configuración', () => {
+      renderBand();
+
+      // specs/028: "pongámonos manos a la obra" es la forma reflexiva con su acento. El valor vive en
+      // la configuración — specs/025 lo decidió y el componente no tiene frase propia — así que leer
+      // `siteConfig.contactTagline` y el texto renderizado son la misma afirmación por dos bocas.
+      expect(screen.getByTestId('contact-tagline')).toHaveTextContent(
+        'Hablemos y pongámonos manos a la obra'
+      );
+      expect(siteConfig.contactTagline).toBe('Hablemos y pongámonos manos a la obra');
+    });
+
     it('muestra la dirección visible como un único enlace mailto', () => {
       renderBand();
 
@@ -335,6 +348,24 @@ describe('ContactBand', () => {
       // segunda pregunta y el contorno dejaría de decir qué es cada sección.
       expect(screen.getByTestId('contact-tagline').tagName).toBe('P');
       expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(1);
+    });
+
+    it('la frase tiene el tamaño del texto de "Sobre mí" y el gap del bloque respira un escalón', () => {
+      renderBand();
+
+      // specs/028 brought three claims: the accent (asserted above), this scale and this gap.
+      // The token reference is the assertion, the same way the question's test holds
+      // `--text-display-section`: a literal would agree at one viewport and lie at another.
+      const frase = getCssForElement(screen.getByTestId('contact-tagline'));
+      expect(frase).toContain('font-size: var(--text-large-subtitle)');
+      expect(frase).not.toContain('--text-body');
+
+      // El testid del contenedor existe porque `no-node-access` prohíbe alcanzar un padre a través de
+      // un hijo, y la fila ya lo practica: un nodo estructural sin rol se nombra para la prueba, no
+      // para el lector de pantalla.
+      expect(getCssForElement(screen.getByTestId('contact-band-inner'))).toContain(
+        `gap: ${tokens.space[12]}`
+      );
     });
 
     it('las redes van antes que el mail en el DOM', () => {

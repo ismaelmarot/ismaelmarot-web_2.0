@@ -26,6 +26,9 @@ interface Medida {
   preguntaFuente: string;
   tituloFuente: string;
   mailFuente: string;
+  fraseFuente: string;
+  descripcionFuente: string;
+  distanciaBotonFila: number;
   lineas: number;
   desborda: boolean;
   ordenVertical: number[];
@@ -48,6 +51,8 @@ async function medir(page: Page): Promise<Medida> {
     const boton = q('a[href="/contact"]');
     const redes = fila.querySelector('ul');
     const titulo = document.querySelector('#about-summary h2') as HTMLElement;
+    // specs/028: the sentence's coordinate is the "Me interesa…" description in the band above this one.
+    const descripcion = document.querySelector('#about-summary p') as HTMLElement;
 
     const caja = (e: Element) => e.getBoundingClientRect();
     const altoLinea = parseFloat(getComputedStyle(mail).lineHeight);
@@ -57,6 +62,12 @@ async function medir(page: Page): Promise<Medida> {
       preguntaFuente: getComputedStyle(encabezado).fontSize,
       tituloFuente: getComputedStyle(titulo).fontSize,
       mailFuente: getComputedStyle(mail).fontSize,
+      fraseFuente: getComputedStyle(frase).fontSize,
+      descripcionFuente: getComputedStyle(descripcion).fontSize,
+      // specs/028: the air the band owns is the distance between its last copy element and the row.
+      // Measured rather than read off a stylesheet, so a margin smuggled in anywhere fails it the
+      // same way a gap that never rendered would; roundoff gets 1px of slack.
+      distanciaBotonFila: Math.round(caja(fila).top - caja(boton).bottom),
       lineas: Math.round(caja(mail).height / altoLinea),
       // scrollWidth exceeds clientWidth when the flex line cannot hold the address, the arrow and the
       // gap together. This is the assertion specs/021's table could not make.
@@ -73,8 +84,11 @@ async function medir(page: Page): Promise<Medida> {
       redesALaIzquierda: redes ? caja(redes).right < caja(mail).left : false,
       // 2px of slack for sub-pixel layout; the address hugs the row's right edge.
       mailALaDerecha: caja(fila).right - caja(mail).right < 4,
-      // The call to action is left-aligned, so it sits at the band's own padding edge.
-      botonALaIzquierda: caja(boton).left - caja(banda).left < 60,
+      // The call to action is left-aligned within the copy, whose column starts at the question's own
+      // left edge — not at the band's, which the centred, max-widthed inner can sit 80px inside of at
+      // 1440. Measuring against the heading is measuring what `align-items: flex-start` promises, and
+      // it is the same number at every viewport because the three children share one flex line.
+      botonALaIzquierda: Math.abs(caja(boton).left - caja(encabezado).left) < 4,
       // The width a media query sees, which is not the width Playwright was asked for. On a platform
       // with classic scrollbars the two differ, and at 768 that difference is enough to flip a
       // breakpoint. Everything the CSS branches on branches on this, so this is what the assertions
@@ -108,6 +122,33 @@ test.describe('la banda de contacto', () => {
         // token, whose ceiling is the token one step below the section title, so the two cannot be
         // equal and the address can never outgrow the question.
         expect(parseFloat(m.mailFuente)).toBeLessThan(parseFloat(m.preguntaFuente));
+      });
+
+      test('la frase mide lo mismo que el texto de Sobre mí, y no gana sobre la pregunta', async ({ page }) => {
+        await page.goto('/');
+        await page.waitForLoadState('networkidle');
+        const m = await medir(page);
+
+        // specs/028's request, literally: the sentence reads the same size as the "Me interesa…"
+        // description two bands above it. Measured on the rendered page, not read off a stylesheet.
+        expect(parseFloat(m.fraseFuente)).toBe(parseFloat(m.descripcionFuente));
+        // And the hierarchy specs/027 settled survives the sentence's wider token at every viewport:
+        // its 20px floor is above the address's 18px on a phone, which is fine — the sentence is not
+        // the display. The question remains the largest thing in the band.
+        expect(parseFloat(m.preguntaFuente)).toBeGreaterThan(parseFloat(m.fraseFuente));
+      });
+
+      test('el aire entre el bloque y la fila mide el escalón que specs/028 pide', async ({ page }) => {
+        await page.goto('/');
+        await page.waitForLoadState('networkidle');
+        const m = await medir(page);
+
+        // 48px is the step the band owns between its last copy element and the row — `space[12]` on the
+        // parent's gap, up from the 40px the band carried through specs/027. One pixel of slack covers
+        // the roundoff in the measurement; the distance is what a margin smuggled in anywhere would
+        // spoil, which is why it is measured and not read off a stylesheet.
+        expect(m.distanciaBotonFila, 'la fila respira un escalón más').toBeGreaterThan(40);
+        expect(Math.abs(m.distanciaBotonFila - 48), '48px, espacio-aguja').toBeLessThanOrEqual(1);
       });
 
       test('el mail no parte ni desborda su columna', async ({ page }) => {

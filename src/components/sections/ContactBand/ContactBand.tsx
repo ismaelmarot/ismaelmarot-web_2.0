@@ -56,7 +56,7 @@ export const ContactBand = ({ email, displayEmail, redes, tagline }: ContactBand
 
   return (
     <StyledContactBand id="contact-summary" aria-label="Contacto">
-      <StyledContactBandInner>
+      <StyledContactBandInner data-testid="contact-band-inner">
         <StyledContactBandCopy>
           <StyledContactBandTitle>¿Tienes un proyecto?</StyledContactBandTitle>
           {/* specs/025: the sentence is copy, so it comes from siteConfig rather than from here.

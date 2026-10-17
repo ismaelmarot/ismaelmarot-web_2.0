@@ -23,12 +23,17 @@ export const StyledContactBand = styled.section`
 
 /* A flex column because the band's own button is aligned with align-self, and align-self does nothing
    in a block container. The row and the copy above it set their own widths, so making this a flex column
-   changes nothing about them. */
+   changes nothing about them.
+
+   The gap is the only air between the copy block and the row — the copy carries no margin, which is what
+   specs/025 recorded and specs/028 leaves as the arrangement's decision rather than a child's exception.
+   space[12] is the next step up the scale from the 40px the band carried through specs/027, and the E2E
+   measures the button-to-row distance so a margin smuggled in anywhere fails it. */
 export const StyledContactBandInner = styled.div`
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: ${tokens.space[10]};
+  gap: ${tokens.space[12]};
   max-width: ${tokens.containers.xl};
   width: 100%;
   margin-inline: auto;
@@ -56,12 +61,16 @@ export const StyledContactBandTitle = styled.h2`
   color: ${tokens.colors.textPrimary};
 `;
 
-/* specs/025: what happens after the question. One step below the question and two below the address,
-   because it is neither of them: the question asks and this answers, and the address is the thing being
-   asked about. A paragraph and not a heading, so the band keeps exactly one level-two heading. */
+/* specs/025: what happens after the question. specs/028 moves it onto --text-large-subtitle, the token
+   the "Me interesa…" description in "Sobre mí" reads, so the two are the same size by construction —
+   the same construction that puts the question on the section-title token. The token specs/027 rejected
+   for the QUESTION is safe here: that rejection was about a display whose 20px floor would have beaten
+   the address's 18px floor and reversed the hierarchy. The sentence is not the display; it stays the
+   smallest voice at a phone, under a 40px question and an 18px address, and it carries the same relation
+   "Sobre mí" already lives with: a 20px description under a section-scale heading. */
 export const StyledContactBandDescription = styled.p`
   margin: 0;
-  font-size: var(--text-body);
+  font-size: var(--text-large-subtitle);
   font-weight: ${tokens.fontWeights.normal};
   line-height: 1.625;
   letter-spacing: -0.005em;

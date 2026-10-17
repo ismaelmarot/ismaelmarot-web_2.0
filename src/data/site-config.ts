@@ -12,8 +12,10 @@ export const siteConfig: SiteConfig = {
      read the `email` entry of `socialLinks`. */
   contactDisplayEmail: 'ismaelmarot@contacto.com',
   /* specs/025. Copy rather than markup: the closing band asks the question and this says what
-     happens next, so it belongs beside the tagline and the about text and not in the component. */
-  contactTagline: 'Hablemos y pongamos manos a la obra',
+     happens next, so it belongs beside the tagline and the about text and not in the component.
+     specs/028. The reflexive imperative, with the accent a stressed final syllable calls for —
+     "pongámonos manos a la obra" is the idiom, and one puts oneself to work. */
+  contactTagline: 'Hablemos y pongámonos manos a la obra',
   githubUsername: 'ismaelmarot',
   socialLinks: [
     {

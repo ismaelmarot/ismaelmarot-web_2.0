@@ -83,14 +83,14 @@ async function abrirMenu(page: Page, ruta: string, scrollY = 0) {
   await page.waitForTimeout(ESPERA_SETTLED);
 }
 
-type Medida = {
+interface Medida {
   panelBg: string;
   navColor: string;
   ctaColor: string;
   closeColor: string;
   headerBg: string;
   navCount: number;
-};
+}
 
 /** Los cuatro puntos que miden SC-001 y SC-002, leídos ya asentada la animación. */
 async function medir(page: Page): Promise<Medida> {
@@ -177,7 +177,7 @@ test.describe('el menú móvil toma el tema de la navbar', () => {
         // Soltar el boton sobre el enlace lo activaria y cerraria el menu, asi que se lee con el boton
         // todavia presionado y se aparta el puntero antes de soltarlo.
         const activeDark = await conBotonPresionado(page, item);
-
+        colorCerca(activeDark, AZUL_SOBRE_NEGRO);
         // :focus-visible es el teclado llegando a algo que nadie señaló.
         await page.keyboard.press('Tab');
         await page.waitForTimeout(120);
